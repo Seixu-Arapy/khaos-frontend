@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!--
+    Eight-pointed star matching U+2737 ✷ as rendered in Khaos.
+    Outer radius 13, inner radius 5, center 16,16.
+    Color: copper-400 #D08F4E
+  -->
+  <polygon
+    fill="#D08F4E"
+    points="
+      16,3
+      17.91,11.38
+      25.19,6.81
+      20.62,14.09
+      29,16
+      20.62,17.91
+      25.19,25.19
+      17.91,20.62
+      16,29
+      14.09,20.62
+      6.81,25.19
+      11.38,17.91
+      3,16
+      11.38,14.09
+      6.81,6.81
+      14.09,11.38
+    "
+  />
+</svg>
