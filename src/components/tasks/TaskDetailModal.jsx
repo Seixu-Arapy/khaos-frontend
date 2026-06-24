@@ -46,7 +46,7 @@ function Section({ title, children, action }) {
 }
 
 export default function TaskDetailModal({ taskId, task, onClose }) {
-  const { update, remove } = useTaskMutations();
+  const { update, remove, archive } = useTaskMutations();
   const { data: sections = [] } = useSections();
   const { data: projects = [] } = useProjects();
   const { data: items = [] } = useTaskItems(taskId);
@@ -232,7 +232,7 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
           action={
             <button
               onClick={() => setTagPickerOpen((o) => !o)}
-              className="hover:text-copper-300 text-copper-400 text-xs"
+              className="text-copper-400 hover:text-copper-300 text-xs"
             >
               + Add tag
             </button>
@@ -320,7 +320,7 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
               value={newItem}
               onChange={(e) => setNewItem(e.target.value)}
               placeholder="Add a checklist item…"
-              className="text-ink-200 placeholder:text-ink-600 flex-1 bg-transparent py-1 text-sm focus:outline-hidden"
+              className="text-ink-200 placeholder:text-ink-600 flex-1 bg-transparent py-1 text-sm focus:outline-none"
             />
           </form>
         </Section>
@@ -414,12 +414,31 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
 
         <div className="border-ink-700 flex justify-between border-t pt-3.5">
           <StatusBadge status={task.status} size="md" />
-          <button
-            onClick={handleDelete}
-            className="text-ink-500 hover:text-rust-500 flex items-center gap-1 text-xs"
-          >
-            <Trash2 size={13} /> Delete task
-          </button>
+          <div className="flex items-center gap-3">
+            {task.status === 'archived' ? (
+              <button
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Permanently delete "${task.name}"? This cannot be undone.`
+                    )
+                  ) {
+                    remove.mutate(task.id, { onSuccess: onClose });
+                  }
+                }}
+                className="text-rust-500 hover:text-rust-400 flex items-center gap-1 text-xs"
+              >
+                <Trash2 size={13} /> Delete permanently
+              </button>
+            ) : (
+              <button
+                onClick={() => archive.mutate(task.id, { onSuccess: onClose })}
+                className="text-ink-500 hover:text-ink-300 flex items-center gap-1 text-xs"
+              >
+                <Trash2 size={13} /> Archive
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </Modal>

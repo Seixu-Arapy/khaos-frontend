@@ -8,6 +8,7 @@ export const STATUSES = [
   'done',
   'paused',
   'cancelled',
+  'archived',
 ];
 
 // public.priority
@@ -75,6 +76,12 @@ export const STATUS_META = {
     dot: 'bg-rust-500',
     text: 'text-ink-500 line-through',
     bg: 'bg-ink-700/30',
+  },
+  archived: {
+    label: 'Archived',
+    dot: 'bg-ink-600',
+    text: 'text-ink-600',
+    bg: 'bg-ink-700/20',
   },
 };
 

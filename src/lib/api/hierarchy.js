@@ -42,6 +42,14 @@ export const projectsApi = {
       .select()
       .single()
       .then(unwrap),
+  archive: (id) =>
+    supabase
+      .from('projects')
+      .update({ status: 'archived' })
+      .eq('id', id)
+      .select()
+      .single()
+      .then(unwrap),
   remove: (id) => supabase.from('projects').delete().eq('id', id).then(unwrap),
 };
 
@@ -60,6 +68,14 @@ export const sectionsApi = {
     supabase
       .from('sections')
       .update(patch)
+      .eq('id', id)
+      .select()
+      .single()
+      .then(unwrap),
+  archive: (id) =>
+    supabase
+      .from('sections')
+      .update({ status: 'archived' })
       .eq('id', id)
       .select()
       .single()
@@ -104,6 +120,14 @@ export const tasksApi = {
     supabase
       .from('tasks')
       .update(patch)
+      .eq('id', id)
+      .select()
+      .single()
+      .then(unwrap),
+  archive: (id) =>
+    supabase
+      .from('tasks')
+      .update({ status: 'archived' })
       .eq('id', id)
       .select()
       .single()

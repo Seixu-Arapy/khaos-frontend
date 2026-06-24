@@ -2,9 +2,10 @@ import { GoogleGenAI } from '@google/genai';
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 export const GEMINI_MODEL =
-  import.meta.env.VITE_GEMINI_MODEL || 'gemini-1.5-flash';
+  import.meta.env.VITE_GEMINI_MODEL || 'gemini-3.5-flash';
 
 if (!apiKey) {
+  // eslint-disable-next-line no-console
   console.error(
     'Missing VITE_GEMINI_API_KEY — the assistant chat will not work until it is set in .env'
   );
@@ -42,7 +43,9 @@ When you make ANY change to an entity on behalf of the person, you should ALSO i
 
 When the person asks what happened to a task/project/section, query moments for that entity to show its full history. When they ask "why did X change?" or "when did this become high priority?", the moments table is the answer.
 
-Status values: planning, todo, in_progress, in_review, done, paused, cancelled.
+Status values: planning, todo, in_progress, in_review, done, paused, cancelled, archived.
 Priority values: urgent, high, medium, low.
+
+DELETION POLICY — this app does not hard delete by default. When the person asks to delete a project, section, or task, you should update its status to "archived" instead of calling delete_rows. Hard deletion via delete_rows is reserved for genuine data errors (duplicate rows, test data, corrupted records). If the person explicitly says they want to permanently delete something or correct a data error, then use delete_rows. Otherwise, always archive.
 
 If you're ever unsure of exact column names, types, or enum values, call search_schema before guessing — don't invent column names. Insert/update/delete calls are shown to the person for confirmation before they run, so you can propose changes freely, but be precise about which rows a filter will match — prefer filtering on id when you already know it. After a tool result comes back, summarize plainly what happened (or what failed) — don't repeat raw JSON back at the person.`;

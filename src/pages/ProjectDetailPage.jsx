@@ -68,8 +68,11 @@ export default function ProjectDetailPage() {
   const { data: tasks = [] } = useTasks();
   const { data: sectionEdges = [] } = useSectionsSequence();
   const { data: taskEdges = [] } = useTasksSequence();
-  const { update: updateProject, remove: removeProject } =
-    useProjectMutations();
+  const {
+    update: updateProject,
+    remove: removeProject,
+    archive: archiveProject,
+  } = useProjectMutations();
   const { create: createSection, reorder: reorderSections } =
     useSectionMutations();
 
@@ -157,7 +160,7 @@ export default function ProjectDetailPage() {
               patch: { name: e.target.value },
             })
           }
-          className="font-display text-ink-100 w-full bg-transparent text-2xl focus:outline-hidden"
+          className="font-display text-ink-100 w-full bg-transparent text-2xl focus:outline-none"
         />
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Select
@@ -215,12 +218,31 @@ export default function ProjectDetailPage() {
               <ExternalLink size={12} /> Docs
             </a>
           )}
-          <button
-            onClick={handleDeleteProject}
-            className="text-ink-500 hover:text-rust-500 ml-auto flex items-center gap-1 text-xs"
-          >
-            <Trash2 size={13} /> Delete project
-          </button>
+          {project.status === 'archived' ? (
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Permanently delete "${project.name}"? This cannot be undone.`
+                  )
+                ) {
+                  removeProject.mutate(projectId, {
+                    onSuccess: () => navigate('/projects'),
+                  });
+                }
+              }}
+              className="text-rust-500 hover:text-rust-400 ml-auto flex items-center gap-1 text-xs"
+            >
+              <Trash2 size={13} /> Delete permanently
+            </button>
+          ) : (
+            <button
+              onClick={() => archiveProject.mutate(projectId)}
+              className="text-ink-500 hover:text-ink-300 ml-auto flex items-center gap-1 text-xs"
+            >
+              <Trash2 size={13} /> Archive project
+            </button>
+          )}
         </div>
       </div>
 
@@ -269,7 +291,7 @@ export default function ProjectDetailPage() {
           value={newSectionName}
           onChange={(e) => setNewSectionName(e.target.value)}
           placeholder="Add a section…"
-          className="text-ink-300 placeholder:text-ink-600 flex-1 bg-transparent text-sm focus:outline-hidden"
+          className="text-ink-300 placeholder:text-ink-600 flex-1 bg-transparent text-sm focus:outline-none"
         />
       </form>
 
