@@ -1,3 +1,8 @@
+// All date formatting now goes through timezone.js so that:
+//   1. Timestamps are always displayed in the user's configured timezone
+//   2. moments.time (stored without tz marker) is parsed as UTC correctly
+//   3. datetime-local inputs read/write in the user's timezone, not the OS locale
+
 import { formatDistanceToNowStrict } from 'date-fns';
 import {
   formatDueInTz,
@@ -7,9 +12,40 @@ import {
   fromDatetimeLocalInTz,
   formatTime,
   parseMomentTime,
+  getTimezone,
 } from './timezone';
 
 export { parseMomentTime };
+
+const EN_MONTHS = [
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+];
+
+// Returns { day: '06', month: 'DEC' } in the user's timezone
+export function formatDueCompact(dateInput) {
+  if (!dateInput) return null;
+  const tz = getTimezone();
+  const d = new Date(dateInput);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    day: '2-digit',
+    month: 'numeric',
+  }).formatToParts(d);
+  const day = parts.find((p) => p.type === 'day')?.value ?? '01';
+  const month = Number(parts.find((p) => p.type === 'month')?.value ?? 1) - 1;
+  return { day, month: EN_MONTHS[month] };
+}
 
 export function formatDue(dateInput) {
   return formatDueInTz(dateInput);

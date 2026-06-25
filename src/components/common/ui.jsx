@@ -54,7 +54,7 @@ export function StatusBadge({ status, size = 'sm' }) {
   return (
     <span
       title={meta.label}
-      className="inline-flex items-center gap-1 rounded-md font-mono font-medium tracking-wider uppercase"
+      className="inline-flex items-center gap-0.5 rounded-md font-mono font-medium tracking-wider uppercase"
       style={{
         fontSize: size === 'sm' ? 11 : 13,
         marginRight: size === 'sm' ? 4 : 6,
@@ -69,7 +69,7 @@ export function StatusBadge({ status, size = 'sm' }) {
   );
 }
 
-export function PriorityBadge({ priority, size = 'sm' }) {
+export function PriorityBadge({ priority = 'medium', size = 'sm' }) {
   if (!priority) return null;
   const meta = PRIORITY_META[priority] || PRIORITY_META.medium;
   const Icon = PRIORITY_ICONS[meta.icon] || ChevronUp;
@@ -237,5 +237,25 @@ export function EmptyState({ icon: Icon, title, hint }) {
       <p className="text-ink-300 font-medium">{title}</p>
       {hint && <p className="text-ink-500 max-w-xs text-sm">{hint}</p>}
     </div>
+  );
+}
+import { formatDueCompact, isOverdue } from '../../lib/dateUtils';
+
+export function DueBadge({ due, status }) {
+  if (!due) return null;
+  const parts = formatDueCompact(due);
+  if (!parts) return null;
+  const overdue = isOverdue(due, status);
+
+  return (
+    <span className="relative inline-flex items-center">
+      <span
+        className={`relative font-mono text-xs tracking-tight ${overdue && 'animate-pulse'}`}
+        style={{ color: overdue ? '#f87171' : '#828DA0' }}
+      >
+        <span className="font-bold">{parts.day}</span>
+        <span>{parts.month}</span>
+      </span>
+    </span>
   );
 }

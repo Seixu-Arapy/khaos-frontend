@@ -13,15 +13,15 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { StatusBadge, PriorityBadge, Select, StatusIcon } from '../common/ui';
+import { Select } from '../common/ui';
 import { STATUS_META } from '../../lib/constants';
-import { formatDue, isOverdue } from '../../lib/dateUtils';
 import {
   useTaskMutations,
   useSectionMutations,
 } from '../../hooks/useHierarchy';
+import TaskRow from '../tasks/TaskRow';
 
-function TaskRow({ task, onOpen }) {
+function SortableTaskRow({ task, onOpen }) {
   const {
     attributes,
     listeners,
@@ -30,46 +30,18 @@ function TaskRow({ task, onOpen }) {
     transition,
     isDragging,
   } = useSortable({ id: task.id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  };
-  const overdue = isOverdue(task.due, task.status);
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="group hover:border-ink-700 hover:bg-ink-900 flex items-center gap-2 rounded-md border border-transparent px-2 py-1.5"
-    >
-      <span
-        {...attributes}
-        {...listeners}
-        className="text-ink-700 hover:text-ink-400 cursor-grab active:cursor-grabbing"
-      >
-        <GripVertical size={13} />
-      </span>
-      <button
-        onClick={() => onOpen(task)}
-        className="flex min-w-0 flex-1 items-center gap-2 text-left"
-      >
-        <StatusBadge status={task.status} />
-        <span className="text-ink-100 truncate text-sm">{task.name}</span>
-      </button>
-      <PriorityBadge priority={task.priority} />
-      {task.due && (
-        <span
-          className={
-            overdue
-              ? 'text-rust-500 shrink-0 text-xs font-medium'
-              : 'text-ink-500 shrink-0 text-xs'
-          }
-        >
-          {formatDue(task.due)}
-        </span>
-      )}
-    </div>
+    <TaskRow
+      task={task}
+      onOpen={onOpen}
+      dragRef={setNodeRef}
+      dragStyle={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+      }}
+      dragHandleProps={{ ...attributes, ...listeners }}
+    />
   );
 }
 
@@ -193,7 +165,11 @@ export default function SectionColumn({
           >
             <div className="space-y-0.5">
               {orderedTasks.map((task) => (
-                <TaskRow key={task.id} task={task} onOpen={onOpenTask} />
+                <SortableTaskRow
+                  key={task.id}
+                  task={task}
+                  onOpen={onOpenTask}
+                />
               ))}
             </div>
           </SortableContext>

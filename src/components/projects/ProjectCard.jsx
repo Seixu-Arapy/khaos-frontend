@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { StatusBadge, PriorityBadge } from '../common/ui';
-import { formatDue, isOverdue } from '../../lib/dateUtils';
+import { StatusBadge, PriorityBadge, DueBadge } from '../common/ui';
 
 export default function ProjectCard({
   project,
@@ -10,7 +9,6 @@ export default function ProjectCard({
 }) {
   const navigate = useNavigate();
   const pct = taskCount ? Math.round((doneCount / taskCount) * 100) : 0;
-  const overdue = isOverdue(project.due, project.status);
 
   return (
     <button
@@ -23,17 +21,7 @@ export default function ProjectCard({
       </div>
       <div className="flex items-center gap-2">
         <StatusBadge status={project.status} />
-        {project.due && (
-          <span
-            className={
-              overdue
-                ? 'text-rust-500 text-xs font-medium'
-                : 'text-ink-500 text-xs'
-            }
-          >
-            {formatDue(project.due)}
-          </span>
-        )}
+        <DueBadge due={project.due} status={project.status} />
       </div>
       <div className="text-ink-500 text-xs">
         {sectionCount} section{sectionCount === 1 ? '' : 's'} · {taskCount} task

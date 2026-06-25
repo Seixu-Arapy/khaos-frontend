@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ArrowUpDown } from 'lucide-react';
-import { StatusBadge, PriorityBadge, EmptyState } from '../common/ui';
-import { formatDue, isOverdue, minutesToHuman } from '../../lib/dateUtils';
+import { StatusBadge, PriorityBadge, EmptyState, DueBadge } from '../common/ui';
+import { minutesToHuman } from '../../lib/dateUtils';
 import { ListTodo } from 'lucide-react';
 
 const SORTERS = {
@@ -64,7 +64,6 @@ export default function TaskList({
         {sorted.map((task) => {
           const section = sectionsById.get(task.section_id);
           const project = section ? projectsById.get(section.project_id) : null;
-          const overdue = isOverdue(task.due, task.status);
           return (
             <button
               key={task.id}
@@ -76,7 +75,7 @@ export default function TaskList({
                 {task.name}
               </span>
               {project && (
-                <span className="text-ink-500 hidden max-w-40 shrink-0 truncate text-xs sm:block">
+                <span className="text-ink-500 hidden max-w-[10rem] shrink-0 truncate text-xs sm:block">
                   {project.name}
                 </span>
               )}
@@ -86,17 +85,7 @@ export default function TaskList({
                   {minutesToHuman(task.estimate)}
                 </span>
               ) : null}
-              {task.due && (
-                <span
-                  className={
-                    overdue
-                      ? 'text-rust-500 shrink-0 text-xs font-medium'
-                      : 'text-ink-500 shrink-0 text-xs'
-                  }
-                >
-                  {formatDue(task.due)}
-                </span>
-              )}
+              <DueBadge due={task.due} status={task.status} />
             </button>
           );
         })}
