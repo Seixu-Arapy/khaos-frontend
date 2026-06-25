@@ -26,11 +26,9 @@ import QuickAddBar from '../tasks/QuickAddBar';
 import CommandPalette from './CommandPalette';
 import MomentPrompt from '../common/MomentPrompt';
 import TimezonePicker from '../common/TimezonePicker';
+import { StatusIcon } from '../common/ui';
 import { useProcessingContext } from '../../lib/processingContext';
 import { useMomentDetector } from '../../hooks/useMomentDetector';
-import { STATUS_META } from '../../lib/constants';
-import ChaoticText from '../common/ChaoticText';
-import { KhaosLogo } from '../common/KhaosLogo';
 
 // Bottom tab bar items (mobile) — keep to 5 max for thumb reach
 const BOTTOM_NAV = [
@@ -80,7 +78,7 @@ function FieldGroup({ field, projects, onNavigate }) {
         {field.name}
       </button>
       {open && (
-        <div className="border-ink-700 ml-1 space-y-0.5 border-l pl-3">
+        <div className="border-ink-700 space-y-0.2 ml-2.5 border-l">
           {fieldProjects.map((p) => (
             <NavLink
               key={p.id}
@@ -88,12 +86,7 @@ function FieldGroup({ field, projects, onNavigate }) {
               className={sidebarLinkClass}
               onClick={onNavigate}
             >
-              <span
-                className={clsx(
-                  'h-1.5 w-1.5 shrink-0 rounded-full',
-                  STATUS_META[p.status]?.dot
-                )}
-              />
+              <StatusIcon status={p.status} size={18} />
               <span className="truncate">{p.name}</span>
             </NavLink>
           ))}
@@ -102,6 +95,22 @@ function FieldGroup({ field, projects, onNavigate }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function KhaosLogo({ spinning }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className={`text-copper-400 text-xl leading-none select-none ${spinning ? 'animate-spin-slow' : ''}`}
+        aria-hidden="true"
+      >
+        ✷
+      </span>
+      <span className="font-display text-ink-100 text-base font-semibold tracking-tight">
+        Khaos
+      </span>
     </div>
   );
 }
@@ -222,7 +231,7 @@ export default function AppShell() {
   }, []);
 
   return (
-    <div className="bg-ink-900 flex h-dvh overflow-hidden">
+    <div className="bg-ink-900 flex h-[100dvh] overflow-hidden">
       {/* ── Desktop sidebar ─────────────────────────────────── */}
       <aside className="border-ink-700 bg-ink-900 hidden w-60 shrink-0 flex-col border-r md:flex">
         <Sidebar onNavigate={() => {}} spinning={spinning} />
@@ -231,7 +240,7 @@ export default function AppShell() {
       {/* ── Mobile drawer backdrop ───────────────────────────── */}
       {drawerOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
           onClick={() => setDrawerOpen(false)}
         />
       )}

@@ -1,21 +1,70 @@
 import { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import {
+  X,
+  MessageCircle,
+  CircleDashed,
+  Play,
+  Eye,
+  Check,
+  Pause,
+  Ban,
+  Archive,
+  Flame,
+  ChevronsUp,
+  ChevronUp,
+  ChevronDown,
+} from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_META, PRIORITY_META } from '../../lib/constants';
 
-export function StatusBadge({ status, size = 'sm' }) {
+const STATUS_ICONS = {
+  MessageCircle,
+  CircleDashed,
+  Play,
+  Eye,
+  Check,
+  Pause,
+  Ban,
+  Archive,
+};
+const PRIORITY_ICONS = { Flame, ChevronsUp, ChevronUp, ChevronDown };
+
+export function StatusIcon({ status, size = 18 }) {
   const meta = STATUS_META[status] || STATUS_META.planning;
+  const Icon = STATUS_ICONS[meta.icon] || CircleDashed;
   return (
     <span
-      className={clsx(
-        'inline-flex items-center gap-1.5 rounded-full font-medium',
-        meta.bg,
-        meta.text,
-        size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-sm'
-      )}
+      title={meta.label}
+      className="inline-flex shrink-0 items-center justify-center rounded-full"
+      style={{
+        width: size,
+        height: size,
+        color: meta.iconColor,
+      }}
     >
-      <span className={clsx('h-1.5 w-1.5 rounded-full', meta.dot)} />
-      {meta.label}
+      <Icon size={Math.round(size * 0.6)} />
+    </span>
+  );
+}
+
+export function StatusBadge({ status, size = 'sm' }) {
+  const meta = STATUS_META[status] || STATUS_META.planning;
+  const iconSize = size === 'sm' ? 18 : 24;
+
+  return (
+    <span
+      title={meta.label}
+      className="inline-flex items-center gap-1 rounded-md font-mono font-medium tracking-wider uppercase"
+      style={{
+        fontSize: size === 'sm' ? 11 : 13,
+        marginRight: size === 'sm' ? 4 : 6,
+        backgroundColor: meta.circleBg,
+      }}
+    >
+      <StatusIcon status={status} size={iconSize} />
+      <span className="pr-1" style={{ color: meta.iconColor }}>
+        {meta.acronym}
+      </span>
     </span>
   );
 }
@@ -23,17 +72,19 @@ export function StatusBadge({ status, size = 'sm' }) {
 export function PriorityBadge({ priority, size = 'sm' }) {
   if (!priority) return null;
   const meta = PRIORITY_META[priority] || PRIORITY_META.medium;
+  const Icon = PRIORITY_ICONS[meta.icon] || ChevronUp;
+  const px = size === 'sm' ? 24 : 28;
   return (
     <span
-      className={clsx(
-        'inline-flex items-center rounded-full font-medium ring-1',
-        meta.bg,
-        meta.text,
-        meta.ring,
-        size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-sm'
-      )}
+      title={meta.label}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full ${priority == 'urgent' ? 'animate-bounce' : ''}`}
+      style={{
+        width: px,
+        height: px,
+        color: meta.iconColor,
+      }}
     >
-      {meta.label}
+      <Icon size={Math.round(px * 0.55)} />
     </span>
   );
 }
@@ -101,7 +152,7 @@ export function Select({ className, children, ...props }) {
     <select
       className={clsx(
         'border-ink-600 bg-ink-800 text-ink-100 rounded border px-2.5 py-1.5 text-sm',
-        'focus:border-copper-400 focus:outline-hidden',
+        'focus:border-copper-400 focus:outline-none',
         className
       )}
       {...props}
@@ -116,7 +167,7 @@ export function TextInput({ className, ...props }) {
     <input
       className={clsx(
         'border-ink-600 bg-ink-800 text-ink-100 placeholder:text-ink-500 w-full rounded border px-3 py-2 text-sm',
-        'focus:border-copper-400 focus:outline-hidden',
+        'focus:border-copper-400 focus:outline-none',
         className
       )}
       {...props}
@@ -150,14 +201,14 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 pt-[8vh] backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 pt-[8vh] backdrop-blur-sm">
       <div
         ref={dialogRef}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         className={clsx(
-          'border-ink-700 bg-ink-800 shadow-panel w-full rounded-lg border focus:outline-hidden',
+          'border-ink-700 bg-ink-800 shadow-panel w-full rounded-lg border focus:outline-none',
           width
         )}
         onClick={(e) => e.stopPropagation()}
