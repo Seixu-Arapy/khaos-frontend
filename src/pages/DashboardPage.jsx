@@ -5,14 +5,11 @@ import { AlertTriangle, CalendarClock, CheckCircle2 } from 'lucide-react';
 import { useTasks, useSections, useProjects } from '../hooks/useHierarchy';
 import { useEvents } from '../hooks/useEvents';
 import { OPEN_STATUSES } from '../lib/constants';
-import { formatDue, isOverdue } from '../lib/dateUtils';
+import { isOverdue } from '../lib/dateUtils';
 import { parseRange } from '../lib/range';
-import {
-  StatusBadge,
-  PriorityBadge,
-  EmptyState,
-} from '../components/common/ui';
+import { EmptyState } from '../components/common/ui';
 import TaskDetailModal from '../components/tasks/TaskDetailModal';
+import TaskRow from '../components/tasks/TaskRow';
 
 export default function DashboardPage() {
   const { data: tasks = [] } = useTasks();
@@ -150,30 +147,5 @@ export default function DashboardPage() {
         />
       )}
     </div>
-  );
-}
-
-function TaskRow({ task, project, onOpen }) {
-  return (
-    <button
-      onClick={() => onOpen(task)}
-      className="hover:bg-ink-800 flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left"
-    >
-      <StatusBadge status={task.status} />
-      <span className="text-ink-100 min-w-0 flex-1 truncate text-sm">
-        {task.name}
-      </span>
-      {project && (
-        <span className="text-ink-500 hidden shrink-0 text-xs sm:block">
-          {project}
-        </span>
-      )}
-      <PriorityBadge priority={task.priority} />
-      {task.due && (
-        <span className="text-ink-500 shrink-0 text-xs">
-          {formatDue(task.due)}
-        </span>
-      )}
-    </button>
   );
 }

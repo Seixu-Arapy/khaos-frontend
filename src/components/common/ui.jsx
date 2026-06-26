@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_META, PRIORITY_META } from '../../lib/constants';
+import { formatDueCompact, isOverdue } from '../../lib/dateUtils';
 
 const STATUS_ICONS = {
   MessageCircle,
@@ -239,8 +240,6 @@ export function EmptyState({ icon: Icon, title, hint }) {
     </div>
   );
 }
-import { formatDueCompact, isOverdue } from '../../lib/dateUtils';
-
 export function DueBadge({ due, status }) {
   if (!due) return null;
   const parts = formatDueCompact(due);

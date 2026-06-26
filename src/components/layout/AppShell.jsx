@@ -78,7 +78,7 @@ function FieldGroup({ field, projects, onNavigate }) {
         {field.name}
       </button>
       {open && (
-        <div className="border-ink-700 space-y-0.2 ml-2.5 border-l">
+        <div className="border-ink-700 ml-1 space-y-0.5 border-l pl-3">
           {fieldProjects.map((p) => (
             <NavLink
               key={p.id}
@@ -86,7 +86,7 @@ function FieldGroup({ field, projects, onNavigate }) {
               className={sidebarLinkClass}
               onClick={onNavigate}
             >
-              <StatusIcon status={p.status} size={18} />
+              <StatusIcon status={p.status} size={14} />
               <span className="truncate">{p.name}</span>
             </NavLink>
           ))}
