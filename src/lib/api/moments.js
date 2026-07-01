@@ -6,21 +6,20 @@ function unwrap({ data, error }) {
 }
 
 export const momentsApi = {
-  listForEntity: (entityType, entityId) =>
-    supabase
-      .from('moments')
-      .select('*')
-      .eq('entity_type', entityType)
-      .eq('entity_id', entityId)
-      .order('time', { ascending: false })
-      .then(unwrap),
+  // entityRef: one of { project_id }, { section_id }, { task_id }, { event_id }
+  listForEntity: (entityRef) => {
+    let query = supabase.from('moments').select('*');
+    for (const [column, value] of Object.entries(entityRef)) {
+      query = query.eq(column, value);
+    }
+    return query.order('created_at', { ascending: false }).then(unwrap);
+  },
 
-  addNote: (entityType, entityId, note) =>
+  addNote: (entityRef, note) =>
     supabase
       .from('moments')
       .insert({
-        entity_type: entityType,
-        entity_id: entityId,
+        ...entityRef,
         moment_type: 'note',
         moment_note: note,
       })

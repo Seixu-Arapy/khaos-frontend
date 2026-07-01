@@ -46,7 +46,7 @@ export default function TasksPage() {
     return new Set(
       tagLinks
         .filter(
-          (l) => l.entity_type === 'task' && l.work_tag_id === Number(tagFilter)
+          (l) => l.entity_type === 'task' && l.work_tag_id === tagFilter
         )
         .map((l) => l.entity_id)
     );
@@ -69,7 +69,7 @@ export default function TasksPage() {
         return false;
       if (projectFilter !== 'all') {
         const section = sectionsById.get(t.section_id);
-        if (!section || section.project_id !== Number(projectFilter))
+        if (!section || section.project_id !== projectFilter)
           return false;
       }
       if (taggedTaskIds && !taggedTaskIds.has(t.id)) return false;
@@ -92,7 +92,7 @@ export default function TasksPage() {
 
   const openTaskId = searchParams.get('taskId');
   const openTask = openTaskId
-    ? tasks.find((t) => t.id === Number(openTaskId))
+    ? tasks.find((t) => t.id === openTaskId)
     : null;
 
   function openTask_(task) {

@@ -57,8 +57,8 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
   const { data: allTags = [] } = useTags();
   const { data: tagLinks = [] } = useTagLinks();
   const tagMutations = useTagMutations();
-  const { data: notes = [] } = useNotes('task', taskId);
-  const noteMutations = useNoteMutations('task', taskId);
+  const { data: notes = [] } = useNotes({ task_id: taskId });
+  const noteMutations = useNoteMutations({ task_id: taskId });
 
   const [newItem, setNewItem] = useState('');
   const [newNote, setNewNote] = useState('');
@@ -70,10 +70,7 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
   const otherTimerRunning = activeLog && activeLog.task_id !== task.id;
 
   const taskTagLinks = useMemo(
-    () =>
-      tagLinks.filter(
-        (l) => l.entity_type === 'task' && l.entity_id === task.id
-      ),
+    () => tagLinks.filter((l) => l.task_id === task.id),
     [tagLinks, task.id]
   );
   const taskTags = taskTagLinks
@@ -131,7 +128,7 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
               value={section?.project_id ?? ''}
               className="py-0.5! text-xs!"
               onChange={(e) => {
-                const projectId = Number(e.target.value);
+                const projectId = e.target.value;
                 const firstSection = sections.find(
                   (s) => s.project_id === projectId
                 );
@@ -148,7 +145,7 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
             <Select
               value={task.section_id ?? ''}
               className="py-0.5! text-xs!"
-              onChange={(e) => patch({ section_id: Number(e.target.value) })}
+              onChange={(e) => patch({ section_id: e.target.value })}
             >
               {sections
                 .filter((s) => s.project_id === section?.project_id)
@@ -245,8 +242,7 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
                 onRemove={() =>
                   tagMutations.detach.mutate({
                     tagId: tag.id,
-                    entityType: 'task',
-                    entityId: task.id,
+                    entityRef: { task_id: task.id },
                   })
                 }
               >
@@ -265,8 +261,7 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
                   onClick={() => {
                     tagMutations.attach.mutate({
                       tagId: tag.id,
-                      entityType: 'task',
-                      entityId: task.id,
+                      entityRef: { task_id: task.id },
                     });
                     setTagPickerOpen(false);
                   }}
@@ -394,7 +389,7 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
                   </button>
                 </div>
                 <p className="text-ink-600 mt-1 text-[11px]">
-                  {formatDue(parseMomentTime(note.time))}
+                  {formatDue(parseMomentTime(note.created_at))}
                 </p>
               </div>
             ))}

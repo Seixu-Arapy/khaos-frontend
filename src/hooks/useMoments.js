@@ -1,21 +1,28 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { momentsApi } from '../lib/api/moments';
 
-export function useNotes(entityType, entityId) {
+// entityRef: one of { project_id }, { section_id }, { task_id }, { event_id }
+function refKey(entityRef) {
+  return entityRef ? Object.entries(entityRef)[0] : null; // [column, value]
+}
+
+export function useNotes(entityRef) {
+  const key = refKey(entityRef);
   return useQuery({
-    queryKey: ['moments', entityType, entityId],
-    queryFn: () => momentsApi.listForEntity(entityType, entityId),
-    enabled: Boolean(entityType && entityId),
+    queryKey: ['moments', key?.[0], key?.[1]],
+    queryFn: () => momentsApi.listForEntity(entityRef),
+    enabled: Boolean(key),
   });
 }
 
-export function useNoteMutations(entityType, entityId) {
+export function useNoteMutations(entityRef) {
   const qc = useQueryClient();
+  const key = refKey(entityRef);
   const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ['moments', entityType, entityId] });
+    qc.invalidateQueries({ queryKey: ['moments', key?.[0], key?.[1]] });
   return {
     addNote: useMutation({
-      mutationFn: (note) => momentsApi.addNote(entityType, entityId, note),
+      mutationFn: (note) => momentsApi.addNote(entityRef, note),
       onSuccess: invalidate,
     }),
     remove: useMutation({

@@ -23,30 +23,32 @@ export const tagsApi = {
 
   listLinks: () => supabase.from('work_tag_entities').select('*').then(unwrap),
 
-  listForEntity: (entityType, entityId) =>
-    supabase
-      .from('work_tag_entities')
-      .select('*, work_tags(*)')
-      .eq('entity_type', entityType)
-      .eq('entity_id', entityId)
-      .then(unwrap),
+  // entityRef: one of { project_id }, { section_id }, { task_id }, { event_id }
+  listForEntity: (entityRef) => {
+    let query = supabase.from('work_tag_entities').select('*, work_tags(*)');
+    for (const [column, value] of Object.entries(entityRef)) {
+      query = query.eq(column, value);
+    }
+    return query.then(unwrap);
+  },
 
-  attach: (tagId, entityType, entityId) =>
+  attach: (tagId, entityRef) =>
     supabase
       .from('work_tag_entities')
       .insert({
         work_tag_id: tagId,
-        entity_type: entityType,
-        entity_id: entityId,
+        ...entityRef,
       })
       .then(unwrap),
 
-  detach: (tagId, entityType, entityId) =>
-    supabase
+  detach: (tagId, entityRef) => {
+    let query = supabase
       .from('work_tag_entities')
       .delete()
-      .eq('work_tag_id', tagId)
-      .eq('entity_type', entityType)
-      .eq('entity_id', entityId)
-      .then(unwrap),
+      .eq('work_tag_id', tagId);
+    for (const [column, value] of Object.entries(entityRef)) {
+      query = query.eq(column, value);
+    }
+    return query.then(unwrap);
+  },
 };

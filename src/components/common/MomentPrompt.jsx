@@ -58,17 +58,14 @@ export default function MomentPrompt({ prompt, onDismiss }) {
 
       // Save the annotation note on the most relevant change moment
       if (note.trim()) {
-        saves.push(
-          momentsApi.addNote(prompt.entityType, prompt.entityId, note.trim())
-        );
+        saves.push(momentsApi.addNote(prompt.entityRef, note.trim()));
       }
 
       // Save any extra moment (target or definition)
       if (extraType && extraValue.trim()) {
         saves.push(
           supabase.from('moments').insert({
-            entity_type: prompt.entityType,
-            entity_id: prompt.entityId,
+            ...prompt.entityRef,
             moment_type: extraType,
             // target → store the date in value; definition → store text in moment_note
             value: extraType === 'target' ? extraValue : null,

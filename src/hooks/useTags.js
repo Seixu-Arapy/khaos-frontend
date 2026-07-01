@@ -26,14 +26,13 @@ export function useTagMutations() {
         invalidateLinks();
       },
     }),
+    // entityRef: one of { project_id }, { section_id }, { task_id }, { event_id }
     attach: useMutation({
-      mutationFn: ({ tagId, entityType, entityId }) =>
-        tagsApi.attach(tagId, entityType, entityId),
+      mutationFn: ({ tagId, entityRef }) => tagsApi.attach(tagId, entityRef),
       onSuccess: invalidateLinks,
     }),
     detach: useMutation({
-      mutationFn: ({ tagId, entityType, entityId }) =>
-        tagsApi.detach(tagId, entityType, entityId),
+      mutationFn: ({ tagId, entityRef }) => tagsApi.detach(tagId, entityRef),
       onSuccess: invalidateLinks,
     }),
   };

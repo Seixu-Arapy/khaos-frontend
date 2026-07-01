@@ -18,18 +18,24 @@ const FIELD_LABEL = {
   priority: 'priority',
 };
 
+// moments/work_tag_entities link back to an entity via a direct FK column
+// rather than a polymorphic (entity_type, entity_id) pair.
+const ENTITY_FK_COLUMN = {
+  tasks: 'task_id',
+  projects: 'project_id',
+  sections: 'section_id',
+};
+
 function buildPrompt(table, oldRow, newRow) {
   const watched = WATCHED_FIELDS[table] || [];
   const changes = watched.filter((col) => oldRow[col] !== newRow[col]);
   if (!changes.length) return null;
 
-  const entityType =
-    table === 'tasks' ? 'task' : table === 'projects' ? 'project' : 'section';
+  const fkColumn = ENTITY_FK_COLUMN[table];
 
   return {
     id: `${table}-${newRow.id}-${Date.now()}`,
-    entityType,
-    entityId: newRow.id,
+    entityRef: { [fkColumn]: newRow.id },
     entityName: newRow.name,
     changes: changes.map((col) => ({
       field: col,
