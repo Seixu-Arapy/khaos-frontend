@@ -3,8 +3,9 @@ import globals from 'globals';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
   {
     ignores: ['dist', 'node_modules', 'vite.config.js'],
   },
@@ -28,7 +29,6 @@ export default [
     },
     rules: {
       ...js.configs.recommended.rules,
-
       ...react.configs.recommended.rules,
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
@@ -39,7 +39,7 @@ export default [
       ],
 
       'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off', // Turn off if you rely on prop safety elsewhere
+      'react/prop-types': 'off',
 
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
@@ -50,4 +50,50 @@ export default [
       },
     },
   },
-];
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [...tseslint.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.es2021,
+      },
+    },
+    plugins: {
+      react,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    rules: {
+      ...react.configs.recommended.rules,
+      ...react.configs['jsx-runtime'].rules,
+      ...reactHooks.configs.recommended.rules,
+
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+
+      // substitui a regra JS nativa pela versão TS-aware
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      '@typescript-eslint/consistent-type-imports': 'warn',
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
+  }
+);
