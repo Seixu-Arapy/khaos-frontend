@@ -4,11 +4,15 @@ import { addDays, format, isToday, startOfWeek } from 'date-fns';
 import { parseRange } from '../../lib/range';
 import { EVENT_TYPE_META } from '../../lib/constants';
 import { getTimezone } from '../../lib/timezone';
+import { getEventLabel } from '../../lib/eventLabel';
+import type { Event, Task } from '../../lib/types';
 
 const HOUR_HEIGHT = 48; // px
 const DAY_HEIGHT = HOUR_HEIGHT * 24;
 
-function minutesFromMidnight(date) {
+type PositionedEvent = Event & { start: Date; end: Date; label: string };
+
+function minutesFromMidnight(date: Date): number {
   const tz = getTimezone();
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
@@ -21,7 +25,19 @@ function minutesFromMidnight(date) {
   return hour * 60 + minute;
 }
 
-export default function CalendarView({ events, onSlotClick, onEventClick }) {
+interface CalendarViewProps {
+  events: Event[];
+  tasks?: Task[];
+  onSlotClick: (date: Date) => void;
+  onEventClick: (event: Event) => void;
+}
+
+export default function CalendarView({
+  events,
+  tasks = [],
+  onSlotClick,
+  onEventClick,
+}: CalendarViewProps) {
   const [anchor, setAnchor] = useState(new Date());
   const weekStart = startOfWeek(anchor, { weekStartsOn: 1 });
   const days = useMemo(
@@ -29,27 +45,36 @@ export default function CalendarView({ events, onSlotClick, onEventClick }) {
     [weekStart]
   );
 
+  const tasksById = useMemo(
+    () => new Map(tasks.map((t) => [t.id, t])),
+    [tasks]
+  );
+
   const eventsByDay = useMemo(() => {
-    const map = new Map(days.map((d) => [format(d, 'yyyy-MM-dd'), []]));
+    const map = new Map<string, PositionedEvent[]>(
+      days.map((d) => [format(d, 'yyyy-MM-dd'), []])
+    );
     const tz = getTimezone();
     for (const ev of events) {
-      const { start, end } = parseRange(ev.duration);
+      const { start, end } = parseRange(ev.duration as unknown as string);
       if (!start) continue;
       // Bucket by the wall-clock date in the user's timezone
       const key = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(
         start
       ); // "YYYY-MM-DD"
+      const taskName = ev.task_id ? tasksById.get(ev.task_id)?.name : null;
       if (map.has(key))
-        map.get(key).push({
+        map.get(key)!.push({
           ...ev,
           start,
           end: end || new Date(start.getTime() + 30 * 60000),
+          label: getEventLabel(ev, taskName),
         });
     }
     return map;
-  }, [events, days]);
+  }, [events, days, tasksById]);
 
-  function handleColumnClick(day, e) {
+  function handleColumnClick(day: Date, e: React.MouseEvent<HTMLDivElement>) {
     if (e.target !== e.currentTarget) return; // ignore clicks on event blocks (they stop propagation)
     const rect = e.currentTarget.getBoundingClientRect();
     const offsetY = e.clientY - rect.top;
@@ -141,7 +166,8 @@ export default function CalendarView({ events, onSlotClick, onEventClick }) {
                     (minutesFromMidnight(ev.start) / 60) * HOUR_HEIGHT;
                   const height = Math.max(
                     18,
-                    ((ev.end - ev.start) / 60000 / 60) * HOUR_HEIGHT
+                    ((ev.end.getTime() - ev.start.getTime()) / 60000 / 60) *
+                      HOUR_HEIGHT
                   );
                   const meta =
                     EVENT_TYPE_META[ev.event_type] || EVENT_TYPE_META.scheduled;
@@ -155,7 +181,7 @@ export default function CalendarView({ events, onSlotClick, onEventClick }) {
                       style={{ top, height }}
                       className={`absolute right-1 left-1 overflow-hidden rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-tight ${meta.bg} ${meta.text}`}
                     >
-                      <span className="font-medium">{ev.name}</span>
+                      <span className="font-medium">{ev.label}</span>
                     </button>
                   );
                 })}

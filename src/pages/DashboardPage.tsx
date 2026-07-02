@@ -7,15 +7,17 @@ import { useEvents } from '../hooks/useEvents';
 import { OPEN_STATUSES } from '../lib/constants';
 import { isOverdue } from '../lib/dateUtils';
 import { parseRange } from '../lib/range';
+import { getEventLabel } from '../lib/eventLabel';
 import { EmptyState } from '../components/common/ui';
 import TaskDetailModal from '../components/tasks/TaskDetailModal';
 import TaskRow from '../components/tasks/TaskRow';
+import type { Event, Project, Section, Task } from '../lib/types';
 
 export default function DashboardPage() {
-  const { data: tasks = [] } = useTasks();
-  const { data: sections = [] } = useSections();
-  const { data: projects = [] } = useProjects();
-  const { data: events = [] } = useEvents();
+  const { data: tasks = [] } = useTasks() as { data: Task[] };
+  const { data: sections = [] } = useSections() as { data: Section[] };
+  const { data: projects = [] } = useProjects() as { data: Project[] };
+  const { data: events = [] } = useEvents() as { data: Event[] };
   const [searchParams, setSearchParams] = useSearchParams();
 
   const sectionsById = useMemo(
@@ -26,6 +28,10 @@ export default function DashboardPage() {
     () => new Map(projects.map((p) => [p.id, p])),
     [projects]
   );
+  const tasksById = useMemo(
+    () => new Map(tasks.map((t) => [t.id, t])),
+    [tasks]
+  );
 
   const openTasks = tasks.filter((t) => OPEN_STATUSES.includes(t.status));
   const overdue = openTasks.filter((t) => isOverdue(t.due, t.status));
@@ -33,15 +39,16 @@ export default function DashboardPage() {
     (t) => t.due && isToday(new Date(t.due)) && !isOverdue(t.due, t.status)
   );
   const todaysEvents = events
-    .map((e) => ({ ...e, ...parseRange(e.duration) }))
-    .filter((e) => e.start && isToday(e.start))
-    .sort((a, b) => a.start - b.start);
+    .map((e) => ({ ...e, ...parseRange(e.duration as unknown as string) }))
+    .filter(
+      (e): e is typeof e & { start: Date } =>
+        Boolean(e.start) && isToday(e.start as Date)
+    )
+    .sort((a, b) => a.start.getTime() - b.start.getTime());
 
   const openTaskId = searchParams.get('taskId');
-  const openTask = openTaskId
-    ? tasks.find((t) => t.id === openTaskId)
-    : null;
-  function openTask_(task) {
+  const openTask = openTaskId ? tasks.find((t) => t.id === openTaskId) : null;
+  function openTask_(task: Task) {
     setSearchParams({ taskId: String(task.id) });
   }
   function closeTask() {
@@ -49,9 +56,9 @@ export default function DashboardPage() {
     setSearchParams(searchParams);
   }
 
-  function projectLabel(task) {
-    const section = sectionsById.get(task.section_id);
-    return section ? projectsById.get(section.project_id)?.name : null;
+  function projectLabel(task: Task) {
+    const section = sectionsById.get(task.section_id!);
+    return section ? projectsById.get(section.project_id!)?.name : null;
   }
 
   return (
@@ -118,23 +125,30 @@ export default function DashboardPage() {
           />
         ) : (
           <div className="divide-ink-700 border-ink-700 divide-y rounded-lg border">
-            {todaysEvents.map((ev) => (
-              <div
-                key={ev.id}
-                className="flex items-center gap-3 px-3.5 py-2.5"
-              >
-                <span className="text-ink-400 w-20 shrink-0 font-mono text-xs">
-                  {ev.start.toLocaleTimeString(undefined, {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })}
-                </span>
-                <span className="text-ink-100 text-sm">{ev.name}</span>
-                <span className="text-ink-600 ml-auto text-xs">
-                  {ev.event_type}
-                </span>
-              </div>
-            ))}
+            {todaysEvents.map((ev) => {
+              const taskName = ev.task_id
+                ? tasksById.get(ev.task_id)?.name
+                : null;
+              return (
+                <div
+                  key={ev.id}
+                  className="flex items-center gap-3 px-3.5 py-2.5"
+                >
+                  <span className="text-ink-400 w-20 shrink-0 font-mono text-xs">
+                    {ev.start.toLocaleTimeString(undefined, {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                  <span className="text-ink-100 text-sm">
+                    {getEventLabel(ev, taskName)}
+                  </span>
+                  <span className="text-ink-600 ml-auto text-xs">
+                    {ev.event_type}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>

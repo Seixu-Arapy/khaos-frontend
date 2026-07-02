@@ -1,4 +1,11 @@
-import { useEffect, useRef } from 'react';
+import {
+  useEffect,
+  useRef,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+} from 'react';
 import {
   X,
   MessageCircle,
@@ -13,12 +20,14 @@ import {
   ChevronsUp,
   ChevronUp,
   ChevronDown,
+  type LucideIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_META, PRIORITY_META } from '../../lib/constants';
 import { formatDueCompact, isOverdue } from '../../lib/dateUtils';
+import type { Status, Priority } from '../../lib/types';
 
-const STATUS_ICONS = {
+const STATUS_ICONS: Record<string, LucideIcon> = {
   MessageCircle,
   CircleDashed,
   Play,
@@ -28,10 +37,20 @@ const STATUS_ICONS = {
   Ban,
   Archive,
 };
-const PRIORITY_ICONS = { Flame, ChevronsUp, ChevronUp, ChevronDown };
+const PRIORITY_ICONS: Record<string, LucideIcon> = {
+  Flame,
+  ChevronsUp,
+  ChevronUp,
+  ChevronDown,
+};
 
-export function StatusIcon({ status, size = 18 }) {
-  const meta = STATUS_META[status] || STATUS_META.planning;
+interface StatusIconProps {
+  status?: Status | null;
+  size?: number;
+}
+
+export function StatusIcon({ status, size = 18 }: StatusIconProps) {
+  const meta = (status && STATUS_META[status]) || STATUS_META.planning;
   const Icon = STATUS_ICONS[meta.icon] || CircleDashed;
   return (
     <span
@@ -48,8 +67,13 @@ export function StatusIcon({ status, size = 18 }) {
   );
 }
 
-export function StatusBadge({ status, size = 'sm' }) {
-  const meta = STATUS_META[status] || STATUS_META.planning;
+interface StatusBadgeProps {
+  status?: Status | null;
+  size?: 'sm' | 'md';
+}
+
+export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
+  const meta = (status && STATUS_META[status]) || STATUS_META.planning;
   const iconSize = size === 'sm' ? 18 : 24;
 
   return (
@@ -70,7 +94,15 @@ export function StatusBadge({ status, size = 'sm' }) {
   );
 }
 
-export function PriorityBadge({ priority = 'medium', size = 'sm' }) {
+interface PriorityBadgeProps {
+  priority?: Priority | null;
+  size?: 'sm' | 'md';
+}
+
+export function PriorityBadge({
+  priority = 'medium',
+  size = 'sm',
+}: PriorityBadgeProps) {
   if (!priority) return null;
   const meta = PRIORITY_META[priority] || PRIORITY_META.medium;
   const Icon = PRIORITY_ICONS[meta.icon] || ChevronUp;
@@ -78,7 +110,7 @@ export function PriorityBadge({ priority = 'medium', size = 'sm' }) {
   return (
     <span
       title={meta.label}
-      className={`inline-flex shrink-0 items-center justify-center rounded-full ${priority == 'urgent' ? 'animate-bounce' : ''}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full ${priority === 'urgent' ? 'animate-bounce' : ''}`}
       style={{
         width: px,
         height: px,
@@ -90,7 +122,12 @@ export function PriorityBadge({ priority = 'medium', size = 'sm' }) {
   );
 }
 
-export function Tag({ children, onRemove }) {
+interface TagProps {
+  children: ReactNode;
+  onRemove?: () => void;
+}
+
+export function Tag({ children, onRemove }: TagProps) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400">
       {children}
@@ -107,12 +144,17 @@ export function Tag({ children, onRemove }) {
   );
 }
 
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'secondary' | 'ghost' | 'danger';
+  size?: 'sm' | 'md';
+}
+
 export function Button({
   variant = 'default',
   size = 'md',
   className,
   ...props
-}) {
+}: ButtonProps) {
   return (
     <button
       className={clsx(
@@ -132,7 +174,16 @@ export function Button({
   );
 }
 
-export function IconButton({ className, label, children, ...props }) {
+interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  label: string;
+}
+
+export function IconButton({
+  className,
+  label,
+  children,
+  ...props
+}: IconButtonProps) {
   return (
     <button
       aria-label={label}
@@ -148,7 +199,9 @@ export function IconButton({ className, label, children, ...props }) {
   );
 }
 
-export function Select({ className, children, ...props }) {
+type SelectProps = SelectHTMLAttributes<HTMLSelectElement>;
+
+export function Select({ className, children, ...props }: SelectProps) {
   return (
     <select
       className={clsx(
@@ -163,7 +216,9 @@ export function Select({ className, children, ...props }) {
   );
 }
 
-export function TextInput({ className, ...props }) {
+type TextInputProps = InputHTMLAttributes<HTMLInputElement>;
+
+export function TextInput({ className, ...props }: TextInputProps) {
   return (
     <input
       className={clsx(
@@ -176,6 +231,15 @@ export function TextInput({ className, ...props }) {
   );
 }
 
+interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  title: ReactNode;
+  children: ReactNode;
+  footer?: ReactNode;
+  width?: string;
+}
+
 export function Modal({
   open,
   onClose,
@@ -183,8 +247,8 @@ export function Modal({
   children,
   footer,
   width = 'max-w-lg',
-}) {
-  const dialogRef = useRef(null);
+}: ModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -194,7 +258,8 @@ export function Modal({
     if (!open) return;
     // Focus the dialog itself only on open — not on every render.
     dialogRef.current?.focus();
-    const onKey = (e) => e.key === 'Escape' && onCloseRef.current();
+    const onKey = (e: KeyboardEvent) =>
+      e.key === 'Escape' && onCloseRef.current();
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open]); // deliberately excludes onClose — handled via ref above
@@ -231,7 +296,13 @@ export function Modal({
   );
 }
 
-export function EmptyState({ icon: Icon, title, hint }) {
+interface EmptyStateProps {
+  icon?: LucideIcon;
+  title: string;
+  hint?: string;
+}
+
+export function EmptyState({ icon: Icon, title, hint }: EmptyStateProps) {
   return (
     <div className="border-ink-700 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-6 py-14 text-center">
       {Icon && <Icon size={28} className="text-ink-600" />}
@@ -240,7 +311,13 @@ export function EmptyState({ icon: Icon, title, hint }) {
     </div>
   );
 }
-export function DueBadge({ due, status }) {
+
+interface DueBadgeProps {
+  due?: string | null;
+  status?: Status | null;
+}
+
+export function DueBadge({ due, status }: DueBadgeProps) {
   if (!due) return null;
   const parts = formatDueCompact(due);
   if (!parts) return null;

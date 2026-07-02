@@ -1,6 +1,9 @@
+// src/lib/constants.ts
 // Mirrors the Postgres enums in the database exactly.
+import type { EventType, MomentType, Priority, Status } from './types';
+
 // public.status
-export const STATUSES = [
+export const STATUSES: Status[] = [
   'planning',
   'todo',
   'in_progress',
@@ -12,16 +15,17 @@ export const STATUSES = [
 ];
 
 // public.priority
-export const PRIORITIES = ['urgent', 'high', 'medium', 'low'];
+export const PRIORITIES: Priority[] = ['urgent', 'high', 'medium', 'low'];
 
 // public.event_types
-export const EVENT_TYPES = ['scheduled', 'fixed', 'routine'];
+export const EVENT_TYPES: EventType[] = ['scheduled', 'fixed', 'routine'];
 
 // public.entity_types (used by work_tag_entities / moment_tag_entities)
-export const ENTITY_TYPES = ['project', 'section', 'task'];
+export const ENTITY_TYPES = ['project', 'section', 'task'] as const;
+export type EntityType = (typeof ENTITY_TYPES)[number];
 
 // public.moment_types
-export const MOMENT_TYPES = [
+export const MOMENT_TYPES: MomentType[] = [
   'created',
   'due',
   'estimate',
@@ -41,7 +45,16 @@ export const MOMENT_TYPES = [
 //   iconColor — icon + acronym color
 //   circleBg  — background of the icon circle
 //   dot       — Tailwind class for the small sidebar dot (kept for AppShell)
-export const STATUS_META = {
+interface StatusMeta {
+  label: string;
+  acronym: string;
+  icon: string;
+  iconColor: string;
+  circleBg: string;
+  dot: string;
+}
+
+export const STATUS_META: Record<Status, StatusMeta> = {
   planning: {
     label: 'Planning',
     acronym: 'PLAN',
@@ -108,7 +121,14 @@ export const STATUS_META = {
   },
 };
 
-export const PRIORITY_META = {
+interface PriorityMeta {
+  label: string;
+  icon: string;
+  iconColor: string;
+  circleBg: string;
+}
+
+export const PRIORITY_META: Record<Priority, PriorityMeta> = {
   urgent: {
     label: 'Urgent',
     icon: 'Flame',
@@ -135,7 +155,13 @@ export const PRIORITY_META = {
   },
 };
 
-export const EVENT_TYPE_META = {
+interface EventTypeMeta {
+  label: string;
+  text: string;
+  bg: string;
+}
+
+export const EVENT_TYPE_META: Record<EventType, EventTypeMeta> = {
   fixed: { label: 'Fixed', text: 'text-rust-500', bg: 'bg-rust-500/10' },
   scheduled: { label: 'Plan', text: 'text-teal-400', bg: 'bg-teal-500/10' },
   routine: {
@@ -146,7 +172,7 @@ export const EVENT_TYPE_META = {
 };
 
 // Active/open statuses — excludes done, cancelled, archived
-export const OPEN_STATUSES = [
+export const OPEN_STATUSES: Status[] = [
   'planning',
   'todo',
   'in_progress',

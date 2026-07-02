@@ -1,48 +1,84 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Modal, TextInput, Select, Button } from '../common/ui';
 import { EVENT_TYPES } from '../../lib/constants';
 import { toDatetimeLocalValue } from '../../lib/dateUtils';
 import { useEventMutations } from '../../hooks/useEvents';
 import { useProjects, useTasks } from '../../hooks/useHierarchy';
+import type { Event, EventType, Id, Project, Task } from '../../lib/types';
 
-export default function EventModal({ event, defaultStart, onClose }) {
+interface EventModalProps {
+  event?: Event | null;
+  defaultStart?: Date | null;
+  onClose: () => void;
+}
+
+interface EventFormState {
+  name: string;
+  eventType: EventType;
+  recurrent: boolean;
+  start: string;
+  end: string;
+  taskId: Id | '';
+  projectId: Id | '';
+}
+
+function parseStart(rangeStr?: string | null): Date {
+  const m = rangeStr?.match(/^[[(]"?([^",]*)"?,/);
+  return m ? new Date(m[1]) : new Date();
+}
+
+function parseEnd(rangeStr: string | null | undefined, fallback: Date): Date {
+  const m = rangeStr?.match(/,"?([^",)\]]*)"?[)\]]$/);
+  return m && m[1] ? new Date(m[1]) : fallback;
+}
+
+function addHour(date?: Date | string | null): Date {
+  const d = new Date(date || Date.now());
+  d.setHours(d.getHours() + 1);
+  return d;
+}
+
+export default function EventModal({
+  event,
+  defaultStart,
+  onClose,
+}: EventModalProps) {
   const { create, update, remove } = useEventMutations();
-  const { data: projects = [] } = useProjects();
-  const { data: tasks = [] } = useTasks();
+  const { data: projects = [] } = useProjects() as { data: Project[] };
+  const { data: tasks = [] } = useTasks() as { data: Task[] };
 
-  const [form, setForm] = useState(() => ({
+  const [form, setForm] = useState<EventFormState>(() => ({
     name: event?.name || '',
-    eventType: event?.event_type || 'scheduled',
+    eventType: (event?.event_type as EventType) || 'scheduled',
     recurrent: event?.recurrent || false,
     start: toDatetimeLocalValue(
-      event ? parseStart(event.duration) : defaultStart
+      event ? parseStart(event.duration as unknown as string) : defaultStart
     ),
     end: toDatetimeLocalValue(
-      event ? parseEnd(event.duration) : addHour(defaultStart)
+      event
+        ? parseEnd(event.duration as unknown as string, addHour(defaultStart))
+        : addHour(defaultStart)
     ),
-    taskId: event?.task_id || '',
-    projectId: event?.project_id || '',
+    taskId: (event?.task_id as Id) || '',
+    projectId: (event?.project_id as Id) || '',
   }));
 
-  function parseStart(rangeStr) {
-    const m = rangeStr?.match(/^[[(]"?([^",]*)"?,/);
-    return m ? new Date(m[1]) : new Date();
-  }
-  function parseEnd(rangeStr) {
-    const m = rangeStr?.match(/,"?([^",)\]]*)"?[)\]]$/);
-    return m && m[1] ? new Date(m[1]) : addHour(new Date());
-  }
-  function addHour(date) {
-    const d = new Date(date || Date.now());
-    d.setHours(d.getHours() + 1);
-    return d;
-  }
+  // A "scheduled" (plan) event linked to a task doesn't need its own title —
+  // it'll just show the task's name on the calendar. A custom title is still
+  // allowed and will be shown alongside the task's name.
+  const isTitleOptional =
+    form.eventType === 'scheduled' && Boolean(form.taskId);
+  const linkedTask = tasks.find((t) => t.id === form.taskId);
 
-  function handleSubmit(e) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!form.name.trim() || !form.start) return;
+    if ((!isTitleOptional && !form.name.trim()) || !form.start) return;
+
+    const resolvedName = form.name.trim() || linkedTask?.name || '';
+    if (!resolvedName) return; // safety net — shouldn't happen given the check above
+
     const payload = {
-      name: form.name.trim(),
+      name: resolvedName,
       eventType: form.eventType,
       recurrent: form.recurrent,
       start: new Date(form.start),
@@ -58,7 +94,7 @@ export default function EventModal({ event, defaultStart, onClose }) {
   }
 
   function handleDelete() {
-    if (window.confirm('Delete this event?')) {
+    if (event && window.confirm('Delete this event?')) {
       remove.mutate(event.id, { onSuccess: onClose });
     }
   }
@@ -78,7 +114,12 @@ export default function EventModal({ event, defaultStart, onClose }) {
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>{event ? 'Save' : 'Create'}</Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!isTitleOptional && !form.name.trim()}
+          >
+            {event ? 'Save' : 'Create'}
+          </Button>
         </>
       }
     >
@@ -86,10 +127,13 @@ export default function EventModal({ event, defaultStart, onClose }) {
         <div>
           <label className="text-ink-400 mb-1 block text-xs font-medium">
             Title
+            {isTitleOptional &&
+              ' (optional — defaults to the task\u2019s name)'}
           </label>
           <TextInput
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder={isTitleOptional ? linkedTask?.name : undefined}
             autoFocus
           />
         </div>
@@ -122,7 +166,9 @@ export default function EventModal({ event, defaultStart, onClose }) {
             </label>
             <Select
               value={form.eventType}
-              onChange={(e) => setForm({ ...form, eventType: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, eventType: e.target.value as EventType })
+              }
               className="w-full"
             >
               {EVENT_TYPES.map((t) => (
@@ -153,7 +199,9 @@ export default function EventModal({ event, defaultStart, onClose }) {
             </label>
             <Select
               value={form.projectId}
-              onChange={(e) => setForm({ ...form, projectId: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, projectId: e.target.value as Id })
+              }
               className="w-full"
             >
               <option value="">None</option>
@@ -170,7 +218,9 @@ export default function EventModal({ event, defaultStart, onClose }) {
             </label>
             <Select
               value={form.taskId}
-              onChange={(e) => setForm({ ...form, taskId: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, taskId: e.target.value as Id })
+              }
               className="w-full"
             >
               <option value="">None</option>

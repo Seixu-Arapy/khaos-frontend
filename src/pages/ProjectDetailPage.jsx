@@ -93,9 +93,7 @@ export default function ProjectDetailPage() {
   );
 
   const openTaskId = searchParams.get('taskId');
-  const openTask = openTaskId
-    ? tasks.find((t) => t.id === openTaskId)
-    : null;
+  const openTask = openTaskId ? tasks.find((t) => t.id === openTaskId) : null;
 
   if (!project) {
     return (
