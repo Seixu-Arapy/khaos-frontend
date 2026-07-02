@@ -316,7 +316,11 @@ export default function AppShell() {
         </nav>
       </div>
 
-      <MomentPrompt prompt={momentPrompt} onDismiss={dismissMoment} />
+      <MomentPrompt
+        key={momentPrompt.id}
+        prompt={momentPrompt}
+        onDismiss={dismissMoment}
+      />
     </div>
   );
 }

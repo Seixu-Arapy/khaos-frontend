@@ -47,7 +47,8 @@ CREATE TYPE "public"."moment_types" AS ENUM (
     'scheduled',
     'target',
     'note',
-    'priority'
+    'priority',
+    'definition'
 );
 
 
@@ -90,6 +91,39 @@ ALTER TYPE "public"."status" OWNER TO "postgres";
 
 COMMENT ON TYPE "public"."status" IS 'Status';
 
+
+
+CREATE OR REPLACE FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text" DEFAULT NULL::"text", "p_note" "text" DEFAULT NULL::"text") RETURNS "void"
+    LANGUAGE "plpgsql"
+    AS $_$
+begin
+  if p_entity_column not in ('project_id', 'section_id', 'task_id', 'event_id') then
+    raise exception 'insert_moment: invalid entity column "%"', p_entity_column;
+  end if;
+
+  execute format(
+    'insert into moments (%I, moment_type, value, moment_note) values ($1, $2, $3, $4)',
+    p_entity_column
+  ) using p_entity_id, p_moment_type, p_value, p_note;
+end;
+$_$;
+
+
+ALTER FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."moment_entity_column"("p_table" "text") RETURNS "text"
+    LANGUAGE "sql" IMMUTABLE
+    AS $$
+  select case p_table
+    when 'projects' then 'project_id'
+    when 'sections' then 'section_id'
+    when 'tasks'    then 'task_id'
+  end;
+$$;
+
+
+ALTER FUNCTION "public"."moment_entity_column"("p_table" "text") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."rls_auto_enable"() RETURNS "event_trigger"
@@ -176,6 +210,192 @@ $$;
 
 
 ALTER FUNCTION "public"."trg_fn_stop_and_start_task_log"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_moment_created"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  perform insert_moment(moment_entity_column(TG_TABLE_NAME), NEW.id, 'created');
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_moment_created"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_moment_due"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if OLD.due is distinct from NEW.due then
+    perform insert_moment(moment_entity_column(TG_TABLE_NAME), NEW.id, 'due', NEW.due::text);
+  end if;
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_moment_due"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_moment_estimate"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if OLD.estimate is distinct from NEW.estimate and NEW.estimate is not null then
+    perform insert_moment('task_id', NEW.id, 'estimate', NEW.estimate::text);
+  end if;
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_moment_estimate"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_moment_priority"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if OLD.priority is distinct from NEW.priority then
+    perform insert_moment(moment_entity_column(TG_TABLE_NAME), NEW.id, 'priority', NEW.priority::text);
+  end if;
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_moment_priority"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_moment_scheduled"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  v_column text;
+  v_entity_id uuid;
+begin
+  if TG_OP = 'INSERT' or (OLD.duration is distinct from NEW.duration) then
+    if NEW.task_id is not null then
+      v_column := 'task_id';
+      v_entity_id := NEW.task_id;
+    elsif NEW.project_id is not null then
+      v_column := 'project_id';
+      v_entity_id := NEW.project_id;
+    else
+      v_column := 'event_id';
+      v_entity_id := NEW.id;
+    end if;
+
+    perform insert_moment(v_column, v_entity_id, 'scheduled', lower(NEW.duration)::text);
+  end if;
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_moment_scheduled"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_moment_started"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if upper_inf(NEW.duration) and NEW.task_id is not null then
+    perform insert_moment('task_id', NEW.task_id, 'started', lower(NEW.duration)::text);
+  end if;
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_moment_started"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_moment_status"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if OLD.status is distinct from NEW.status then
+    perform insert_moment(moment_entity_column(TG_TABLE_NAME), NEW.id, 'status', NEW.status::text);
+  end if;
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_moment_status"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_moment_stopped"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if upper_inf(OLD.duration) and not upper_inf(NEW.duration) and NEW.task_id is not null then
+    perform insert_moment('task_id', NEW.task_id, 'stopped', upper(NEW.duration)::text);
+  end if;
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_moment_stopped"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trigger_update_sections_status"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+    -- Verifica se o status mudou para 'done' ou 'cancelled'
+    IF (NEW.status IN ('done', 'cancelled')) AND (OLD.status IS DISTINCT FROM NEW.status) THEN
+        UPDATE sections
+        SET status = 'cancelled'
+        WHERE project_id = NEW.id 
+          AND status NOT IN ('done', 'cancelled');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."trigger_update_sections_status"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trigger_update_task_items_status"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+    IF (NEW.status = 'done') AND (OLD.status IS DISTINCT FROM NEW.status) THEN
+        UPDATE task_items
+        SET done = TRUE
+        WHERE task_id = NEW.id;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."trigger_update_task_items_status"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."trigger_update_tasks_status"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+BEGIN
+    IF (NEW.status IN ('done', 'cancelled')) AND (OLD.status IS DISTINCT FROM NEW.status) THEN
+        UPDATE tasks
+        SET status = 'cancelled'
+        WHERE section_id = NEW.id 
+          AND status NOT IN ('done', 'cancelled');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."trigger_update_tasks_status"() OWNER TO "postgres";
 
 
 CREATE OR REPLACE VIEW "public"."active_task_log" WITH ("security_invoker"='on') AS
@@ -720,6 +940,82 @@ CREATE UNIQUE INDEX "uq_work_tag_entities_task" ON "public"."work_tag_entities" 
 
 
 
+CREATE OR REPLACE TRIGGER "after_project_status_update" AFTER UPDATE ON "public"."projects" FOR EACH ROW EXECUTE FUNCTION "public"."trigger_update_sections_status"();
+
+
+
+CREATE OR REPLACE TRIGGER "after_section_status_update" AFTER UPDATE ON "public"."sections" FOR EACH ROW EXECUTE FUNCTION "public"."trigger_update_tasks_status"();
+
+
+
+CREATE OR REPLACE TRIGGER "after_task_status_update" AFTER UPDATE ON "public"."tasks" FOR EACH ROW EXECUTE FUNCTION "public"."trigger_update_task_items_status"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_created_projects" AFTER INSERT ON "public"."projects" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_created"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_created_sections" AFTER INSERT ON "public"."sections" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_created"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_created_tasks" AFTER INSERT ON "public"."tasks" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_created"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_due_projects" AFTER UPDATE ON "public"."projects" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_due"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_due_sections" AFTER UPDATE ON "public"."sections" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_due"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_due_tasks" AFTER UPDATE ON "public"."tasks" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_due"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_estimate_tasks" AFTER UPDATE ON "public"."tasks" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_estimate"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_priority_projects" AFTER UPDATE ON "public"."projects" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_priority"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_priority_sections" AFTER UPDATE ON "public"."sections" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_priority"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_priority_tasks" AFTER UPDATE ON "public"."tasks" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_priority"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_scheduled_events" AFTER INSERT OR UPDATE ON "public"."events" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_scheduled"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_started_task_logs" AFTER INSERT ON "public"."task_logs" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_started"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_status_projects" AFTER UPDATE ON "public"."projects" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_status"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_status_sections" AFTER UPDATE ON "public"."sections" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_status"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_status_tasks" AFTER UPDATE ON "public"."tasks" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_status"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_stopped_task_logs" AFTER UPDATE ON "public"."task_logs" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_stopped"();
+
+
+
 CREATE OR REPLACE TRIGGER "trg_stop_task_log_on_insert" BEFORE INSERT ON "public"."task_logs" FOR EACH ROW WHEN (("upper_inf"("new"."duration") = true)) EXECUTE FUNCTION "public"."trg_fn_stop_and_start_task_log"();
 
 
@@ -981,6 +1277,18 @@ GRANT ALL ON SCHEMA "public" TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."moment_entity_column"("p_table" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."moment_entity_column"("p_table" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."moment_entity_column"("p_table" "text") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."rls_auto_enable"() TO "anon";
 GRANT ALL ON FUNCTION "public"."rls_auto_enable"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."rls_auto_enable"() TO "service_role";
@@ -1002,6 +1310,72 @@ GRANT ALL ON FUNCTION "public"."stop_active_task"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."trg_fn_stop_and_start_task_log"() TO "anon";
 GRANT ALL ON FUNCTION "public"."trg_fn_stop_and_start_task_log"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."trg_fn_stop_and_start_task_log"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_moment_created"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_moment_created"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_moment_created"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_moment_due"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_moment_due"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_moment_due"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_moment_estimate"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_moment_estimate"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_moment_estimate"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_moment_priority"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_moment_priority"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_moment_priority"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_moment_scheduled"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_moment_scheduled"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_moment_scheduled"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_moment_started"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_moment_started"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_moment_started"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_moment_status"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_moment_status"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_moment_status"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_moment_stopped"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_moment_stopped"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_moment_stopped"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trigger_update_sections_status"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trigger_update_sections_status"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trigger_update_sections_status"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trigger_update_task_items_status"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trigger_update_task_items_status"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trigger_update_task_items_status"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trigger_update_tasks_status"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trigger_update_tasks_status"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trigger_update_tasks_status"() TO "service_role";
 
 
 
