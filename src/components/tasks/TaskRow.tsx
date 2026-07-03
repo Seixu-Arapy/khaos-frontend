@@ -1,27 +1,17 @@
-import type { CSSProperties, HTMLAttributes, Ref } from 'react';
 import { GripVertical } from 'lucide-react';
 import { StatusBadge, PriorityBadge, DueBadge } from '../common/ui';
+import { minutesToHuman } from '../../lib/dateUtils';
 import type { Task } from '../../lib/types';
 
-/**
- * Shared task row used across list views.
- *
- *   task             — the task object
- *   onOpen           — called with task when the row is clicked
- *   project          — optional project name string shown as a label
- *   dragRef          — ref from useSortable (SectionColumn)
- *   dragStyle        — style from useSortable (SectionColumn)
- *   dragHandleProps  — attributes + listeners from useSortable (SectionColumn)
- */
-const DIMMED: Task['status'][] = ['done', 'cancelled'];
+const DIMMED: Task['status'][] = ['done', 'cancelled', 'archived'];
 
 interface TaskRowProps {
   task: Task;
   onOpen: (task: Task) => void;
   project?: string | null;
-  dragRef?: Ref<HTMLDivElement>;
-  dragStyle?: CSSProperties;
-  dragHandleProps?: HTMLAttributes<HTMLSpanElement>;
+  dragRef?: React.Ref<HTMLDivElement>;
+  dragStyle?: React.CSSProperties;
+  dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
 }
 
 export default function TaskRow({
@@ -32,11 +22,6 @@ export default function TaskRow({
   dragStyle,
   dragHandleProps,
 }: TaskRowProps) {
-  // Derived from dragHandleProps rather than dragRef: passing a ref into a
-  // function during render (even just Boolean(ref)) trips react-hooks/refs,
-  // since it can't statically prove the function won't read ref.current.
-  // dragHandleProps is a plain object and is always passed alongside dragRef
-  // by SortableTaskRow, so it's an equivalent, render-safe signal.
   const draggable = Boolean(dragHandleProps);
   const dimmed = DIMMED.includes(task.status);
 
@@ -75,6 +60,12 @@ export default function TaskRow({
           {project}
         </span>
       )}
+
+      {task.estimate ? (
+        <span className="text-ink-600 hidden shrink-0 font-mono text-xs md:block">
+          {minutesToHuman(task.estimate)}
+        </span>
+      ) : null}
 
       <DueBadge due={task.due} status={task.status} />
     </div>

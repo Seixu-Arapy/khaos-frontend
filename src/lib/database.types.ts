@@ -676,7 +676,8 @@ export type Database = {
         | 'in_review'
         | 'done'
         | 'paused'
-        | 'cancelled';
+        | 'cancelled'
+        | 'archived';
     };
     CompositeTypes: {
       [_ in never]: never;
