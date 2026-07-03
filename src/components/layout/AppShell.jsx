@@ -117,7 +117,7 @@ function KhaosLogo({ spinning }) {
   );
 }
 
-function Sidebar({ onNavigate, spinning }) {
+function Sidebar({ onNavigate, onClose, spinning }) {
   const { data: fields = [] } = useFields();
   const { data: projects = [] } = useProjects();
   const { create } = useProjectMutations();
@@ -126,8 +126,17 @@ function Sidebar({ onNavigate, spinning }) {
 
   return (
     <>
-      <div className="px-4 py-4">
+      <div className="flex items-center justify-between px-4 py-4">
         <KhaosLogo spinning={spinning} />
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="text-ink-400 hover:text-ink-100"
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       <nav className="space-y-0.5 px-3">
@@ -254,20 +263,11 @@ export default function AppShell() {
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex items-center justify-between px-4 py-4">
-          <KhaosLogo spinning={spinning} />
-          <button
-            onClick={() => setDrawerOpen(false)}
-            className="text-ink-400 hover:text-ink-100"
-            aria-label="Close menu"
-          >
-            <X size={18} />
-          </button>
-        </div>
-        {/* Reuse sidebar contents, close drawer on navigation */}
+        {/* Reuse sidebar contents, close drawer on navigation or via X */}
         <div className="flex flex-1 flex-col overflow-hidden">
           <Sidebar
             onNavigate={() => setDrawerOpen(false)}
+            onClose={() => setDrawerOpen(false)}
             spinning={spinning}
           />
         </div>
