@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { X, MessageSquarePlus, Target, BookOpen } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -141,6 +141,17 @@ export default function MomentPrompt({ prompt, onDismiss }: MomentPromptProps) {
   const [extraValue, setExtraValue] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Esc closes/skips the prompt — but never while a save is in flight, so a
+  // stray Esc can't abandon a write that's already been kicked off.
+  useEffect(() => {
+    if (!prompt) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape' && !saving) onDismiss();
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [prompt, saving, onDismiss]);
 
   // AppShell only mounts this component when a prompt is queued, but the
   // guard is kept for safety in case that contract changes.
