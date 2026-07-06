@@ -97,7 +97,6 @@ export default function TaskDetailModal({ taskId, task, onClose }) {
       task_id: task.id,
       description: newItem.trim(),
       done: false,
-      order: items.length,
     });
     setNewItem('');
   }
