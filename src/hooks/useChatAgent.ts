@@ -1,14 +1,31 @@
-// src/hooks/useChatAgent.js
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { genAI, GEMINI_MODEL, SYSTEM_INSTRUCTION } from '../lib/gemini/client';
 import { functionDeclarations } from '../lib/gemini/tools';
-import { runTurn } from '../lib/gemini/agent';
+import { runTurn, type GeminiChat } from '../lib/gemini/agent';
+import {
+  buildConfirmationPreview,
+  type ConfirmationPreview,
+} from '../lib/gemini/confirmationPreview';
 import { useProcessingContext } from '../lib/processingContext';
 import { useActiveEntity } from '../lib/activeEntityContext';
 
 const STORAGE_KEY = 'logbook.chatHistory.v1';
 
-function loadHistory() {
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'model';
+  text: string;
+  isError?: boolean;
+}
+
+export interface PendingWrite {
+  name: string;
+  args: Record<string, unknown>;
+  preview: ConfirmationPreview;
+  resolve: (approved: boolean) => void;
+}
+
+function loadHistory(): ChatMessage[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -17,17 +34,17 @@ function loadHistory() {
   }
 }
 
-function newId() {
+function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function useChatAgent() {
-  const [messages, setMessages] = useState(loadHistory);
-  const [pending, setPending] = useState(null); // { name, args, resolve }
+  const [messages, setMessages] = useState<ChatMessage[]>(loadHistory);
+  const [pending, setPending] = useState<PendingWrite | null>(null);
   const [isSending, setIsSending] = useState(false);
   const { setAssistantProcessing } = useProcessingContext();
   const { activeEntity } = useActiveEntity();
-  const chatRef = useRef(null);
+  const chatRef = useRef<GeminiChat | null>(null);
 
   useEffect(() => {
     try {
@@ -37,7 +54,7 @@ export function useChatAgent() {
     }
   }, [messages]);
 
-  function getChat() {
+  const getChat = useCallback((): GeminiChat => {
     if (!chatRef.current) {
       chatRef.current = genAI.chats.create({
         model: GEMINI_MODEL,
@@ -51,16 +68,21 @@ export function useChatAgent() {
       });
     }
     return chatRef.current;
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const requestConfirmation = useCallback(
-    (name, args) =>
-      new Promise((resolve) => setPending({ name, args, resolve })),
+    async (name: string, args: Record<string, unknown>) => {
+      const preview = await buildConfirmationPreview(name, args);
+      return new Promise<boolean>((resolve) =>
+        setPending({ name, args, preview, resolve })
+      );
+    },
     []
   );
 
   const resolvePending = useCallback(
-    (approved) => {
+    (approved: boolean) => {
       pending?.resolve(approved);
       setPending(null);
     },
@@ -68,7 +90,7 @@ export function useChatAgent() {
   );
 
   const sendMessage = useCallback(
-    async (text) => {
+    async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
       setMessages((m) => [...m, { id: newId(), role: 'user', text: trimmed }]);
@@ -98,7 +120,7 @@ export function useChatAgent() {
           {
             id: newId(),
             role: 'model',
-            text: `Something went wrong: ${err.message}`,
+            text: `Something went wrong: ${(err as Error).message}`,
             isError: true,
           },
         ]);
@@ -107,7 +129,7 @@ export function useChatAgent() {
         setAssistantProcessing(false);
       }
     },
-    [requestConfirmation, activeEntity]
+    [getChat, requestConfirmation, activeEntity, setAssistantProcessing]
   );
 
   const clearHistory = useCallback(() => {

@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App.jsx';
-import { ProcessingProvider } from './lib/processingContext.jsx';
-import { ActiveEntityProvider } from './lib/activeEntityContext.jsx';
+import { ProcessingProvider } from './lib/processingContext';
+import { ActiveEntityProvider } from './lib/activeEntityContext';
 import { PasswordGate } from './components/layout/PasswordGate.jsx';
 import './index.css';
 

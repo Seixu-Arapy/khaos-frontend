@@ -19,7 +19,9 @@ export const ALLOWED_TABLES = [
   'work_tag_entities',
   'sections_sequence',
   'tasks_sequence',
-];
+] as const;
+
+export type AllowedTable = (typeof ALLOWED_TABLES)[number];
 
 const VALID_OPERATORS = [
   'eq',
@@ -35,7 +37,49 @@ const VALID_OPERATORS = [
   'cs',
   'cd',
   'ov',
-];
+] as const;
+
+type FilterOperator = (typeof VALID_OPERATORS)[number];
+
+export interface RowFilter {
+  column: string;
+  operator: FilterOperator;
+  value: unknown;
+}
+
+export interface SearchSchemaArgs {
+  query: string;
+}
+
+export interface QueryRowsArgs {
+  table: AllowedTable;
+  select?: string;
+  filters?: RowFilter[];
+  orderBy?: string;
+  ascending?: boolean;
+  limit?: number;
+}
+
+export interface InsertRowArgs {
+  table: AllowedTable;
+  values: Record<string, unknown>;
+}
+
+export interface UpdateRowsArgs {
+  table: AllowedTable;
+  values: Record<string, unknown>;
+  filters: RowFilter[];
+}
+
+export interface DeleteRowsArgs {
+  table: AllowedTable;
+  filters: RowFilter[];
+}
+
+export interface CallRpcArgs {
+  name: string;
+  args?: Record<string, unknown>;
+}
 
 const filtersSchema = {
   type: 'array',
@@ -163,18 +207,23 @@ export const functionDeclarations = [
   },
 ];
 
-function assertAllowedTable(table) {
-  if (!ALLOWED_TABLES.includes(table)) {
+function assertAllowedTable(table: string): asserts table is AllowedTable {
+  if (!(ALLOWED_TABLES as readonly string[]).includes(table)) {
     throw new Error(
       `"${table}" is not a recognized table. Call search_schema to find the right one.`
     );
   }
 }
 
-function applyFilters(query, filters) {
+// Generic over the concrete Supabase query-builder type passed in, so the
+// caller keeps every chainable method (.order, .limit, .select, ...) after
+// filters are applied — only requires that the builder exposes `.filter`.
+function applyFilters<
+  T extends { filter: (column: string, operator: string, value: unknown) => T },
+>(query: T, filters?: RowFilter[]): T {
   let q = query;
   for (const f of filters || []) {
-    if (!VALID_OPERATORS.includes(f.operator))
+    if (!(VALID_OPERATORS as readonly string[]).includes(f.operator))
       throw new Error(`Unsupported operator "${f.operator}"`);
     q = q.filter(f.column, f.operator, f.value);
   }
@@ -182,57 +231,73 @@ function applyFilters(query, filters) {
 }
 
 /** Executes a single tool call and returns a plain JSON-serializable result. */
-export async function executeTool(name, args) {
+export async function executeTool(
+  name: string,
+  args: Record<string, unknown>
+): Promise<unknown> {
   switch (name) {
-    case 'search_schema':
-      return searchSchema(args.query);
+    case 'search_schema': {
+      const a = args as SearchSchemaArgs;
+      return searchSchema(a.query);
+    }
 
     case 'query_rows': {
-      assertAllowedTable(args.table);
-      let q = supabase.from(args.table).select(args.select || '*');
-      q = applyFilters(q, args.filters);
-      if (args.orderBy)
-        q = q.order(args.orderBy, { ascending: args.ascending !== false });
-      q = q.limit(Math.min(args.limit || 25, 100));
+      const a = args as QueryRowsArgs;
+      assertAllowedTable(a.table);
+      let q = supabase.from(a.table).select(a.select || '*');
+      q = applyFilters(q, a.filters);
+      if (a.orderBy)
+        q = q.order(a.orderBy, { ascending: a.ascending !== false });
+      q = q.limit(Math.min(a.limit || 25, 100));
       const { data, error } = await q;
       if (error) throw new Error(error.message);
-      return { rows: data, count: data.length };
+      return { rows: data ?? [], count: data?.length ?? 0 };
     }
 
     case 'insert_row': {
-      assertAllowedTable(args.table);
+      const a = args as InsertRowArgs;
+      assertAllowedTable(a.table);
       const { data, error } = await supabase
-        .from(args.table)
-        .insert(args.values)
+        .from(a.table)
+        // Values come from the model at runtime — the exact shape can't be
+        // known at compile time, so `never` is the standard escape hatch to
+        // hand a dynamic object to Supabase's generated Insert type.
+        .insert(a.values as never)
         .select();
       if (error) throw new Error(error.message);
-      return { inserted: data };
+      return { inserted: data ?? [] };
     }
 
     case 'update_rows': {
-      assertAllowedTable(args.table);
-      if (!args.filters?.length)
+      const a = args as UpdateRowsArgs;
+      assertAllowedTable(a.table);
+      if (!a.filters?.length)
         throw new Error('Refusing to update without at least one filter.');
-      let q = supabase.from(args.table).update(args.values);
-      q = applyFilters(q, args.filters);
+      let q = supabase.from(a.table).update(a.values as never);
+      q = applyFilters(q, a.filters);
       const { data, error } = await q.select();
       if (error) throw new Error(error.message);
-      return { updated: data, count: data.length };
+      return { updated: data ?? [], count: data?.length ?? 0 };
     }
 
     case 'delete_rows': {
-      assertAllowedTable(args.table);
-      if (!args.filters?.length)
+      const a = args as DeleteRowsArgs;
+      assertAllowedTable(a.table);
+      if (!a.filters?.length)
         throw new Error('Refusing to delete without at least one filter.');
-      let q = supabase.from(args.table).delete();
-      q = applyFilters(q, args.filters);
+      let q = supabase.from(a.table).delete();
+      q = applyFilters(q, a.filters);
       const { data, error } = await q.select();
       if (error) throw new Error(error.message);
-      return { deleted: data, count: data.length };
+      return { deleted: data ?? [], count: data?.length ?? 0 };
     }
 
     case 'call_rpc': {
-      const { data, error } = await supabase.rpc(args.name, args.args || {});
+      const a = args as CallRpcArgs;
+      const { data, error } = await supabase.rpc(
+        a.name as unknown as Parameters<typeof supabase.rpc>[0],
+        a.args || {}
+      );
       if (error) throw new Error(error.message);
       return { result: data };
     }
@@ -243,20 +308,31 @@ export async function executeTool(name, args) {
 }
 
 /** Builds a short, human-readable summary of a pending write for the confirmation card. */
-export function describeAction(name, args) {
+export function describeAction(
+  name: string,
+  args: Record<string, unknown>
+): string {
   switch (name) {
-    case 'insert_row':
-      return `Insert a new row into "${args.table}": ${JSON.stringify(args.values)}`;
-    case 'update_rows':
-      return `Update rows in "${args.table}" where ${args.filters
+    case 'insert_row': {
+      const a = args as InsertRowArgs;
+      return `Insert a new row into "${a.table}": ${JSON.stringify(a.values)}`;
+    }
+    case 'update_rows': {
+      const a = args as UpdateRowsArgs;
+      return `Update rows in "${a.table}" where ${a.filters
         .map((f) => `${f.column} ${f.operator} ${f.value}`)
-        .join(' and ')} → set ${JSON.stringify(args.values)}`;
-    case 'delete_rows':
-      return `Delete rows from "${args.table}" where ${args.filters
+        .join(' and ')} → set ${JSON.stringify(a.values)}`;
+    }
+    case 'delete_rows': {
+      const a = args as DeleteRowsArgs;
+      return `Delete rows from "${a.table}" where ${a.filters
         .map((f) => `${f.column} ${f.operator} ${f.value}`)
         .join(' and ')}`;
-    case 'call_rpc':
-      return `Call function "${args.name}"${args.args ? ` with ${JSON.stringify(args.args)}` : ''}`;
+    }
+    case 'call_rpc': {
+      const a = args as CallRpcArgs;
+      return `Call function "${a.name}"${a.args ? ` with ${JSON.stringify(a.args)}` : ''}`;
+    }
     default:
       return `${name}(${JSON.stringify(args)})`;
   }

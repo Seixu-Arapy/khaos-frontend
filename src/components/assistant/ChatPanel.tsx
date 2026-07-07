@@ -1,21 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  Bot,
-  Send,
-  Trash2,
-  ShieldAlert,
-  User,
-  Loader2,
-  X,
-  Link2,
-} from 'lucide-react';
+import { Bot, Send, Trash2, User, Loader2, X, Link2 } from 'lucide-react';
 import clsx from 'clsx';
-import { useChatAgent } from '../../hooks/useChatAgent';
-import { describeAction } from '../../lib/gemini/tools';
+import { useChatAgent, type ChatMessage } from '../../hooks/useChatAgent';
 import { useActiveEntity } from '../../lib/activeEntityContext';
-import { Button } from '../common/ui';
+import { parseMessageSegments } from '../../lib/gemini/entityRefs';
+import { EntityChip } from './EntityChip';
+import ConfirmationCard from './ConfirmationCard';
 
-function MessageBubble({ message }) {
+function MessageContent({ text }: { text: string }) {
+  const segments = parseMessageSegments(text);
+  return (
+    <>
+      {segments.map((seg, i) =>
+        seg.type === 'entity' ? (
+          <EntityChip key={i} entityType={seg.entityType} id={seg.id} />
+        ) : (
+          seg.value && (
+            <span key={i} className="whitespace-pre-wrap">
+              {seg.value}
+            </span>
+          )
+        )
+      )}
+    </>
+  );
+}
+
+function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user';
   return (
     <div className={clsx('flex gap-2.5', isUser && 'flex-row-reverse')}>
@@ -31,42 +42,13 @@ function MessageBubble({ message }) {
       </div>
       <div
         className={clsx(
-          'max-w-[85%] rounded-lg px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap',
+          'max-w-[85%] rounded-lg px-3.5 py-2.5 text-sm leading-relaxed',
           isUser ? 'bg-ink-700 text-ink-100' : 'bg-ink-800 text-ink-200',
           message.isError &&
             'text-rust-400 border-rust-500/40 bg-rust-500/10 border'
         )}
       >
-        {message.text}
-      </div>
-    </div>
-  );
-}
-
-function ConfirmCard({ pending, onResolve }) {
-  if (!pending) return null;
-  const description = describeAction(pending.name, pending.args);
-  const isDelete = pending.name === 'delete_rows';
-  return (
-    <div className="border-copper-500/40 bg-ink-800 ml-9 max-w-[85%] rounded-lg border p-3.5">
-      <div className="text-copper-400 mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
-        <ShieldAlert size={13} />
-        Confirm before running
-      </div>
-      <p className="text-ink-300 mb-3 font-mono text-xs leading-relaxed">
-        {description}
-      </p>
-      <div className="flex justify-end gap-2">
-        <Button variant="ghost" size="sm" onClick={() => onResolve(false)}>
-          Cancel
-        </Button>
-        <Button
-          variant={isDelete ? 'danger' : 'default'}
-          size="sm"
-          onClick={() => onResolve(true)}
-        >
-          {isDelete ? 'Delete' : 'Confirm'}
-        </Button>
+        <MessageContent text={message.text} />
       </div>
     </div>
   );
@@ -76,7 +58,11 @@ function ConfirmCard({ pending, onResolve }) {
  * Shared chat UI — used as the persistent desktop sidebar, the mobile
  * bottom-sheet, and the standalone /assistant route.
  */
-export default function ChatPanel({ onRequestClose }) {
+export default function ChatPanel({
+  onRequestClose,
+}: {
+  onRequestClose?: () => void;
+}) {
   const {
     messages,
     sendMessage,
@@ -87,7 +73,7 @@ export default function ChatPanel({ onRequestClose }) {
   } = useChatAgent();
   const { activeEntity, clearActiveEntity } = useActiveEntity();
   const [input, setInput] = useState('');
-  const scrollRef = useRef(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -96,7 +82,7 @@ export default function ChatPanel({ onRequestClose }) {
     });
   }, [messages, pending]);
 
-  function handleSubmit(e) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim() || isSending) return;
     sendMessage(input);
@@ -162,7 +148,7 @@ export default function ChatPanel({ onRequestClose }) {
           <div className="text-ink-600 flex h-full flex-col items-center justify-center gap-2 text-center">
             <Bot size={26} />
             <p className="text-sm">
-              Try: &ldquo;What&lsquo;s overdue?&lrequo; — or open a task and ask
+              Try: &ldquo;What&lsquo;s overdue?&rdquo; — or open a task and ask
               about it directly.
             </p>
           </div>
@@ -171,7 +157,11 @@ export default function ChatPanel({ onRequestClose }) {
           <MessageBubble key={m.id} message={m} />
         ))}
         {pending && (
-          <ConfirmCard pending={pending} onResolve={resolvePending} />
+          <ConfirmationCard
+            preview={pending.preview}
+            actionName={pending.name}
+            onResolve={resolvePending}
+          />
         )}
         {isSending && !pending && (
           <div className="text-ink-500 flex items-center gap-2 pl-9 text-xs">
