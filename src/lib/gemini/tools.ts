@@ -98,12 +98,14 @@ const filtersSchema = {
   description: 'Row filters, all combined with AND.',
   items: {
     type: 'object',
+    additionalProperties: false,
     properties: {
       column: { type: 'string' },
       operator: { type: 'string', enum: VALID_OPERATORS },
       value: {
+        type: 'string',
         description:
-          'Value to compare against. For "in", pass a comma-separated string.',
+          'Value to compare against, always as a string (e.g. "42", "true", "2026-01-01"). For "in", pass a comma-separated string.',
       },
     },
     required: ['column', 'operator', 'value'],
@@ -125,6 +127,7 @@ export const functionDeclarations = [
       "Searches the database's live OpenAPI schema by keyword to find table names, columns, types, enum values, and available RPC functions. Call this first whenever you're unsure of exact table/column names or valid enum values.",
     parametersJsonSchema: {
       type: 'object',
+      additionalProperties: false,
       properties: {
         query: {
           type: 'string',
@@ -136,10 +139,10 @@ export const functionDeclarations = [
   },
   {
     name: 'query_rows',
-    // Otimização: Forçar textualmente o modelo a escolher colunas específicas em vez de usar '*'
     description: `Reads rows from a table (SELECT). Prefer selecting specific, needed columns (e.g., "id, name, status") instead of "*" to save context space. Allowed tables: ${ALLOWED_TABLES.join(', ')}.`,
     parametersJsonSchema: {
       type: 'object',
+      additionalProperties: false,
       properties: {
         table: { type: 'string', enum: ALLOWED_TABLES },
         select: {
@@ -152,7 +155,6 @@ export const functionDeclarations = [
         ascending: { type: 'boolean' },
         limit: {
           type: 'integer',
-          // Otimização: Reduzido teto de 100 para 40 e o padrão de 25 para 8
           description:
             'Max rows to return. Defaults to 8, capped at 40 to avoid token limits.',
         },
@@ -160,7 +162,70 @@ export const functionDeclarations = [
       required: ['table'],
     },
   },
-  // ... outras ferramentas permanecem com as mesmas declarações
+  {
+    name: 'insert_row',
+    description: `Inserts a single new row into a table. Allowed tables: ${ALLOWED_TABLES.join(', ')}.`,
+    parametersJsonSchema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        table: { type: 'string', enum: ALLOWED_TABLES },
+        values: {
+          type: 'object',
+          description:
+            'Column/value pairs to insert, e.g. { "name": "Task name", "status": "todo" }.',
+        },
+      },
+      required: ['table', 'values'],
+    },
+  },
+  {
+    name: 'update_rows',
+    description: `Updates rows matching the given filters. Always include at least one filter (usually "id"). Allowed tables: ${ALLOWED_TABLES.join(', ')}.`,
+    parametersJsonSchema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        table: { type: 'string', enum: ALLOWED_TABLES },
+        values: {
+          type: 'object',
+          description: 'Column/value pairs to set.',
+        },
+        filters: filtersSchema,
+      },
+      required: ['table', 'values', 'filters'],
+    },
+  },
+  {
+    name: 'delete_rows',
+    description: `Soft- or hard-deletes rows matching the given filters (use update_rows with deleted_at for soft delete when the table supports it). Allowed tables: ${ALLOWED_TABLES.join(', ')}.`,
+    parametersJsonSchema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        table: { type: 'string', enum: ALLOWED_TABLES },
+        filters: filtersSchema,
+      },
+      required: ['table', 'filters'],
+    },
+  },
+  {
+    name: 'call_rpc',
+    description:
+      'Calls a Postgres RPC function exposed by Supabase (e.g. stop_active_task).',
+    parametersJsonSchema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        name: { type: 'string', description: 'Name of the RPC function.' },
+        args: {
+          type: 'object',
+          description: 'Named arguments for the RPC function, if any.',
+        },
+      },
+      required: ['name'],
+    },
+  },
 ];
 
 function assertAllowedTable(table: string): asserts table is AllowedTable {

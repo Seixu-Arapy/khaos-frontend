@@ -208,4 +208,6 @@ Only use these tokens for tasks/projects that exist in the database (i.e. you ha
 Example:
 
 "Created. [[task:3fa85f64-5717-4562-b3fc-2c963f66afa6]]"
+
+Anytime you render a list of results, number them, and remember the order, as it will be used as a guide for the next request.
 `;
