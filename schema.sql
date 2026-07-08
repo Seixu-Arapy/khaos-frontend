@@ -119,6 +119,86 @@ COMMENT ON TYPE "public"."status" IS 'Global lifecycle state machine. Values:
 
 
 
+CREATE OR REPLACE FUNCTION "public"."check_and_unlock_next_sections"("p_previous_section_id" "uuid") RETURNS "void"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  r_next record;
+  v_pending_count integer;
+begin
+  for r_next in 
+    SELECT ss.section_next 
+    FROM public.sections_sequence ss
+    JOIN public.sections s ON s.id = ss.section_next
+    WHERE ss.section_previous = p_previous_section_id AND s.status = 'waiting'
+  loop
+    
+    SELECT count(*)
+    INTO v_pending_count
+    FROM public.sections_sequence ss_check
+    JOIN public.sections s_check ON s_check.id = ss_check.section_previous
+    WHERE ss_check.section_next = r_next.section_next
+      AND s_check.status != 'done'
+      AND s_check.deleted_at IS NULL;
+      
+    if v_pending_count = 0 then
+      UPDATE public.sections
+      SET status = 'todo'
+      WHERE id = r_next.section_next;
+    end if;
+    
+  end loop;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."check_and_unlock_next_sections"("p_previous_section_id" "uuid") OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."check_and_unlock_next_sections"("p_previous_section_id" "uuid") IS 'Core engine for container-level sequence progression. Evaluates sections downstream from a completed/altered section, promoting sequential elements from waiting to todo when clear pathways open up.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" "uuid") RETURNS "void"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  r_next record;
+  v_pending_count integer;
+begin
+  for r_next in 
+    SELECT ts.task_next 
+    FROM public.tasks_sequence ts
+    JOIN public.tasks t ON t.id = ts.task_next
+    WHERE ts.task_previous = p_previous_task_id AND t.status = 'waiting'
+  loop
+    
+    SELECT count(*)
+    INTO v_pending_count
+    FROM public.tasks_sequence ts_check
+    JOIN public.tasks t_check ON t_check.id = ts_check.task_previous
+    WHERE ts_check.task_next = r_next.task_next
+      AND t_check.status != 'done'
+      AND t_check.deleted_at IS NULL;
+      
+    if v_pending_count = 0 then
+      UPDATE public.tasks
+      SET status = 'todo'
+      WHERE id = r_next.task_next;
+    end if;
+    
+  end loop;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" "uuid") OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" "uuid") IS 'Core engine for task sequence progression. Re-evaluates tasks downstream from the specified ID that are in a waiting state, shifting them to todo if all prior sequence links are resolved, skipped, or logically deleted.';
+
+
+
 CREATE OR REPLACE FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text" DEFAULT NULL::"text", "p_note" "text" DEFAULT NULL::"text") RETURNS "void"
     LANGUAGE "plpgsql"
     AS $_$
@@ -136,6 +216,39 @@ $_$;
 
 
 ALTER FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text" DEFAULT NULL::"text", "p_note" "text" DEFAULT NULL::"text", "p_previous_value" "text" DEFAULT NULL::"text") RETURNS "void"
+    LANGUAGE "plpgsql"
+    AS $_$
+begin
+  if p_entity_column not in ('project_id', 'section_id', 'task_id', 'event_id') then
+    raise exception 'insert_moment: invalid entity column "%"', p_entity_column;
+  end if;
+
+  execute format(
+    'insert into moments (%I, moment_type, value, moment_note, previous_value) values ($1, $2, $3, $4, $5)',
+    p_entity_column
+  ) using p_entity_id, p_moment_type, p_value, p_note, p_previous_value;
+end;
+$_$;
+
+
+ALTER FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text", "p_previous_value" "text") OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text", "p_previous_value" "text") IS 'A core utility function designed to dynamically insert records into the "moments" table. 
+
+It abstracts the exclusive relationship constraint of the schema by accepting the target entity column name ("project_id", "section_id", "task_id", or "event_id") as a parameter and validating it against an explicit whitelist. Using dynamic SQL execution, it programmatically assigns the UUID to the correct entity column while ensuring all other entity foreign keys default to NULL, guaranteeing data integrity. 
+
+Parameters:
+- p_entity_column: Whitelisted column name representing the linked entity.
+- p_entity_id: The UUID of the specific project, section, task, or event.
+- p_moment_type: The enum metric or lifestyle aspect being logged.
+- p_value: The new state value (the "to" state).
+- p_note: Optional qualitative contextual notes.
+- p_previous_value: The state value prior to the change (the "from" state).';
+
 
 
 CREATE OR REPLACE FUNCTION "public"."moment_entity_column"("p_table" "text") RETURNS "text"
@@ -312,10 +425,10 @@ CREATE OR REPLACE FUNCTION "public"."trg_moment_due"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 begin
-  if OLD.due is distinct from NEW.due then
-    perform insert_moment(moment_entity_column(TG_TABLE_NAME), NEW.id, 'due', NEW.due::text);
+  if old.due is distinct from new.due then
+    perform insert_moment(moment_entity_column(TG_TABLE_NAME), new.id, 'due', new.due::text, null, old.due::text);
   end if;
-  return NEW;
+  return new;
 end;
 $$;
 
@@ -323,14 +436,18 @@ $$;
 ALTER FUNCTION "public"."trg_moment_due"() OWNER TO "postgres";
 
 
+COMMENT ON FUNCTION "public"."trg_moment_due"() IS 'Trigger function that intercepts changes to the "due" column (deadlines). If the value shifts, it invokes insert_moment() to log the transition, storing the old deadline as previous_value and the new deadline as value.';
+
+
+
 CREATE OR REPLACE FUNCTION "public"."trg_moment_estimate"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 begin
-  if OLD.estimate is distinct from NEW.estimate and NEW.estimate is not null then
-    perform insert_moment('task_id', NEW.id, 'estimate', NEW.estimate::text);
+  if old.estimate is distinct from new.estimate and new.estimate is not null then
+    perform insert_moment('task_id', new.id, 'estimate', new.estimate::text, null, old.estimate::text);
   end if;
-  return NEW;
+  return new;
 end;
 $$;
 
@@ -338,19 +455,27 @@ $$;
 ALTER FUNCTION "public"."trg_moment_estimate"() OWNER TO "postgres";
 
 
+COMMENT ON FUNCTION "public"."trg_moment_estimate"() IS 'Trigger function restricted to task effort changes. It tracks modifications to the "estimate" column, forwarding both the prior estimation (previous_value) and the new time estimation (value) to the moments log, ignoring null-value overrides.';
+
+
+
 CREATE OR REPLACE FUNCTION "public"."trg_moment_priority"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 begin
-  if OLD.priority is distinct from NEW.priority then
-    perform insert_moment(moment_entity_column(TG_TABLE_NAME), NEW.id, 'priority', NEW.priority::text);
+  if old.priority is distinct from new.priority then
+    perform insert_moment(moment_entity_column(TG_TABLE_NAME), new.id, 'priority', new.priority::text, null, old.priority::text);
   end if;
-  return NEW;
+  return new;
 end;
 $$;
 
 
 ALTER FUNCTION "public"."trg_moment_priority"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_moment_priority"() IS 'Trigger function that monitors priority classification shifts across entities. It leverages moment_entity_column() to dynamically identify the parent table context and records the strict urgency transition from previous_value to value.';
+
 
 
 CREATE OR REPLACE FUNCTION "public"."trg_moment_scheduled"() RETURNS "trigger"
@@ -359,27 +484,34 @@ CREATE OR REPLACE FUNCTION "public"."trg_moment_scheduled"() RETURNS "trigger"
 declare
   v_column text;
   v_entity_id uuid;
+  v_previous text;
 begin
-  if TG_OP = 'INSERT' or (OLD.duration is distinct from NEW.duration) then
-    if NEW.task_id is not null then
+  if TG_OP = 'INSERT' or (old.duration is distinct from new.duration) then
+    if new.task_id is not null then
       v_column := 'task_id';
-      v_entity_id := NEW.task_id;
-    elsif NEW.project_id is not null then
+      v_entity_id := new.task_id;
+    elsif new.project_id is not null then
       v_column := 'project_id';
-      v_entity_id := NEW.project_id;
+      v_entity_id := new.project_id;
     else
       v_column := 'event_id';
-      v_entity_id := NEW.id;
+      v_entity_id := new.id;
     end if;
 
-    perform insert_moment(v_column, v_entity_id, 'scheduled', lower(NEW.duration)::text);
+    v_previous := case when TG_OP = 'UPDATE' then lower(old.duration)::text else null end;
+
+    perform insert_moment(v_column, v_entity_id, 'scheduled', lower(new.duration)::text, null, v_previous);
   end if;
-  return NEW;
+  return new;
 end;
 $$;
 
 
 ALTER FUNCTION "public"."trg_moment_scheduled"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_moment_scheduled"() IS 'Advanced trigger function operating on INSERT and UPDATE events if an entity is scheduled. It evaluates duration modifications, automatically resolves the context priority (task_id, project_id, or event_id), and records time block allocations. For updates, it captures the lower bound of the prior duration range as previous_value alongside the new lower bound duration as value.';
+
 
 
 CREATE OR REPLACE FUNCTION "public"."trg_moment_started"() RETURNS "trigger"
@@ -409,15 +541,19 @@ CREATE OR REPLACE FUNCTION "public"."trg_moment_status"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 begin
-  if OLD.status is distinct from NEW.status then
-    perform insert_moment(moment_entity_column(TG_TABLE_NAME), NEW.id, 'status', NEW.status::text);
+  if old.status is distinct from new.status then
+    perform insert_moment(moment_entity_column(TG_TABLE_NAME), new.id, 'status', new.status::text, null, old.status::text);
   end if;
-  return NEW;
+  return new;
 end;
 $$;
 
 
 ALTER FUNCTION "public"."trg_moment_status"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_moment_status"() IS 'Trigger function handling lifecycle status changes. Whenever a state transition occurs (e.g., pending to completed), it dynamically pushes the full migration path (old state as previous_value, new state as value) into the moments ledger.';
+
 
 
 CREATE OR REPLACE FUNCTION "public"."trg_moment_stopped"() RETURNS "trigger"
@@ -439,15 +575,98 @@ CREATE OR REPLACE FUNCTION "public"."trg_moment_target"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 begin
-  if OLD.target is distinct from NEW.target then
-    perform insert_moment(moment_entity_column(TG_TABLE_NAME), NEW.id, 'target', NEW.target::text);
+  if old.target is distinct from new.target then
+    perform insert_moment(moment_entity_column(TG_TABLE_NAME), new.id, 'target', new.target::text, null, old.target::text);
   end if;
-  return NEW;
+  return new;
 end;
 $$;
 
 
 ALTER FUNCTION "public"."trg_moment_target"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_moment_target"() IS 'Trigger function focused on soft targets, target metrics, or flexible completion goal dates. It catches modifications and writes a timeline audit entry capturing the old goal (previous_value) alongside the newly established target (value).';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_section_sequence_unlock_next"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if TG_OP = 'DELETE' then
+    PERFORM public.check_and_unlock_next_sections(OLD.section_previous);
+    return OLD;
+  end if;
+
+  if TG_OP = 'UPDATE' then
+    if OLD.section_previous IS DISTINCT FROM NEW.section_previous or OLD.section_next IS DISTINCT FROM NEW.section_next then
+      PERFORM public.check_and_unlock_next_sections(OLD.section_previous);
+    end if;
+    return NEW;
+  end if;
+
+  return null;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_section_sequence_unlock_next"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_section_sequence_unlock_next"() IS 'Internal trigger function tracking layout changes or map cleanups within the sections sequence connections table.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_sections_unlock_next"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'done') OR
+     (OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL) OR
+     (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'cancelled') then
+     
+    PERFORM public.check_and_unlock_next_sections(NEW.id);
+  end if;
+  
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_sections_unlock_next"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_sections_unlock_next"() IS 'Internal trigger function mapping lifecycle transitions on structural sections (done, cancelled, or deleted) to evaluate layout sequence shifts.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_sequence_unlock_next"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if TG_OP = 'DELETE' then
+    PERFORM public.check_and_unlock_next_tasks(OLD.task_previous);
+    return OLD;
+  end if;
+
+  if TG_OP = 'UPDATE' then
+    if OLD.task_previous IS DISTINCT FROM NEW.task_previous or OLD.task_next IS DISTINCT FROM NEW.task_next then
+      PERFORM public.check_and_unlock_next_tasks(OLD.task_previous);
+    end if;
+    return NEW;
+  end if;
+
+  return null;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_sequence_unlock_next"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_sequence_unlock_next"() IS 'Internal trigger function tracking changes to the structural layout mapping rows within the tasks sequence link schema.';
+
 
 
 CREATE OR REPLACE FUNCTION "public"."trg_status_waiting_section"() RETURNS "trigger"
@@ -456,9 +675,9 @@ CREATE OR REPLACE FUNCTION "public"."trg_status_waiting_section"() RETURNS "trig
 begin
   -- Quando uma sequência de seções é criada, a próxima seção entra em modo 'waiting'
   UPDATE public.sections
-  SET status = 'waiting'::public.section_statuses -- Ajuste para o nome real do seu enum de status
+  SET status = 'waiting'::public.status -- Ajuste para o nome real do seu enum de status
   WHERE id = NEW.section_next
-    AND status != 'waiting'::public.section_statuses;
+    AND status != 'waiting'::public.status;
     
   return NEW;
 end;
@@ -478,9 +697,9 @@ CREATE OR REPLACE FUNCTION "public"."trg_status_waiting_task"() RETURNS "trigger
 begin
   -- Quando um vínculo de sequência é criado, a próxima task entra em modo 'waiting'
   UPDATE public.tasks
-  SET status = 'waiting'::public.task_statuses -- Ajuste para o nome real do seu enum de status, se aplicável
+  SET status = 'waiting'::public.status -- Ajuste para o nome real do seu enum de status, se aplicável
   WHERE id = NEW.task_next
-    AND status != 'waiting'::public.task_statuses; -- Evita updates desnecessários
+    AND status != 'waiting'::public.status; -- Evita updates desnecessários
     
   return NEW;
 end;
@@ -507,15 +726,15 @@ begin
       SELECT ss.section_next 
       FROM public.sections_sequence ss
       JOIN public.sections s ON s.id = ss.section_next
-      WHERE ss.section_id = NEW.id AND s.status = 'waiting'
+      WHERE ss.section_previous = NEW.id AND s.status = 'waiting'
     loop
       
       SELECT count(*)
       INTO v_pending_count
       FROM public.sections_sequence ss_check
-      JOIN public.sections s_check ON s_check.id = ss_check.section_id
+      JOIN public.sections s_check ON s_check.id = ss_check.section_previous
       WHERE ss_check.section_next = r_next.section_next
-        AND s_check.status != 'done';
+       AND s_check.status != 'done';
         
       if v_pending_count = 0 then
         UPDATE public.sections
@@ -551,13 +770,13 @@ begin
       SELECT ts.task_next 
       FROM public.tasks_sequence ts
       JOIN public.tasks t ON t.id = ts.task_next
-      WHERE ts.task_id = NEW.id AND t.status = 'waiting'
+      WHERE ts.task_previous = NEW.id AND t.status = 'waiting'
     loop
       
       SELECT count(*)
       INTO v_pending_count
       FROM public.tasks_sequence ts_check
-      JOIN public.tasks t_check ON t_check.id = ts_check.task_id
+      JOIN public.tasks t_check ON t_check.id = ts_check.task_previous
       WHERE ts_check.task_next = r_next.task_next
         AND t_check.status != 'done';
         
@@ -579,6 +798,29 @@ ALTER FUNCTION "public"."trg_status_waiting_to_todo_task"() OWNER TO "postgres";
 
 
 COMMENT ON FUNCTION "public"."trg_status_waiting_to_todo_task"() IS 'Pipeline function that checks tasks_sequence when a task goes "done", unlocking subsequent tasks from waiting to todo once all barriers are cleared.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_tasks_unlock_next"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'done') OR
+     (OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL) OR
+     (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'cancelled') then
+     
+    PERFORM public.check_and_unlock_next_tasks(NEW.id);
+  end if;
+  
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_tasks_unlock_next"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_tasks_unlock_next"() IS 'Internal trigger function mapping lifecycle transitions on tasks (done, cancelled, or deleted) to evaluate sequence clearing for downstream items.';
 
 
 
@@ -875,6 +1117,7 @@ CREATE TABLE IF NOT EXISTS "public"."moments" (
     "value" "text",
     "moment_note" "text",
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "previous_value" "text",
     CONSTRAINT "chk_single_entity" CHECK (("num_nonnulls"("project_id", "section_id", "task_id", "event_id") = 1))
 );
 
@@ -919,6 +1162,10 @@ COMMENT ON COLUMN "public"."moments"."moment_note" IS 'Optional text description
 
 
 COMMENT ON COLUMN "public"."moments"."created_at" IS 'Timestamp when this log/moment was recorded.';
+
+
+
+COMMENT ON COLUMN "public"."moments"."previous_value" IS 'The value prior to the change (the "from" state), alongside the "value" column which stores the new value (the "to" state). Null for moment_types that do not represent a field transition (e.g., created, note, definition).';
 
 
 
@@ -1608,6 +1855,30 @@ CREATE OR REPLACE TRIGGER "tg_task_delete_cascade" BEFORE UPDATE ON "public"."ta
 
 
 
+CREATE OR REPLACE TRIGGER "trg_section_sequence_unlock_next" AFTER DELETE OR UPDATE ON "public"."sections_sequence" FOR EACH ROW EXECUTE FUNCTION "public"."trg_section_sequence_unlock_next"();
+
+
+
+COMMENT ON TRIGGER "trg_section_sequence_unlock_next" ON "public"."sections_sequence" IS 'Re-evaluates section order status if layout links between workspace containers are broken via deletion or modified via path updates.';
+
+
+
+CREATE OR REPLACE TRIGGER "trg_sections_unlock_next" AFTER UPDATE ON "public"."sections" FOR EACH ROW EXECUTE FUNCTION "public"."trg_sections_unlock_next"();
+
+
+
+COMMENT ON TRIGGER "trg_sections_unlock_next" ON "public"."sections" IS 'Triggers container progression checks when a section shifts to done or cancelled, or registers a logical removal event.';
+
+
+
+CREATE OR REPLACE TRIGGER "trg_sequence_unlock_next" AFTER DELETE OR UPDATE ON "public"."tasks_sequence" FOR EACH ROW EXECUTE FUNCTION "public"."trg_sequence_unlock_next"();
+
+
+
+COMMENT ON TRIGGER "trg_sequence_unlock_next" ON "public"."tasks_sequence" IS 'Evaluates sequence progress downstream if layout mappings are severed via row deletion or re-routed via relationship updates.';
+
+
+
 CREATE OR REPLACE TRIGGER "trg_status_waiting_section" AFTER INSERT ON "public"."sections_sequence" FOR EACH ROW EXECUTE FUNCTION "public"."trg_status_waiting_section"();
 
 
@@ -1641,6 +1912,14 @@ COMMENT ON TRIGGER "trg_status_waiting_to_todo_task" ON "public"."tasks" IS 'Tri
 
 
 CREATE OR REPLACE TRIGGER "trg_stop_task_log_on_insert" BEFORE INSERT ON "public"."task_logs" FOR EACH ROW WHEN (("upper_inf"("new"."duration") = true)) EXECUTE FUNCTION "public"."trg_fn_stop_and_start_task_log"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_tasks_unlock_next" AFTER UPDATE ON "public"."tasks" FOR EACH ROW EXECUTE FUNCTION "public"."trg_tasks_unlock_next"();
+
+
+
+COMMENT ON TRIGGER "trg_tasks_unlock_next" ON "public"."tasks" IS 'Triggers progression engine checks when a task row changes status to done or cancelled, or receives a logical removal timestamp.';
 
 
 
@@ -1901,9 +2180,27 @@ GRANT ALL ON SCHEMA "public" TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."check_and_unlock_next_sections"("p_previous_section_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."check_and_unlock_next_sections"("p_previous_section_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."check_and_unlock_next_sections"("p_previous_section_id" "uuid") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" "uuid") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") TO "anon";
 GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text", "p_previous_value" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text", "p_previous_value" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text", "p_previous_value" "text") TO "service_role";
 
 
 
@@ -2009,6 +2306,24 @@ GRANT ALL ON FUNCTION "public"."trg_moment_target"() TO "service_role";
 
 
 
+GRANT ALL ON FUNCTION "public"."trg_section_sequence_unlock_next"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_section_sequence_unlock_next"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_section_sequence_unlock_next"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_sections_unlock_next"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_sections_unlock_next"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_sections_unlock_next"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_sequence_unlock_next"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_sequence_unlock_next"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_sequence_unlock_next"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."trg_status_waiting_section"() TO "anon";
 GRANT ALL ON FUNCTION "public"."trg_status_waiting_section"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."trg_status_waiting_section"() TO "service_role";
@@ -2030,6 +2345,12 @@ GRANT ALL ON FUNCTION "public"."trg_status_waiting_to_todo_section"() TO "servic
 GRANT ALL ON FUNCTION "public"."trg_status_waiting_to_todo_task"() TO "anon";
 GRANT ALL ON FUNCTION "public"."trg_status_waiting_to_todo_task"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."trg_status_waiting_to_todo_task"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_tasks_unlock_next"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_tasks_unlock_next"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_tasks_unlock_next"() TO "service_role";
 
 
 
