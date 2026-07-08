@@ -19,8 +19,8 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Select, Modal, ScheduleBadge } from '../common/ui';
-import ScheduleEditor from '../common/TargetEditor';
+import { Select, Modal, TargetBadge } from '../common/ui';
+import TargetEditor from '../common/TargetEditor';
 import { STATUS_META } from '../../lib/constants';
 import {
   useTaskMutations,
@@ -63,7 +63,7 @@ export default function SectionColumn({
     useSectionMutations();
   const [newTaskName, setNewTaskName] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [targetOpen, setTargetOpen] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
   );
@@ -108,12 +108,12 @@ export default function SectionColumn({
           className="text-ink-100 flex-1 bg-transparent text-sm font-medium focus:outline-none"
         />
         <button
-          onClick={() => setScheduleOpen(true)}
+          onClick={() => setTargetOpen(true)}
           className="text-ink-500 hover:text-ink-200 flex shrink-0 items-center"
-          title="Edit schedule"
+          title="Edit target"
         >
-          {section.schedule ? (
-            <ScheduleBadge schedule={section.schedule} />
+          {section.target ? (
+            <TargetBadge target={section.target} />
           ) : (
             <CalendarRange size={14} />
           )}
@@ -190,15 +190,15 @@ export default function SectionColumn({
       </div>
 
       <Modal
-        open={scheduleOpen}
-        onClose={() => setScheduleOpen(false)}
-        title={`Schedule — ${section.name}`}
+        open={targetOpen}
+        onClose={() => setTargetOpen(false)}
+        title={`Target — ${section.name}`}
       >
-        <ScheduleEditor
-          value={section.schedule}
+        <TargetEditor
+          value={section.target}
           due={section.due}
           onChange={(v) =>
-            updateSection.mutate({ id: section.id, patch: { schedule: v } })
+            updateSection.mutate({ id: section.id, patch: { target: v } })
           }
         />
       </Modal>

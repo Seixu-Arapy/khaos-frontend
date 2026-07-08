@@ -24,16 +24,16 @@ import {
 import { STATUSES, PRIORITIES } from '../lib/constants';
 import { parseRange } from '../lib/range';
 import { Select, TextInput, EmptyState } from '../components/common/ui';
-import ScheduleEditor from '../components/common/TargetEditor';
 import SectionColumn, {
   SortableSectionWrapper,
 } from '../components/projects/SectionColumn';
 import TaskDetailModal from '../components/tasks/TaskDetailModal';
+import TargetEditor from '../components/common/TargetEditor';
 
-// Ordem cronológica dentro de uma seção: schedule.start primeiro, senão due,
+// Ordem cronológica dentro de uma seção: target.start primeiro, senão due,
 // senão vai para o final (precisa "se encaixar" — mesmo critério do Gantt).
 function taskChronoKey(task) {
-  const { start } = parseRange(task.schedule);
+  const { start } = parseRange(task.target);
   if (start) return start.getTime();
   if (task.due) return new Date(task.due).getTime();
   return Infinity;
@@ -221,16 +221,16 @@ export default function ProjectDetailPage() {
 
         <div className="mt-2 max-w-sm">
           <label className="text-ink-500 mb-1 block text-xs font-medium">
-            Schedule{' '}
+            Target{' '}
             <span className="text-ink-600 font-normal normal-case">
               (planned window — optional, must land before due)
             </span>
           </label>
-          <ScheduleEditor
-            value={project.schedule}
+          <TargetEditor
+            value={project.target}
             due={project.due}
             onChange={(v) =>
-              updateProject.mutate({ id: projectId, patch: { schedule: v } })
+              updateProject.mutate({ id: projectId, patch: { target: v } })
             }
           />
         </div>

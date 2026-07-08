@@ -16,7 +16,7 @@ import {
   StatusBadge,
   Tag,
 } from '../common/ui';
-import ScheduleEditor from '../common/TargetEditor';
+import TargetEditor from '../common/TargetEditor';
 import { STATUSES, PRIORITIES } from '../../lib/constants';
 import {
   toDatetimeLocalValue,
@@ -304,15 +304,15 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
 
         <div>
           <label className="text-ink-500 mb-1 block text-xs font-medium">
-            Schedule{' '}
+            Target{' '}
             <span className="text-ink-600 font-normal normal-case">
               (planned window — optional, must land before due)
             </span>
           </label>
-          <ScheduleEditor
-            value={task.schedule}
+          <TargetEditor
+            value={task.target}
             due={task.due}
-            onChange={(v) => patch({ schedule: v })}
+            onChange={(v) => patch({ target: v })}
           />
         </div>
 

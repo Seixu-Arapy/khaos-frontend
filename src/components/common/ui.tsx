@@ -337,16 +337,16 @@ export function DueBadge({ due, status }: DueBadgeProps) {
   );
 }
 
-interface ScheduleBadgeProps {
-  schedule?: string | null;
+interface TargetBadgeProps {
+  target?: string | null;
 }
 
-// Compact display of the `schedule` planning window — start (bold day +
+// Compact display of the `target` planning window — start (bold day +
 // month, same convention as DueBadge) through end, or an arrow with no
-// second date when the schedule is open-ended.
-export function ScheduleBadge({ schedule }: ScheduleBadgeProps) {
-  if (!schedule) return null;
-  const { start, end } = parseRange(schedule);
+// second date when the target is open-ended.
+export function TargetBadge({ target }: TargetBadgeProps) {
+  if (!target) return null;
+  const { start, end } = parseRange(target);
   if (!start) return null;
   const startParts = formatDueCompact(start);
   const endParts = end ? formatDueCompact(end) : null;

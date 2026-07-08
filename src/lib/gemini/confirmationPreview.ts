@@ -35,7 +35,7 @@ const FIELD_LABELS: Record<string, string> = {
   due: 'due date',
   estimate: 'estimate',
   name: 'name',
-  schedule: 'schedule',
+  target: 'target',
 };
 
 function getIdFilter(filters?: RowFilter[]): string | null {
