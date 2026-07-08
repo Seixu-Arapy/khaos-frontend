@@ -7,6 +7,17 @@ import { parseMessageSegments } from '../../lib/gemini/entityRefs';
 import { EntityChip } from './EntityChip';
 import ConfirmationCard from './ConfirmationCard';
 import KhaosIcon from '../common/KhaosIcon';
+import MomentPrompt from './MomentPrompt';
+import { momentsApi } from '../../lib/api/moments';
+
+interface ChatPromptItem {
+  id: string;
+  entityRef: any;
+  entityName?: string;
+  changes: any[];
+  status: 'pending' | 'saving' | 'saved' | 'error';
+  savedNote?: string;
+}
 
 function MessageContent({ text }: { text: string }) {
   const segments = parseMessageSegments(text);
@@ -74,23 +85,87 @@ export default function ChatPanel({
     resolvePending,
     clearHistory,
   } = useChatAgent();
-  const { activeEntity, clearActiveEntity } = useActiveEntity();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { activeEntity, clearActiveEntity } = useActiveEntity();
+
+  const [momentPrompts, setMomentPrompts] = useState<ChatPromptItem[]>([]);
+
+  useEffect(() => {
+    function handleExternalMoment(e: Event) {
+      const prompt = (e as CustomEvent).detail;
+      setMomentPrompts((prev) => [...prev, { ...prompt, status: 'pending' }]);
+    }
+    window.addEventListener('external-moment-detected', handleExternalMoment);
+    return () =>
+      window.removeEventListener(
+        'external-moment-detected',
+        handleExternalMoment
+      );
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
       behavior: 'smooth',
     });
-  }, [messages, pending]);
+  }, [messages, pending, momentPrompts]);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim() || isSending) return;
+
+    // Find the first prompt that is still waiting for input ('pending' or 'error')
+    const activePromptIndex = momentPrompts.findIndex(
+      (p) => p.status === 'pending' || p.status === 'error'
+    );
+
+    if (activePromptIndex !== -1) {
+      const activePrompt = momentPrompts[activePromptIndex];
+      const noteText = input.trim();
+
+      // Update status to saving
+      setMomentPrompts((prev) =>
+        prev.map((p, idx) =>
+          idx === activePromptIndex ? { ...p, status: 'saving' } : p
+        )
+      );
+      setInput(''); // Quick UI clear
+
+      try {
+        await momentsApi.attachNoteToLatestChange(
+          activePrompt.entityRef,
+          noteText
+        );
+
+        // Finalize state to permanently saved with its note text inside the chat log
+        setMomentPrompts((prev) =>
+          prev.map((p, idx) =>
+            idx === activePromptIndex
+              ? { ...p, status: 'saved', savedNote: noteText }
+              : p
+          )
+        );
+      } catch {
+        // Linter issue resolved: 'err' catch variable removed completely
+        setMomentPrompts((prev) =>
+          prev.map((p, idx) =>
+            idx === activePromptIndex ? { ...p, status: 'error' } : p
+          )
+        );
+        setInput(noteText); // Restore text to chat bar on failure
+      }
+      return;
+    }
+
     sendMessage(input);
     setInput('');
   }
+
+  const hasPendingPrompt = momentPrompts.some(
+    (p) => p.status === 'pending' || p.status === 'error'
+  );
+  const isCurrentlySaving = momentPrompts.some((p) => p.status === 'saving');
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -147,7 +222,7 @@ export default function ChatPanel({
         ref={scrollRef}
         className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4"
       >
-        {!messages.length && (
+        {!messages.length && !momentPrompts.length && (
           <div className="text-ink-600 flex h-full flex-col items-center justify-center gap-2 text-center">
             <KhaosIcon size="h-10 w-10" bgColor="bg-transparent" spin={true} />
             <p className="text-sm">
@@ -159,6 +234,17 @@ export default function ChatPanel({
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
         ))}
+
+        {momentPrompts.map((prompt) => (
+          <MomentPrompt
+            key={prompt.id}
+            entityName={prompt.entityName}
+            changes={prompt.changes}
+            status={prompt.status}
+            savedNote={prompt.savedNote}
+          />
+        ))}
+
         {pending && (
           <ConfirmationCard
             preview={pending.preview}
@@ -180,15 +266,18 @@ export default function ChatPanel({
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask Khaos…"
-          disabled={isSending}
+          placeholder={
+            hasPendingPrompt
+              ? 'Type the reason for this change...'
+              : 'Ask Khaos…'
+          }
+          disabled={isSending || isCurrentlySaving}
           className="border-ink-700 bg-ink-800 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 flex-1 rounded-full border px-4 py-2.5 text-sm focus:outline-hidden disabled:opacity-60"
         />
         <button
           type="submit"
-          disabled={isSending || !input.trim()}
+          disabled={isSending || !input.trim() || isCurrentlySaving}
           className="bg-copper-500 text-ink-900 hover:bg-copper-400 flex h-10 w-10 shrink-0 items-center justify-center rounded-full disabled:opacity-40"
-          aria-label="Send"
         >
           <Send size={16} />
         </button>

@@ -22,7 +22,6 @@ import {
 import ActiveTimerWidget from '../timeTracking/ActiveTimerWidget';
 import QuickAddBar from '../tasks/QuickAddBar';
 import CommandPalette from './CommandPalette';
-import MomentPrompt from '../common/MomentPrompt';
 import TimezonePicker from '../common/TimezonePicker';
 import ChatPanel from '../assistant/ChatPanel';
 import KhaosIcon from '../common/KhaosIcon'; // Certifique-se de que o caminho relativo está correto
@@ -174,7 +173,7 @@ function Sidebar({ onNavigate, onClose, spinning }) {
 export default function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatSheetOpen, setChatSheetOpen] = useState(false);
-  const { current: momentPrompt, dismiss: dismissMoment } = useMomentDetector();
+  useMomentDetector();
   const { isAssistantProcessing } = useProcessingContext();
   const isFetching = useIsFetching();
   const isMutating = useIsMutating();
@@ -308,14 +307,6 @@ export default function AppShell() {
             <ChatPanel onRequestClose={() => setChatSheetOpen(false)} />
           </div>
         </div>
-      )}
-
-      {momentPrompt && (
-        <MomentPrompt
-          key={momentPrompt.id}
-          prompt={momentPrompt}
-          onDismiss={dismissMoment}
-        />
       )}
     </div>
   );

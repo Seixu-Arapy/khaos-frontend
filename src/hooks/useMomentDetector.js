@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
+import { useProcessingContext } from '../lib/processingContext'; // IMPORTADO DO SEU CONTEXTO
 
-// Columns whose changes we surface to the user for optional annotation.
-// The trigger already auto-inserts the raw moment; this is about letting the
-// user add context ("why did this change?") or record a target / definition.
 const WATCHED_FIELDS = {
   tasks: ['status', 'due', 'estimate', 'priority'],
   projects: ['status', 'due', 'priority'],
@@ -18,8 +16,6 @@ const FIELD_LABEL = {
   priority: 'priority',
 };
 
-// moments/work_tag_entities link back to an entity via a direct FK column
-// rather than a polymorphic (entity_type, entity_id) pair.
 const ENTITY_FK_COLUMN = {
   tasks: 'task_id',
   projects: 'project_id',
@@ -47,24 +43,13 @@ function buildPrompt(table, oldRow, newRow) {
 }
 
 export function useMomentDetector() {
-  const [queue, setQueue] = useState([]); // pending prompts
-  const [current, setCurrent] = useState(null);
   const qc = useQueryClient();
-  const prevRows = useRef({}); // table:id → last known row
+  const { isAssistantProcessing } = useProcessingContext();
 
-  // When a new prompt lands, surface it if nothing is showing
+  const isLlmChangingRef = useRef(false);
   useEffect(() => {
-    if (!current && queue.length) {
-      setCurrent(queue[0]);
-      setQueue((q) => q.slice(1));
-    }
-  }, [queue, current]);
-
-  const dismiss = useCallback(() => setCurrent(null), []);
-
-  const enqueue = useCallback((prompt) => {
-    setQueue((q) => [...q, prompt]);
-  }, []);
+    isLlmChangingRef.current = isAssistantProcessing;
+  }, [isAssistantProcessing]);
 
   useEffect(() => {
     const channels = Object.keys(WATCHED_FIELDS).map((table) => {
@@ -75,18 +60,21 @@ export function useMomentDetector() {
           { event: 'UPDATE', schema: 'public', table },
           (payload) => {
             const { old: oldRow, new: newRow } = payload;
-            const prompt = buildPrompt(table, oldRow, newRow);
-            if (prompt) enqueue(prompt); // Safe to call here
 
-            qc.invalidateQueries({
-              queryKey: [table === 'tasks' ? 'tasks' : table],
-            });
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table },
-          () => {
+            if (isLlmChangingRef.current) {
+              qc.invalidateQueries({
+                queryKey: [table === 'tasks' ? 'tasks' : table],
+              });
+              return;
+            }
+
+            const prompt = buildPrompt(table, oldRow, newRow);
+            if (prompt) {
+              window.dispatchEvent(
+                new CustomEvent('external-moment-detected', { detail: prompt })
+              );
+            }
+
             qc.invalidateQueries({
               queryKey: [table === 'tasks' ? 'tasks' : table],
             });
@@ -98,7 +86,7 @@ export function useMomentDetector() {
     return () => {
       channels.forEach((ch) => supabase.removeChannel(ch));
     };
-  }, [enqueue, qc]);
+  }, [qc]);
 
-  return { current, dismiss, pendingCount: queue.length };
+  return { current: null, dismiss: () => {}, pendingCount: 0 };
 }
