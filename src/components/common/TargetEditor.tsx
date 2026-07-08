@@ -7,18 +7,18 @@ import {
   fromDatetimeLocalValue,
 } from '../../lib/dateUtils';
 
-interface ScheduleEditorProps {
+interface TargetEditorProps {
   value?: string | null;
   due?: string | null;
   onChange: (next: string | null) => void;
   disabled?: boolean;
 }
 
-// Mirrors the DB's chk_schedule_valid constraint client-side, so an invalid
+// Mirrors the DB's chk_target_valid constraint client-side, so an invalid
 // combination shows an inline error instead of round-tripping to Postgres
 // and back as a generic error.
 function validate(start: Date | null, end: Date | null, due?: string | null) {
-  if (!start) return 'Schedule needs a start date.';
+  if (!start) return 'Target window needs a start date.';
   if (due) {
     const dueDate = new Date(due);
     if (start >= dueDate) return 'Start must be before the due date.';
@@ -28,8 +28,8 @@ function validate(start: Date | null, end: Date | null, due?: string | null) {
 }
 
 /**
- * Inline editor for the `schedule` tstzrange column shared by tasks,
- * sections, and projects. Unlike `due` (a hard deadline), schedule is an
+ * Inline editor for the `target` tstzrange column shared by tasks,
+ * sections, and projects. Unlike `due` (a hard deadline), target is an
  * optional planning window — it may be absent, open-ended (start only), or
  * bounded (start + end) — but it must always resolve before `due`.
  *
@@ -38,12 +38,12 @@ function validate(start: Date | null, end: Date | null, due?: string | null) {
  * the resulting range is valid — an invalid combination shows an inline
  * error instead of persisting bad data.
  */
-export default function ScheduleEditor({
+export default function TargetEditor({
   value,
   due,
   onChange,
   disabled,
-}: ScheduleEditorProps) {
+}: TargetEditorProps) {
   const { start, end } = parseRange(value ?? null);
   const [error, setError] = useState<string | null>(null);
   // Lets the user reveal the "end" input before an end date is actually
@@ -126,8 +126,8 @@ export default function ScheduleEditor({
             type="button"
             onClick={handleClear}
             className="text-ink-500 hover:text-rust-500 shrink-0"
-            aria-label="Clear schedule"
-            title="Clear schedule"
+            aria-label="Clear target window"
+            title="Clear target window"
           >
             <X size={13} />
           </button>

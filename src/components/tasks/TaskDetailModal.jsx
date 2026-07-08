@@ -16,7 +16,7 @@ import {
   StatusBadge,
   Tag,
 } from '../common/ui';
-import ScheduleEditor from '../common/ScheduleEditor';
+import ScheduleEditor from '../common/TargetEditor';
 import { STATUSES, PRIORITIES } from '../../lib/constants';
 import {
   toDatetimeLocalValue,

@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Select, Modal, ScheduleBadge } from '../common/ui';
-import ScheduleEditor from '../common/ScheduleEditor';
+import ScheduleEditor from '../common/TargetEditor';
 import { STATUS_META } from '../../lib/constants';
 import {
   useTaskMutations,

@@ -24,7 +24,7 @@ import {
 import { STATUSES, PRIORITIES } from '../lib/constants';
 import { parseRange } from '../lib/range';
 import { Select, TextInput, EmptyState } from '../components/common/ui';
-import ScheduleEditor from '../components/common/ScheduleEditor';
+import ScheduleEditor from '../components/common/TargetEditor';
 import SectionColumn, {
   SortableSectionWrapper,
 } from '../components/projects/SectionColumn';
