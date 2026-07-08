@@ -33,7 +33,10 @@ CREATE TYPE "public"."event_types" AS ENUM (
 ALTER TYPE "public"."event_types" OWNER TO "postgres";
 
 
-COMMENT ON TYPE "public"."event_types" IS 'Event types';
+COMMENT ON TYPE "public"."event_types" IS 'Enum distinguishing calendar allocation and execution layout patterns. Supported values:
+- "scheduled": Flexible events that were explicitly assigned to a specific time slot on the calendar assigned to a task.
+- "fixed": Rigid, unmovable time blocks (e.g., external appointments, flights, or hard commitments).
+- "routine": Automated or recurring calendar patterns generated periodically from a routine template.';
 
 
 
@@ -55,7 +58,18 @@ CREATE TYPE "public"."moment_types" AS ENUM (
 ALTER TYPE "public"."moment_types" OWNER TO "postgres";
 
 
-COMMENT ON TYPE "public"."moment_types" IS 'Moment types';
+COMMENT ON TYPE "public"."moment_types" IS 'Enum defining valid types of life cycle events, state snapshots, and metric logs for the moments table. Supported values:
+- "created": When an execution entity (project, section, task, event) is first instantiated in the system.
+- "due": Hard deadline modifications, shifts, or updates (critical for tracking procrastination or delays).
+- "estimate": Revisions, additions, or changes to the estimated execution time required for a task.
+- "status": Workflow state transitions (e.g., changing from "pending" to "completed").
+- "started": Dispatched automatically when a task log tracking session begins (starts counting time).
+- "stopped": Dispatched automatically when an active task log is paused or finished (closes a time slot).
+- "scheduled": Calendar allocation events or time block adjustments on the agenda.
+- "target": Modifications to target dates.
+- "note": Pure qualitative user text reflection or interaction notes (core source for behavioral analysis).
+- "priority": Operational urgency or critical-level adjustments (e.g., scaling from medium to urgent).
+- "definition": Structural edits, scope reformulations, or core textual redefinitions of an entity.';
 
 
 
@@ -70,7 +84,11 @@ CREATE TYPE "public"."priority" AS ENUM (
 ALTER TYPE "public"."priority" OWNER TO "postgres";
 
 
-COMMENT ON TYPE "public"."priority" IS 'Priority';
+COMMENT ON TYPE "public"."priority" IS 'Enum mapping strict operational urgency and execution importance for tasks and projects. Supported values:
+- "urgent": Immediate action required; critical blockers or hard deadlines that disrupt the entire workflow if ignored.
+- "high": High-priority initiatives that yield significant impact and should be tackled as soon as urgent slots are cleared.
+- "medium": Standard operational tasks representing routine work, sustainable progress, or baseline commitments.
+- "low": Minor or flexible improvements, nice-to-have adjustments, or backlog items with no strict timeline constraints.';
 
 
 
@@ -82,14 +100,22 @@ CREATE TYPE "public"."status" AS ENUM (
     'done',
     'paused',
     'cancelled',
-    'archived'
+    'waiting'
 );
 
 
 ALTER TYPE "public"."status" OWNER TO "postgres";
 
 
-COMMENT ON TYPE "public"."status" IS 'Status';
+COMMENT ON TYPE "public"."status" IS 'Global lifecycle state machine. Values:
+- planning: Initiative or item is being structured/drafted (concept phase).
+- todo: Ready to be tackled but active work has not started yet.
+- in_progress: Active work is currently happening.
+- in_review: Waiting for external validation, feedback, or approval.
+- done: Completed successfully.
+- paused: Temporarily halted or put on hold.
+- cancelled: Aborted, no longer needed or pursued.
+- waiting: Blocked because another entity or dependent step needs to be completed first.';
 
 
 
@@ -424,6 +450,21 @@ $$;
 ALTER FUNCTION "public"."trg_moment_stopped"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."trg_moment_target"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+begin
+  if OLD.target is distinct from NEW.target then
+    perform insert_moment(moment_entity_column(TG_TABLE_NAME), NEW.id, 'target', NEW.target::text);
+  end if;
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_moment_target"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."trigger_update_sections_status"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -529,6 +570,22 @@ CREATE OR REPLACE VIEW "public"."active_task_log" WITH ("security_invoker"='on')
 ALTER VIEW "public"."active_task_log" OWNER TO "postgres";
 
 
+COMMENT ON VIEW "public"."active_task_log" IS 'A view capturing all currently active and ongoing task tracking execution segments (where upper bound of duration is infinity), which is expected to be only one.';
+
+
+
+COMMENT ON COLUMN "public"."active_task_log"."id" IS 'Primary key (UUID) inherited from the parent task log record.';
+
+
+
+COMMENT ON COLUMN "public"."active_task_log"."task_id" IS 'Foreign key referencing the specific task currently being executed and timed.';
+
+
+
+COMMENT ON COLUMN "public"."active_task_log"."duration" IS 'The timestamp range (tstzrange) representing when this tracking session started. The upper bound is infinity, indicating active execution.';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."events" (
     "name" "text" NOT NULL,
     "event_type" "public"."event_types" NOT NULL,
@@ -547,19 +604,47 @@ CREATE TABLE IF NOT EXISTS "public"."events" (
 ALTER TABLE "public"."events" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."events" IS 'Events for the calendar, including plans';
+COMMENT ON TABLE "public"."events" IS 'Stores calendar events, time blocks scheduled for tasks or routines.';
 
 
 
-COMMENT ON COLUMN "public"."events"."name" IS 'Title of the event';
+COMMENT ON COLUMN "public"."events"."name" IS 'Title or description of the event.';
 
 
 
-COMMENT ON COLUMN "public"."events"."event_type" IS 'Event type';
+COMMENT ON COLUMN "public"."events"."event_type" IS 'The category of the event. Must be one of the enum values: scheduled, fixed, routine.';
 
 
 
-COMMENT ON COLUMN "public"."events"."recurrent" IS 'If event is recurrent';
+COMMENT ON COLUMN "public"."events"."recurrent" IS 'Boolean flag. True if the event is part of a recurring pattern or routine.';
+
+
+
+COMMENT ON COLUMN "public"."events"."duration" IS 'The exact date and time range block for the event (tstzrange). Format example: "[2026-07-08 09:00:00-03, 2026-07-08 10:00:00-03]".';
+
+
+
+COMMENT ON COLUMN "public"."events"."id" IS 'Primary key (UUID) of the event.';
+
+
+
+COMMENT ON COLUMN "public"."events"."task_id" IS 'Optional foreign key linking this event to a specific task.';
+
+
+
+COMMENT ON COLUMN "public"."events"."project_id" IS 'Optional foreign key linking this event to a specific project.';
+
+
+
+COMMENT ON COLUMN "public"."events"."field_id" IS 'Foreign key referencing the operational workspace/field this event belongs to.';
+
+
+
+COMMENT ON COLUMN "public"."events"."routine_id" IS 'Optional foreign key linking this event to the recurring routine template that generated it.';
+
+
+
+COMMENT ON COLUMN "public"."events"."deleted_at" IS 'Soft delete timestamptz. If not null, the event is archived/deleted.';
 
 
 
@@ -575,19 +660,23 @@ CREATE TABLE IF NOT EXISTS "public"."fields" (
 ALTER TABLE "public"."fields" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."fields" IS 'Project fields';
+COMMENT ON TABLE "public"."fields" IS 'Represents a domain or an area of interest that primarily groups and isolates projects.';
 
 
 
-COMMENT ON COLUMN "public"."fields"."name" IS 'Name of the field';
+COMMENT ON COLUMN "public"."fields"."name" IS 'The human-readable name of the field. Used by the AI to identify contexts like "Art", "Coding", or "Personal".';
 
 
 
-COMMENT ON COLUMN "public"."fields"."doc_reference" IS 'Documentation URL';
+COMMENT ON COLUMN "public"."fields"."doc_reference" IS 'Optional URL pointing to external documentation, knowledge base, or reference materials related to this field.';
 
 
 
-COMMENT ON COLUMN "public"."fields"."order" IS 'Display order';
+COMMENT ON COLUMN "public"."fields"."order" IS 'Display sort order priority (smallint) for rendering fields in the user interface.';
+
+
+
+COMMENT ON COLUMN "public"."fields"."id" IS 'Primary key (UUID) unique identifier for the field.';
 
 
 
@@ -605,6 +694,34 @@ CREATE TABLE IF NOT EXISTS "public"."moment_tag_entities" (
 ALTER TABLE "public"."moment_tag_entities" OWNER TO "postgres";
 
 
+COMMENT ON TABLE "public"."moment_tag_entities" IS 'Many-to-many junction table that links a behavioral moment_tag to a specific project, section, task, or event. This allows the AI to stamp an active behavioral pattern directly onto an execution entity. Note: Exactly ONE entity foreign key must be populated per row.';
+
+
+
+COMMENT ON COLUMN "public"."moment_tag_entities"."moment_tag_id" IS 'Foreign key referencing the parent behavioral/pattern tag.';
+
+
+
+COMMENT ON COLUMN "public"."moment_tag_entities"."project_id" IS 'Optional foreign key linking this behavioral tag to a specific project. Must be null if section_id, task_id, or event_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."moment_tag_entities"."section_id" IS 'Optional foreign key linking this behavioral tag to a specific section phase. Must be null if project_id, task_id, or event_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."moment_tag_entities"."task_id" IS 'Optional foreign key linking this behavioral tag to a specific actionable task. Must be null if project_id, section_id, or event_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."moment_tag_entities"."event_id" IS 'Optional foreign key linking this behavioral tag to a specific calendar event. Must be null if project_id, section_id, or task_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."moment_tag_entities"."id" IS 'Primary key (UUID) for this tag relationship entry.';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."moment_tags" (
     "name" "text" NOT NULL,
     "synonyms" "text"[] DEFAULT '{}'::"text"[] NOT NULL,
@@ -615,15 +732,19 @@ CREATE TABLE IF NOT EXISTS "public"."moment_tags" (
 ALTER TABLE "public"."moment_tags" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."moment_tags" IS 'Moment tags';
+COMMENT ON TABLE "public"."moment_tags" IS 'AI-generated behavioral taxonomy derived from user interactions and moment_notes. Used by the AI to detect psychological, emotional, environmental, or systemic patterns and bottlenecks over time (e.g., identifying that the user tends to get sick during "review" phases, or predicting high delay risks when a deadline changes more than three times).';
 
 
 
-COMMENT ON COLUMN "public"."moment_tags"."name" IS 'Tag';
+COMMENT ON COLUMN "public"."moment_tags"."name" IS 'The unique behavioral pattern, friction point, or context state captured or recognized by the AI (e.g., "Sickness", "Procrastination Risk", "Scope Creep", "Review Burnout").';
 
 
 
-COMMENT ON COLUMN "public"."moment_tags"."synonyms" IS 'Array of synonyms';
+COMMENT ON COLUMN "public"."moment_tags"."synonyms" IS 'Array of text mapping equivalent terms, feelings, or expressions (aliases) to help the AI perform flexible semantic analysis and detect the correct tone from the user text.';
+
+
+
+COMMENT ON COLUMN "public"."moment_tags"."id" IS 'Primary key (UUID) for this behavioral/pattern tag.';
 
 
 
@@ -644,6 +765,46 @@ CREATE TABLE IF NOT EXISTS "public"."moments" (
 ALTER TABLE "public"."moments" OWNER TO "postgres";
 
 
+COMMENT ON TABLE "public"."moments" IS 'Historical timeline log tracking state changes, status updates, estimate modifications, notes, and lifecycle events. Note: Exactly ONE entity foreign key (project_id, section_id, task_id, or event_id) must be populated per record; all others must be NULL.';
+
+
+
+COMMENT ON COLUMN "public"."moments"."id" IS 'Primary key (UUID) of the moment log.';
+
+
+
+COMMENT ON COLUMN "public"."moments"."project_id" IS 'Linked project ID (UUID) if this log belongs to a project lifecycle. Must be NULL if section_id, task_id, or event_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."moments"."section_id" IS 'Linked section ID (UUID) if this log belongs to a section. Must be NULL if project_id, task_id, or event_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."moments"."task_id" IS 'Linked task ID (UUID) if this log belongs to a task lifecycle. Must be NULL if project_id, section_id, or event_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."moments"."event_id" IS 'Linked event ID (UUID) if this log tracks an event modification. Must be NULL if project_id, section_id, or task_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."moments"."moment_type" IS 'The aspect being tracked (Enum: created, due, estimate, status, started, stopped, scheduled, target, note, priority, definition).';
+
+
+
+COMMENT ON COLUMN "public"."moments"."value" IS 'The new state value saved at this moment (e.g., the string value of a new status or priority).';
+
+
+
+COMMENT ON COLUMN "public"."moments"."moment_note" IS 'Optional text description or contextual note explaining the change.';
+
+
+
+COMMENT ON COLUMN "public"."moments"."created_at" IS 'Timestamp when this log/moment was recorded.';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."projects" (
     "name" "text" NOT NULL,
     "status" "public"."status" DEFAULT 'planning'::"public"."status" NOT NULL,
@@ -653,8 +814,8 @@ CREATE TABLE IF NOT EXISTS "public"."projects" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "field_id" "uuid",
     "deleted_at" timestamp with time zone,
-    "schedule" "tstzrange",
-    CONSTRAINT "projects_schedule_valid" CHECK ((("schedule" IS NULL) OR ((NOT "isempty"("schedule")) AND (NOT "lower_inf"("schedule")) AND (("due" IS NULL) OR (("lower"("schedule") < "due") AND ("upper_inf"("schedule") OR ("upper"("schedule") <= "due")))))))
+    "target" "tstzrange",
+    CONSTRAINT "projects_schedule_valid" CHECK ((("target" IS NULL) OR ((NOT "isempty"("target")) AND (NOT "lower_inf"("target")) AND (("due" IS NULL) OR (("lower"("target") < "due") AND ("upper_inf"("target") OR ("upper"("target") <= "due")))))))
 );
 
 ALTER TABLE ONLY "public"."projects" REPLICA IDENTITY FULL;
@@ -663,27 +824,43 @@ ALTER TABLE ONLY "public"."projects" REPLICA IDENTITY FULL;
 ALTER TABLE "public"."projects" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."projects" IS 'Projects';
+COMMENT ON TABLE "public"."projects" IS 'Represents a cohesive initiative, story, or project with a clear beginning, middle, and end. It forms a meaningful narrative broken down into distinct sequential chapters (sections) and executable steps (tasks).';
 
 
 
-COMMENT ON COLUMN "public"."projects"."name" IS 'Name';
+COMMENT ON COLUMN "public"."projects"."name" IS 'The official title of the project or initiative, capturing the essence of the narrative.';
 
 
 
-COMMENT ON COLUMN "public"."projects"."status" IS 'Status';
+COMMENT ON COLUMN "public"."projects"."status" IS 'Current milestone or lifecycle state of the project narrative, bound to public.status enum rules.';
 
 
 
-COMMENT ON COLUMN "public"."projects"."due" IS 'Due date';
+COMMENT ON COLUMN "public"."projects"."due" IS 'The absolute final date for the entire project story (timestamptz). This date is not arbitrary and decided by a client or a contract.';
 
 
 
-COMMENT ON COLUMN "public"."projects"."priority" IS 'Priority';
+COMMENT ON COLUMN "public"."projects"."priority" IS 'Criticality, momentum, or urgency level of this initiative. Restricted to enum values: urgent, high, medium, low.';
 
 
 
-COMMENT ON COLUMN "public"."projects"."doc_reference" IS 'Documentation URL';
+COMMENT ON COLUMN "public"."projects"."doc_reference" IS 'Optional URL pointing to external specification, project brief, moodboard, or core documentation.';
+
+
+
+COMMENT ON COLUMN "public"."projects"."id" IS 'Primary key (UUID) unique identifier for the project.';
+
+
+
+COMMENT ON COLUMN "public"."projects"."field_id" IS 'Foreign key referencing the parent field (domain/area of interest) this project belongs to.';
+
+
+
+COMMENT ON COLUMN "public"."projects"."deleted_at" IS 'Soft delete timestamptz. If populated, the project is considered archived or moved to the trash.';
+
+
+
+COMMENT ON COLUMN "public"."projects"."target" IS 'The planned timeline horizon or date range allocated to develop this initiative (tstzrange). This range is arbitrary and must guide the scheduling of calendar events.';
 
 
 
@@ -703,6 +880,46 @@ CREATE TABLE IF NOT EXISTS "public"."routines" (
 ALTER TABLE "public"."routines" OWNER TO "postgres";
 
 
+COMMENT ON TABLE "public"."routines" IS 'Templates for recurring tasks, habits, or automated calendar patterns that periodically generate events.';
+
+
+
+COMMENT ON COLUMN "public"."routines"."name" IS 'Name of the routine or habit (e.g., "Gym", "Weekly review", "Laundry").';
+
+
+
+COMMENT ON COLUMN "public"."routines"."frequency" IS 'The recurrence pattern rule described in text or cron format (e.g., "daily", "every monday", "0 9 * * 1-5").';
+
+
+
+COMMENT ON COLUMN "public"."routines"."preferred_time" IS 'The preferred time of day or calendar window to execute this routine (e.g., "09:00", "morning").';
+
+
+
+COMMENT ON COLUMN "public"."routines"."estimate" IS 'Estimated duration in minutes for each generated occurrence of this routine.';
+
+
+
+COMMENT ON COLUMN "public"."routines"."constraints" IS 'Textual description of scheduling restrictions or specific conditions (e.g., "Only on weekdays", "After breakfast").';
+
+
+
+COMMENT ON COLUMN "public"."routines"."active" IS 'Boolean flag. If false, this routine is paused and stops generating new calendar events.';
+
+
+
+COMMENT ON COLUMN "public"."routines"."id" IS 'Primary key (UUID) for this routine template.';
+
+
+
+COMMENT ON COLUMN "public"."routines"."task_id" IS 'Optional foreign key linking this routine to a specific task template that requires recurring execution.';
+
+
+
+COMMENT ON COLUMN "public"."routines"."field_id" IS 'Optional foreign key linking this routine to a specific workspace domain.';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."sections" (
     "name" "text" NOT NULL,
     "status" "public"."status" DEFAULT 'planning'::"public"."status" NOT NULL,
@@ -712,8 +929,8 @@ CREATE TABLE IF NOT EXISTS "public"."sections" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "project_id" "uuid",
     "deleted_at" timestamp with time zone,
-    "schedule" "tstzrange",
-    CONSTRAINT "sections_schedule_valid" CHECK ((("schedule" IS NULL) OR ((NOT "isempty"("schedule")) AND (NOT "lower_inf"("schedule")) AND (("due" IS NULL) OR (("lower"("schedule") < "due") AND ("upper_inf"("schedule") OR ("upper"("schedule") <= "due")))))))
+    "target" "tstzrange",
+    CONSTRAINT "sections_schedule_valid" CHECK ((("target" IS NULL) OR ((NOT "isempty"("target")) AND (NOT "lower_inf"("target")) AND (("due" IS NULL) OR (("lower"("target") < "due") AND ("upper_inf"("target") OR ("upper"("target") <= "due")))))))
 );
 
 ALTER TABLE ONLY "public"."sections" REPLICA IDENTITY FULL;
@@ -722,27 +939,43 @@ ALTER TABLE ONLY "public"."sections" REPLICA IDENTITY FULL;
 ALTER TABLE "public"."sections" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."sections" IS 'Project sections';
+COMMENT ON TABLE "public"."sections" IS 'Represents a distinct chapter, phase, sub-product, or side quest within a project narrative. It groups a set of executable steps (tasks) that naturally make sense together.';
 
 
 
-COMMENT ON COLUMN "public"."sections"."name" IS 'Name';
+COMMENT ON COLUMN "public"."sections"."name" IS 'The title of the section (e.g., "Discovery Phase", "MVP Release", "Side Quest: Bug Fixing").';
 
 
 
-COMMENT ON COLUMN "public"."sections"."status" IS 'Status';
+COMMENT ON COLUMN "public"."sections"."status" IS 'The current state of completion for this section, bound to public.status enum rules.';
 
 
 
-COMMENT ON COLUMN "public"."sections"."due" IS 'Due date';
+COMMENT ON COLUMN "public"."sections"."due" IS 'The absolute final deadline for this section (timestamptz). This date is non-arbitrary and usually bound to client milestones or contracts.';
 
 
 
-COMMENT ON COLUMN "public"."sections"."priority" IS 'Priority';
+COMMENT ON COLUMN "public"."sections"."priority" IS 'The relative urgency or significance of this section within the project. Restricted to enum values: urgent, high, medium, low.';
 
 
 
-COMMENT ON COLUMN "public"."sections"."doc_reference" IS 'Documentation URL';
+COMMENT ON COLUMN "public"."sections"."doc_reference" IS 'Optional URL pointing to external specification, requirements, moodboard, or documentation specific to this section.';
+
+
+
+COMMENT ON COLUMN "public"."sections"."id" IS 'Primary key (UUID) unique identifier for this section.';
+
+
+
+COMMENT ON COLUMN "public"."sections"."project_id" IS 'Foreign key linking this section directly to its parent project narrative.';
+
+
+
+COMMENT ON COLUMN "public"."sections"."deleted_at" IS 'Soft delete timestamptz. If populated, this section is archived/deleted.';
+
+
+
+COMMENT ON COLUMN "public"."sections"."target" IS 'The planned timeline horizon or date range allocated to develop this section (tstzrange). This range is arbitrary and must guide the scheduling of calendar events.';
 
 
 
@@ -755,7 +988,15 @@ CREATE TABLE IF NOT EXISTS "public"."sections_sequence" (
 ALTER TABLE "public"."sections_sequence" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."sections_sequence" IS 'Pairs of sections to describe execution order';
+COMMENT ON TABLE "public"."sections_sequence" IS 'Defines the linear story progression, sequential order, or strict execution dependencies between project chapters, sub-products, or side quests (which section must come before which).';
+
+
+
+COMMENT ON COLUMN "public"."sections_sequence"."section_previous" IS 'The preceding section that represents the dependency or previous chapter in the story timeline. While this relationship exists and the previous milestone is incomplete, the subsequent section status may reflect a "waiting" state.';
+
+
+
+COMMENT ON COLUMN "public"."sections_sequence"."section_next" IS 'The subsequent section (chapter, sub-product, or side quest) that follows or is unlocked after the previous phase is completed.';
 
 
 
@@ -772,19 +1013,27 @@ CREATE TABLE IF NOT EXISTS "public"."task_items" (
 ALTER TABLE "public"."task_items" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."task_items" IS 'Checklist for tasks';
+COMMENT ON TABLE "public"."task_items" IS 'Checklist items for a task, used for micro-steps or binary acceptance criteria that do not need individual scheduling.';
 
 
 
-COMMENT ON COLUMN "public"."task_items"."description" IS 'Description';
+COMMENT ON COLUMN "public"."task_items"."description" IS 'The concrete verification step or mini-task to be performed.';
 
 
 
-COMMENT ON COLUMN "public"."task_items"."done" IS 'If task item is completed';
+COMMENT ON COLUMN "public"."task_items"."done" IS 'True if completed. Automatically turns TRUE if the parent task status shifts to "done".';
 
 
 
-COMMENT ON COLUMN "public"."task_items"."order" IS 'Order of execution';
+COMMENT ON COLUMN "public"."task_items"."order" IS 'Sequential display or execution order for the checklist.';
+
+
+
+COMMENT ON COLUMN "public"."task_items"."id" IS 'Primary key (UUID) for this checklist item.';
+
+
+
+COMMENT ON COLUMN "public"."task_items"."task_id" IS 'Foreign key linking this item to its parent task.';
 
 
 
@@ -808,8 +1057,8 @@ CREATE TABLE IF NOT EXISTS "public"."tasks" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "section_id" "uuid",
     "deleted_at" timestamp with time zone,
-    "schedule" "tstzrange",
-    CONSTRAINT "tasks_schedule_valid" CHECK ((("schedule" IS NULL) OR ((NOT "isempty"("schedule")) AND (NOT "lower_inf"("schedule")) AND (("due" IS NULL) OR (("lower"("schedule") < "due") AND ("upper_inf"("schedule") OR ("upper"("schedule") <= "due")))))))
+    "target" "tstzrange",
+    CONSTRAINT "tasks_schedule_valid" CHECK ((("target" IS NULL) OR ((NOT "isempty"("target")) AND (NOT "lower_inf"("target")) AND (("due" IS NULL) OR (("lower"("target") < "due") AND ("upper_inf"("target") OR ("upper"("target") <= "due")))))))
 );
 
 ALTER TABLE ONLY "public"."tasks" REPLICA IDENTITY FULL;
@@ -818,27 +1067,43 @@ ALTER TABLE ONLY "public"."tasks" REPLICA IDENTITY FULL;
 ALTER TABLE "public"."tasks" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."tasks" IS 'Tasks';
+COMMENT ON TABLE "public"."tasks" IS 'Represents an actionable step, atomic execution item, or concrete movement within a section. It is the core executable unit required to progress and complete a chapter or side quest.';
 
 
 
-COMMENT ON COLUMN "public"."tasks"."name" IS 'Name';
+COMMENT ON COLUMN "public"."tasks"."name" IS 'The actionable name or concise description of the task, usually a verb and its objects (e.g., "Draft login wireframe", "Implement JWT auth").';
 
 
 
-COMMENT ON COLUMN "public"."tasks"."status" IS 'Status';
+COMMENT ON COLUMN "public"."tasks"."status" IS 'The current state of execution for this task, bound to public.status enum rules.';
 
 
 
-COMMENT ON COLUMN "public"."tasks"."due" IS 'Due date';
+COMMENT ON COLUMN "public"."tasks"."due" IS 'The strict final deadline for this specific task (timestamptz). This date is non-arbitrary.';
 
 
 
-COMMENT ON COLUMN "public"."tasks"."priority" IS 'Priority';
+COMMENT ON COLUMN "public"."tasks"."priority" IS 'The relative urgency or execution priority of this step. Restricted to enum values: urgent, high, medium, low.';
 
 
 
-COMMENT ON COLUMN "public"."tasks"."estimate" IS 'Estimated number of minutes for completion';
+COMMENT ON COLUMN "public"."tasks"."estimate" IS 'The estimated number of minutes required to fully complete this task. Used by the AI for time-blocking and planning.';
+
+
+
+COMMENT ON COLUMN "public"."tasks"."id" IS 'Primary key (UUID) unique identifier for this task.';
+
+
+
+COMMENT ON COLUMN "public"."tasks"."section_id" IS 'Foreign key linking this task to its parent section (chapter, sub-product, or side quest).';
+
+
+
+COMMENT ON COLUMN "public"."tasks"."deleted_at" IS 'Soft delete timestamptz. If populated, this task is archived/deleted.';
+
+
+
+COMMENT ON COLUMN "public"."tasks"."target" IS 'The planned timeline window or date range allocated to work on this task (tstzrange). This range is arbitrary and must guide the scheduling of calendar events.';
 
 
 
@@ -851,7 +1116,15 @@ CREATE TABLE IF NOT EXISTS "public"."tasks_sequence" (
 ALTER TABLE "public"."tasks_sequence" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."tasks_sequence" IS 'Pairs of tasks to describe execution order';
+COMMENT ON TABLE "public"."tasks_sequence" IS 'Defines the direct linear execution order, workflow path, or strict chronological dependencies between tasks (which task unlocks which).';
+
+
+
+COMMENT ON COLUMN "public"."tasks_sequence"."task_previous" IS 'The preceding task that must be completed or tackled before the next one (Foreign key to tasks). While this relationship exists and the workflow is blocked, the previous task status may reflect or impact the "waiting" lifecycle state.';
+
+
+
+COMMENT ON COLUMN "public"."tasks_sequence"."task_next" IS 'The subsequent task that follows or is unlocked by the completion of the previous task (Foreign key to tasks).';
 
 
 
@@ -869,6 +1142,34 @@ CREATE TABLE IF NOT EXISTS "public"."work_tag_entities" (
 ALTER TABLE "public"."work_tag_entities" OWNER TO "postgres";
 
 
+COMMENT ON TABLE "public"."work_tag_entities" IS 'Many-to-many junction table linking work_tags to a single project, section, task, or event. Exactly ONE entity foreign key (project_id, section_id, task_id, or event_id) must be populated.';
+
+
+
+COMMENT ON COLUMN "public"."work_tag_entities"."work_tag_id" IS 'Foreign key referencing the parent execution tag.';
+
+
+
+COMMENT ON COLUMN "public"."work_tag_entities"."project_id" IS 'Optional foreign key linking to a project. Must be null if section_id, task_id, or event_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."work_tag_entities"."section_id" IS 'Optional foreign key linking to a section. Must be null if project_id, task_id, or event_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."work_tag_entities"."task_id" IS 'Optional foreign key linking to a task. Must be null if project_id, section_id, or event_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."work_tag_entities"."event_id" IS 'Optional foreign key linking to an event. Must be null if project_id, section_id, or task_id is populated.';
+
+
+
+COMMENT ON COLUMN "public"."work_tag_entities"."id" IS 'Primary key (UUID) for this tag relationship entry.';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."work_tags" (
     "name" "text" NOT NULL,
     "synonyms" "text"[] DEFAULT '{}'::"text"[] NOT NULL,
@@ -879,15 +1180,19 @@ CREATE TABLE IF NOT EXISTS "public"."work_tags" (
 ALTER TABLE "public"."work_tags" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."work_tags" IS 'Work tags';
+COMMENT ON TABLE "public"."work_tags" IS 'AI-generated taxonomy reflecting the core operational nature of the work. Used by the AI to detect execution patterns, analyze structural metrics (e.g., how long task types usually take), and auto-suggest sub-tasks or project templates based on previous similar initiatives.';
 
 
 
-COMMENT ON COLUMN "public"."work_tags"."name" IS 'Tag';
+COMMENT ON COLUMN "public"."work_tags"."name" IS 'The operational category or nature of work (e.g., "File conversion", "Calligraphy roll", "Backend dev").';
 
 
 
-COMMENT ON COLUMN "public"."work_tags"."synonyms" IS 'Array of synonyms';
+COMMENT ON COLUMN "public"."work_tags"."synonyms" IS 'Array of text mapping equivalent terms or aliases to help the AI perform flexible semantic tagging and searching.';
+
+
+
+COMMENT ON COLUMN "public"."work_tags"."id" IS 'Primary key (UUID) for this execution tag.';
 
 
 
@@ -1171,6 +1476,18 @@ CREATE OR REPLACE TRIGGER "moment_status_tasks" AFTER UPDATE ON "public"."tasks"
 
 
 CREATE OR REPLACE TRIGGER "moment_stopped_task_logs" AFTER UPDATE ON "public"."task_logs" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_stopped"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_target_projects" AFTER UPDATE ON "public"."projects" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_target"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_target_sections" AFTER UPDATE ON "public"."sections" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_target"();
+
+
+
+CREATE OR REPLACE TRIGGER "moment_target_tasks" AFTER UPDATE ON "public"."tasks" FOR EACH ROW EXECUTE FUNCTION "public"."trg_moment_target"();
 
 
 
@@ -1552,6 +1869,12 @@ GRANT ALL ON FUNCTION "public"."trg_moment_status"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."trg_moment_stopped"() TO "anon";
 GRANT ALL ON FUNCTION "public"."trg_moment_stopped"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."trg_moment_stopped"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_moment_target"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_moment_target"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_moment_target"() TO "service_role";
 
 
 
