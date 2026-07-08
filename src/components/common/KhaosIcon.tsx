@@ -11,6 +11,8 @@ interface KhaosIconProps {
   bgColor?: string;
   /** Determines whether the icon should rotate continuously */
   spin?: boolean;
+  /** Extra classes */
+  className?: string;
 }
 
 export default function KhaosIcon({
@@ -19,13 +21,15 @@ export default function KhaosIcon({
   color = 'text-copper-400',
   bgColor = 'bg-transparent',
   spin = false,
+  className = '',
 }: KhaosIconProps) {
   return (
     <div
       className={clsx(
         'flex shrink-0 items-center justify-center rounded-full text-center font-bold select-none',
         size,
-        bgColor
+        bgColor,
+        className
       )}
       style={{ lineHeight: 0 }} // Neutralizes line height to ensure perfect geometric centering
     >

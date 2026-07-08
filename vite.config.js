@@ -8,16 +8,16 @@ export default defineConfig(({ mode }) => {
 
   const plugins = [react(), tailwindcss()];
 
-  const isLocal = env.VITE_ENVIRONMENT === 'local';
+  const isDev = !!env.VITE_APP_PASSWORD_HASH;
 
-  if (isLocal) {
+  if (isDev) {
     plugins.push(basicSsl());
   }
 
   return {
     plugins,
     server: {
-      https: isLocal,
+      https: isDev,
       port: Number(env.VITE_KHAOS_FRONTEND_PORT) || 5173,
     },
   };

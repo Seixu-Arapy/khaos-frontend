@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { genAI, GEMINI_MODEL, SYSTEM_INSTRUCTION } from '../lib/gemini/client';
-import { functionDeclarations } from '../lib/gemini/tools';
-import { runTurn, type GeminiChat } from '../lib/gemini/agent';
+import { useCallback, useEffect, useState } from 'react';
+import { runTurn, type ChatMessage as AgentMessage } from '../lib/gemini/agent';
 import {
   buildConfirmationPreview,
   type ConfirmationPreview,
 } from '../lib/gemini/confirmationPreview';
 import { useProcessingContext } from '../lib/processingContext';
 import { useActiveEntity } from '../lib/activeEntityContext';
+import { getTimezone } from '../lib/timezone';
 
 const STORAGE_KEY = 'logbook.chatHistory.v1';
 
+// UI-facing shape — this is what ChatPanel and the rest of the app render.
+// Kept separate from AgentMessage (system/tool/tool_calls) on purpose.
 export interface ChatMessage {
   id: string;
   role: 'user' | 'model';
@@ -25,7 +26,7 @@ export interface PendingWrite {
   resolve: (approved: boolean) => void;
 }
 
-function loadHistory(): ChatMessage[] {
+function loadHistory(): AgentMessage[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -34,42 +35,20 @@ function loadHistory(): ChatMessage[] {
   }
 }
 
-function newId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
 export function useChatAgent() {
-  const [messages, setMessages] = useState<ChatMessage[]>(loadHistory);
+  const [messages, setMessages] = useState<AgentMessage[]>(loadHistory);
   const [pending, setPending] = useState<PendingWrite | null>(null);
   const [isSending, setIsSending] = useState(false);
   const { setAssistantProcessing } = useProcessingContext();
   const { activeEntity } = useActiveEntity();
-  const chatRef = useRef<GeminiChat | null>(null);
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-200)));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-100)));
     } catch {
-      // storage full or unavailable — chat still works, just won't persist
+      // storage full or unavailable
     }
   }, [messages]);
-
-  const getChat = useCallback((): GeminiChat => {
-    if (!chatRef.current) {
-      chatRef.current = genAI.chats.create({
-        model: GEMINI_MODEL,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          tools: [{ functionDeclarations }],
-        },
-        history: messages
-          .filter((m) => !m.isError)
-          .map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
-      });
-    }
-    return chatRef.current;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const requestConfirmation = useCallback(
     async (name: string, args: Record<string, unknown>) => {
@@ -93,34 +72,40 @@ export function useChatAgent() {
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed) return;
-      setMessages((m) => [...m, { id: newId(), role: 'user', text: trimmed }]);
+
+      const userTimeZone = getTimezone();
+
+      const userLocalDateTime = new Date().toLocaleString('en-US', {
+        timeZone: userTimeZone,
+        dateStyle: 'long',
+        timeStyle: 'short',
+      });
+      const userIsoString = new Date().toISOString();
+
+      let contextNote = `[Temporal Context: The user's current local time is ${userLocalDateTime} (Timezone: ${userTimeZone}). The current global UTC time is ${userIsoString}. Use this local time to resolve relative dates like 'today', 'tomorrow', or 'next Monday', but remember that database operations expect standardized times.]\n`;
+
+      if (activeEntity) {
+        contextNote += `[UI Context: the person currently has this open on screen — ${activeEntity.type} "${activeEntity.name}" (id: ${activeEntity.id}). If their message refers to "this"/"it" without naming something else, assume it's this.]\n`;
+      }
+
+      contextNote += '\n';
+
+      const userMessageText = contextNote + trimmed;
+
       setIsSending(true);
       setAssistantProcessing(true);
+
       try {
-        const chat = getChat();
-        // Injected silently — never shown in the bubble — so pronouns like
-        // "this" or "it" resolve to whatever entity is open on screen.
-        const contextNote = activeEntity
-          ? `[Context: the person currently has this open on screen — ${activeEntity.type} "${activeEntity.name}" (id: ${activeEntity.id}). If their message refers to "this"/"it" without naming something else, assume it's this.]\n\n`
-          : '';
-        const replyText = await runTurn(chat, contextNote + trimmed, {
+        const { updatedHistory } = await runTurn(messages, userMessageText, {
           onPendingWrite: requestConfirmation,
         });
-        setMessages((m) => [
-          ...m,
-          {
-            id: newId(),
-            role: 'model',
-            text: replyText || '(No response — try rephrasing.)',
-          },
-        ]);
+        setMessages(updatedHistory);
       } catch (err) {
         setMessages((m) => [
           ...m,
           {
-            id: newId(),
-            role: 'model',
-            text: `Something went wrong: ${(err as Error).message}`,
+            role: 'assistant',
+            content: `Something went wrong: ${(err as Error).message}`,
             isError: true,
           },
         ]);
@@ -129,17 +114,43 @@ export function useChatAgent() {
         setAssistantProcessing(false);
       }
     },
-    [getChat, requestConfirmation, activeEntity, setAssistantProcessing]
+    [messages, requestConfirmation, activeEntity, setAssistantProcessing]
   );
 
   const clearHistory = useCallback(() => {
     setMessages([]);
-    chatRef.current = null;
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  // Only user turns and the assistant's final text reply are shown.
+  // Intermediate assistant messages that only carry tool_calls (content is
+  // null) and every 'tool' role response are internal plumbing, not chat.
+  const uiMessages: ChatMessage[] = messages
+    .filter(
+      (m) => (m.role === 'user' || m.role === 'assistant') && Boolean(m.content)
+    )
+    .map((m, index) => {
+      let textToShow = m.content || '';
+
+      if (m.role === 'user') {
+        textToShow = textToShow.replace(
+          /^\[Temporal Context:[\s\S]*?\]\s*/g,
+          ''
+        );
+        textToShow = textToShow.replace(/^\[UI Context:[\s\S]*?\]\s*/g, '');
+        textToShow = textToShow.replace(/^\[Context:[\s\S]*?\]\s*/g, '');
+      }
+
+      return {
+        id: `${m.role}-${index}`,
+        role: m.role === 'assistant' ? ('model' as const) : ('user' as const),
+        text: textToShow,
+        isError: m.isError,
+      };
+    });
+
   return {
-    messages,
+    messages: uiMessages,
     sendMessage,
     isSending,
     pending,
