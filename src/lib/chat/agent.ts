@@ -5,7 +5,12 @@ import {
   SYSTEM_INSTRUCTION,
   TONE_INSTRUCTION,
 } from './client';
-import { executeTool, WRITE_TOOLS, functionDeclarations } from './tools';
+import {
+  executeTool,
+  normalizeToolName,
+  WRITE_TOOLS,
+  functionDeclarations,
+} from './tools';
 
 const MAX_TOOL_ROUNDS = 6;
 const MAX_HISTORY_MESSAGES = 14;
@@ -241,16 +246,21 @@ ${TONE_INSTRUCTION}
 
         let result: unknown;
         try {
-          if (WRITE_TOOLS.has(tc.function.name)) {
-            const approved = await onPendingWrite(tc.function.name, args);
+          // Normalize aliased/mis-cased tool names (e.g. the model calling
+          // "update_row" instead of the declared "update_rows") before the
+          // write-confirmation check — otherwise an aliased write tool
+          // would skip user confirmation and execute straight away.
+          const toolName = normalizeToolName(tc.function.name);
+          if (WRITE_TOOLS.has(toolName)) {
+            const approved = await onPendingWrite(toolName, args);
             result = approved
-              ? await executeTool(tc.function.name, args)
+              ? await executeTool(toolName, args)
               : {
                   declined: true,
                   message: 'The person chose not to run this action.',
                 };
           } else {
-            result = await executeTool(tc.function.name, args);
+            result = await executeTool(toolName, args);
           }
         } catch (err) {
           result = { error: (err as Error).message };

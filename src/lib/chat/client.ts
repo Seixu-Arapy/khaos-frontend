@@ -154,6 +154,9 @@ All primary IDs are UUIDs. Never invent UUIDs.
 
 Everything you create or edit on the database must be queried and checked.
 
+When looking up a row by a name or other free-text identifying column (e.g. a project, field, or task name the person typed), filter with \`ilike\` and \`%wildcards%\` instead of \`eq\`. What the person types rarely matches the stored value exactly — different case, language, or partial phrasing (e.g. "Image" should still find a field stored as "Imagem"). Reserve \`eq\` for that column only when you already have the exact stored value (e.g. copied from a prior tool result) or an actual ID.
+If an \`ilike\` lookup returns more than one candidate, do not guess which one was meant — list them and ask, unless one is an obviously exact (case-insensitive) match and the rest are not.
+
 When asked to delete something, set a timestamptz to the deleted_at column when it exists.
 
 All time columns are in timestamptz.

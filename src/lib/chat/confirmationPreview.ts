@@ -1,6 +1,8 @@
 import { supabase } from '../supabaseClient';
 import {
   describeAction,
+  coerceFilters,
+  coerceValues,
   type RowFilter,
   type InsertRowArgs,
   type UpdateRowsArgs,
@@ -54,14 +56,16 @@ export async function buildConfirmationPreview(
     return {
       kind: 'insert',
       entityType: ENTITY_TABLES[a.table] ?? null,
-      entities: [a.values],
+      entities: [coerceValues(args)],
     };
   }
 
   if (name === 'update_rows') {
     const a = args as unknown as UpdateRowsArgs;
     const entityType = ENTITY_TABLES[a.table] ?? null;
-    const id = getIdFilter(a.filters);
+    const filters = coerceFilters(a.filters);
+    const values = coerceValues(args);
+    const id = getIdFilter(filters);
     let before: Record<string, unknown> | null = null;
 
     if (entityType && id) {
@@ -76,7 +80,7 @@ export async function buildConfirmationPreview(
       before = data;
     }
 
-    const changes: FieldChange[] = Object.entries(a.values || {}).map(
+    const changes: FieldChange[] = Object.entries(values).map(
       ([field, to]) => ({
         field,
         label: FIELD_LABELS[field] || field,
@@ -100,7 +104,7 @@ export async function buildConfirmationPreview(
 
     if (entityType) {
       let query = supabase.from(a.table).select('*');
-      for (const f of a.filters || []) {
+      for (const f of coerceFilters(a.filters)) {
         query = query.filter(f.column, f.operator, f.value);
       }
       const { data } = await query.limit(10);
