@@ -30,6 +30,7 @@ import SectionColumn, {
 } from '../components/projects/SectionColumn';
 import TaskDetailModal from '../components/tasks/TaskDetailModal';
 import TargetEditor from '../components/common/TargetEditor';
+import { useSyncActiveEntity } from '../lib/activeEntityContext';
 import type { Id, Priority, Section, Status, Task } from '../lib/types';
 
 // Ordem cronológica dentro de uma seção: target.start primeiro, senão due,
@@ -92,6 +93,7 @@ export default function ProjectDetailPage() {
   );
 
   const project = projects.find((p) => p.id === projectId);
+  useSyncActiveEntity('project', project?.id, project?.name);
   const orderedSectionIds = useOrderedSectionIds(
     projectId ?? '',
     sections,

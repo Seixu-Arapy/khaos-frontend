@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useSyncActiveEntity } from '../../lib/activeEntityContext';
 import {
   Plus,
   Trash2,
@@ -114,6 +115,7 @@ export default function TaskDetailModal({
   onOpenTask,
 }: TaskDetailModalProps) {
   const { update, remove } = useTaskMutations();
+  useSyncActiveEntity('task', task.id, task.name);
   const { data: sections = [] } = useSections();
   const { data: projects = [] } = useProjects();
   const { data: items = [] } = useTaskItems(taskId);
