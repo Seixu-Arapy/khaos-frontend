@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   Plus,
@@ -15,7 +15,7 @@ import {
   Select,
   TextInput,
   Button,
-  StatusBadge,
+  FieldBadge,
   Tag,
 } from '../common/ui';
 import TargetEditor from '../common/TargetEditor';
@@ -32,6 +32,7 @@ import {
   useTaskItemMutations,
   useSections,
   useProjects,
+  useFields,
   useTasks,
   useTasksSequence,
 } from '../../hooks/useHierarchy';
@@ -148,6 +149,48 @@ function AddButton({ active, onClick, children }: AddButtonProps) {
   );
 }
 
+// Local draft + debounced commit — lets text fields feel instant while
+// typing without firing a mutation on every keystroke. Flushes immediately
+// on blur so nothing is lost when the user tabs away or closes the modal.
+function useDebouncedField<T>(
+  value: T,
+  commit: (next: T) => void,
+  delay = 500
+) {
+  const [draft, setDraft] = useState(value);
+  const draftRef = useRef(value);
+  const dirtyRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    if (!dirtyRef.current) {
+      setDraft(value);
+      draftRef.current = value;
+    }
+  }, [value]);
+
+  function set(next: T) {
+    setDraft(next);
+    draftRef.current = next;
+    dirtyRef.current = true;
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      dirtyRef.current = false;
+      commit(next);
+    }, delay);
+  }
+
+  function flush() {
+    clearTimeout(timerRef.current);
+    if (dirtyRef.current) {
+      dirtyRef.current = false;
+      commit(draftRef.current);
+    }
+  }
+
+  return [draft, set, flush] as const;
+}
+
 interface SeqPicker {
   kind: 'before' | 'after';
   search: string;
@@ -169,6 +212,7 @@ export default function TaskDetailModal({
   const { update, remove } = useTaskMutations();
   const { data: sections = [] } = useSections();
   const { data: projects = [] } = useProjects();
+  const { data: fields = [] } = useFields();
   const { data: items = [] } = useTaskItems(taskId);
   const itemMutations = useTaskItemMutations(taskId);
   const { data: logs = [] } = useTaskLogs(taskId);
@@ -202,8 +246,25 @@ export default function TaskDetailModal({
   });
 
   const section = sections.find((s) => s.id === task.section_id);
+  const currentProject = projects.find((p) => p.id === section?.project_id);
+  const fieldsById = useMemo(
+    () => new Map(fields.map((f) => [f.id, f])),
+    [fields]
+  );
+  const currentFieldName = currentProject?.field_id
+    ? (fieldsById.get(currentProject.field_id)?.name ?? null)
+    : null;
   const isActive = activeLog?.task_id === task.id;
   const otherTimerRunning = activeLog && activeLog.task_id !== task.id;
+
+  const [nameDraft, setNameDraft, flushName] = useDebouncedField(
+    task.name,
+    (v) => patch({ name: v })
+  );
+  const [estimateDraft, setEstimateDraft, flushEstimate] = useDebouncedField(
+    task.estimate != null ? String(task.estimate) : '',
+    (v) => patch({ estimate: v ? Number(v) : null })
+  );
 
   const taskTagLinks = useMemo(
     () => tagLinks.filter((l) => l.task_id === task.id),
@@ -329,28 +390,32 @@ export default function TaskDetailModal({
       <div className="space-y-4">
         <div>
           <TextInput
-            value={task.name}
-            onChange={(e) => patch({ name: e.target.value })}
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onBlur={flushName}
             className="focus:bg-ink-900! border-0! bg-transparent! px-0! text-lg! font-medium!"
           />
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <Select
-              value={section?.project_id ?? ''}
-              className="py-0.5! text-xs!"
-              onChange={(e) => {
-                const projectId = e.target.value;
-                const firstSection = sections.find(
-                  (s) => s.project_id === projectId
-                );
-                if (firstSection) patch({ section_id: firstSection.id });
-              }}
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
+            <span className="text-ink-500 hover:text-ink-300 inline-flex min-w-0 items-center gap-1 text-xs">
+              <FieldBadge fieldName={currentFieldName} size="xs" />
+              <select
+                value={section?.project_id ?? ''}
+                onChange={(e) => {
+                  const projectId = e.target.value;
+                  const firstSection = sections.find(
+                    (s) => s.project_id === projectId
+                  );
+                  if (firstSection) patch({ section_id: firstSection.id });
+                }}
+                className="focus-visible:ring-copper-400 max-w-32 cursor-pointer truncate border-0 bg-transparent p-0 text-xs focus:outline-none focus-visible:ring-1"
+              >
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </span>
             <span className="text-ink-600 text-xs">›</span>
             <Select
               value={task.section_id ?? ''}
@@ -417,12 +482,9 @@ export default function TaskDetailModal({
               <TextInput
                 type="number"
                 min="0"
-                value={task.estimate ?? ''}
-                onChange={(e) =>
-                  patch({
-                    estimate: e.target.value ? Number(e.target.value) : null,
-                  })
-                }
+                value={estimateDraft}
+                onChange={(e) => setEstimateDraft(e.target.value)}
+                onBlur={flushEstimate}
               />
             </div>
 
@@ -804,16 +866,13 @@ export default function TaskDetailModal({
           </form>
         </Section>
 
-        <div className="border-ink-700 flex justify-between border-t pt-3.5">
-          <StatusBadge status={task.status} size="md" />
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => remove.mutate(task.id, { onSuccess: onClose })}
-              className="text-ink-500 hover:text-ink-300 flex items-center gap-1 text-xs"
-            >
-              <Trash2 size={13} /> Delete
-            </button>
-          </div>
+        <div className="border-ink-700 flex justify-end border-t pt-3.5">
+          <button
+            onClick={() => remove.mutate(task.id, { onSuccess: onClose })}
+            className="text-ink-500 hover:text-ink-300 flex items-center gap-1 text-xs"
+          >
+            <Trash2 size={13} /> Delete
+          </button>
         </div>
       </div>
     </Modal>
