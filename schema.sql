@@ -199,25 +199,6 @@ COMMENT ON FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" 
 
 
 
-CREATE OR REPLACE FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text" DEFAULT NULL::"text", "p_note" "text" DEFAULT NULL::"text") RETURNS "void"
-    LANGUAGE "plpgsql"
-    AS $_$
-begin
-  if p_entity_column not in ('project_id', 'section_id', 'task_id', 'event_id') then
-    raise exception 'insert_moment: invalid entity column "%"', p_entity_column;
-  end if;
-
-  execute format(
-    'insert into moments (%I, moment_type, value, moment_note) values ($1, $2, $3, $4)',
-    p_entity_column
-  ) using p_entity_id, p_moment_type, p_value, p_note;
-end;
-$_$;
-
-
-ALTER FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text" DEFAULT NULL::"text", "p_note" "text" DEFAULT NULL::"text", "p_previous_value" "text" DEFAULT NULL::"text") RETURNS "void"
     LANGUAGE "plpgsql"
     AS $_$
@@ -2189,12 +2170,6 @@ GRANT ALL ON FUNCTION "public"."check_and_unlock_next_sections"("p_previous_sect
 GRANT ALL ON FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" "uuid") TO "anon";
 GRANT ALL ON FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."check_and_unlock_next_tasks"("p_previous_task_id" "uuid") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text") TO "service_role";
 
 
 
