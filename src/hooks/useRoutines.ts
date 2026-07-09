@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { routinesApi } from '../lib/api/routines';
+import type { Id, RoutinePatch, NewRoutine } from '../lib/types';
 
 export function useRoutines() {
   return useQuery({ queryKey: ['routines'], queryFn: routinesApi.list });
@@ -10,16 +11,18 @@ export function useRoutineMutations() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ['routines'] });
   return {
     create: useMutation({
-      mutationFn: routinesApi.create,
+      mutationFn: (payload: NewRoutine) => routinesApi.create(payload),
       onSuccess: invalidate,
     }),
     update: useMutation({
-      mutationFn: ({ id, patch }) => routinesApi.update(id, patch),
+      mutationFn: ({ id, patch }: { id: Id; patch: RoutinePatch }) =>
+        routinesApi.update(id, patch),
       onSuccess: invalidate,
     }),
     remove: useMutation({
-      mutationFn: routinesApi.remove,
+      mutationFn: (id: Id) => routinesApi.remove(id),
       onSuccess: invalidate,
     }),
   };
 }
+

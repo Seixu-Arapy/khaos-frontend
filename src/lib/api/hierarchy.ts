@@ -1,6 +1,14 @@
 import { supabase } from '../supabaseClient';
 import { edgesFromOrder } from '../reorder';
-import type { Id, Project, Section, Task, TaskItem } from '../types';
+import type {
+  Id,
+  Project,
+  Section,
+  SectionsSequence,
+  Task,
+  TaskItem,
+  TasksSequence,
+} from '../types';
 
 function unwrap<T>({ data, error }: { data: T | null; error: unknown }): T {
   if (error) throw error;
@@ -153,7 +161,7 @@ export const sectionsApi = {
 };
 
 export const sectionsSequenceApi = {
-  list: async (): Promise<unknown[]> => {
+  list: async (): Promise<SectionsSequence[]> => {
     const response = await supabase.from('sections_sequence').select('*');
     return unwrap(response);
   },
@@ -210,7 +218,7 @@ export const tasksApi = {
 };
 
 export const tasksSequenceApi = {
-  list: async (): Promise<unknown[]> => {
+  list: async (): Promise<TasksSequence[]> => {
     const response = await supabase.from('tasks_sequence').select('*');
     return unwrap(response);
   },

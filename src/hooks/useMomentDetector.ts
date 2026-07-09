@@ -3,26 +3,39 @@ import { supabase } from '../lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProcessingContext } from '../lib/processingContext'; // IMPORTADO DO SEU CONTEXTO
 
-const WATCHED_FIELDS = {
+type WatchedTable = 'tasks' | 'projects' | 'sections';
+
+const WATCHED_FIELDS: Record<WatchedTable, string[]> = {
   tasks: ['status', 'due', 'estimate', 'priority'],
   projects: ['status', 'due', 'priority'],
   sections: ['status', 'due'],
 };
 
-const FIELD_LABEL = {
+const FIELD_LABEL: Record<string, string> = {
   status: 'status',
   due: 'due date',
   estimate: 'estimate',
   priority: 'priority',
 };
 
-const ENTITY_FK_COLUMN = {
+const ENTITY_FK_COLUMN: Record<WatchedTable, string> = {
   tasks: 'task_id',
   projects: 'project_id',
   sections: 'section_id',
 };
 
-function buildPrompt(table, oldRow, newRow) {
+interface MomentPrompt {
+  id: string;
+  entityRef: Record<string, string>;
+  entityName: string;
+  changes: { field: string; label: string; from: unknown; to: unknown }[];
+}
+
+function buildPrompt(
+  table: WatchedTable,
+  oldRow: Record<string, unknown>,
+  newRow: Record<string, unknown>
+): MomentPrompt | null {
   const watched = WATCHED_FIELDS[table] || [];
   const changes = watched.filter((col) => oldRow[col] !== newRow[col]);
   if (!changes.length) return null;
@@ -31,8 +44,8 @@ function buildPrompt(table, oldRow, newRow) {
 
   return {
     id: `${table}-${newRow.id}-${Date.now()}`,
-    entityRef: { [fkColumn]: newRow.id },
-    entityName: newRow.name,
+    entityRef: { [fkColumn]: newRow.id as string },
+    entityName: newRow.name as string,
     changes: changes.map((col) => ({
       field: col,
       label: FIELD_LABEL[col] || col,
@@ -52,36 +65,40 @@ export function useMomentDetector() {
   }, [isAssistantProcessing]);
 
   useEffect(() => {
-    const channels = Object.keys(WATCHED_FIELDS).map((table) => {
-      return supabase
-        .channel(`moment-detector-${table}`)
-        .on(
-          'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table },
-          (payload) => {
-            const { old: oldRow, new: newRow } = payload;
+    const channels = (Object.keys(WATCHED_FIELDS) as WatchedTable[]).map(
+      (table) => {
+        return supabase
+          .channel(`moment-detector-${table}`)
+          .on(
+            'postgres_changes',
+            { event: 'UPDATE', schema: 'public', table },
+            (payload) => {
+              const { old: oldRow, new: newRow } = payload;
 
-            if (isLlmChangingRef.current) {
+              if (isLlmChangingRef.current) {
+                qc.invalidateQueries({
+                  queryKey: [table === 'tasks' ? 'tasks' : table],
+                });
+                return;
+              }
+
+              const prompt = buildPrompt(table, oldRow, newRow);
+              if (prompt) {
+                window.dispatchEvent(
+                  new CustomEvent('external-moment-detected', {
+                    detail: prompt,
+                  })
+                );
+              }
+
               qc.invalidateQueries({
                 queryKey: [table === 'tasks' ? 'tasks' : table],
               });
-              return;
             }
-
-            const prompt = buildPrompt(table, oldRow, newRow);
-            if (prompt) {
-              window.dispatchEvent(
-                new CustomEvent('external-moment-detected', { detail: prompt })
-              );
-            }
-
-            qc.invalidateQueries({
-              queryKey: [table === 'tasks' ? 'tasks' : table],
-            });
-          }
-        )
-        .subscribe();
-    });
+          )
+          .subscribe();
+      }
+    );
 
     return () => {
       channels.forEach((ch) => supabase.removeChannel(ch));

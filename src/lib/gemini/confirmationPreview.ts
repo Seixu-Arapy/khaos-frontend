@@ -50,7 +50,7 @@ export async function buildConfirmationPreview(
   args: Record<string, unknown>
 ): Promise<ConfirmationPreview> {
   if (name === 'insert_row') {
-    const a = args as InsertRowArgs;
+    const a = args as unknown as InsertRowArgs;
     return {
       kind: 'insert',
       entityType: ENTITY_TABLES[a.table] ?? null,
@@ -59,7 +59,7 @@ export async function buildConfirmationPreview(
   }
 
   if (name === 'update_rows') {
-    const a = args as UpdateRowsArgs;
+    const a = args as unknown as UpdateRowsArgs;
     const entityType = ENTITY_TABLES[a.table] ?? null;
     const id = getIdFilter(a.filters);
     let before: Record<string, unknown> | null = null;
@@ -91,7 +91,7 @@ export async function buildConfirmationPreview(
   }
 
   if (name === 'delete_rows') {
-    const a = args as DeleteRowsArgs;
+    const a = args as unknown as DeleteRowsArgs;
     const entityType = ENTITY_TABLES[a.table] ?? null;
     let entities: Record<string, unknown>[] = [];
 

@@ -55,4 +55,27 @@ export const momentsApi = {
       .single();
     return unwrap(response);
   },
+
+  addNote: async (entityRef: EntityRef, note: string): Promise<Moment> => {
+    const response = await supabase
+      .from('moments')
+      .insert({
+        ...entityRef,
+        moment_type: 'note',
+        moment_note: note,
+      })
+      .select()
+      .single();
+    return unwrap(response);
+  },
+
+  remove: async (id: Id): Promise<Moment> => {
+    const response = await supabase
+      .from('moments')
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+    return unwrap(response);
+  },
 };
