@@ -5,12 +5,19 @@ import { parseRange } from '../../lib/range';
 import { EVENT_TYPE_META } from '../../lib/constants';
 import { getTimezone } from '../../lib/timezone';
 import { getEventLabel } from '../../lib/eventLabel';
-import type { Event, Task } from '../../lib/types';
+import { ProjectChip } from '../common/ui';
+import type { Event, Task, Project, Field } from '../../lib/types';
 
 const HOUR_HEIGHT = 48; // px
 const DAY_HEIGHT = HOUR_HEIGHT * 24;
 
-type PositionedEvent = Event & { start: Date; end: Date; label: string };
+type PositionedEvent = Event & {
+  start: Date;
+  end: Date;
+  label: string;
+  projectName: string | null;
+  projectField: string | null;
+};
 
 function minutesFromMidnight(date: Date): number {
   const tz = getTimezone();
@@ -28,6 +35,8 @@ function minutesFromMidnight(date: Date): number {
 interface CalendarViewProps {
   events: Event[];
   tasks?: Task[];
+  projects?: Project[];
+  fields?: Field[];
   onSlotClick: (date: Date) => void;
   onEventClick: (event: Event) => void;
 }
@@ -35,6 +44,8 @@ interface CalendarViewProps {
 export default function CalendarView({
   events,
   tasks = [],
+  projects = [],
+  fields = [],
   onSlotClick,
   onEventClick,
 }: CalendarViewProps) {
@@ -48,6 +59,14 @@ export default function CalendarView({
   const tasksById = useMemo(
     () => new Map(tasks.map((t) => [t.id, t])),
     [tasks]
+  );
+  const projectsById = useMemo(
+    () => new Map(projects.map((p) => [p.id, p])),
+    [projects]
+  );
+  const fieldsById = useMemo(
+    () => new Map(fields.map((f) => [f.id, f])),
+    [fields]
   );
 
   const eventsByDay = useMemo(() => {
@@ -63,16 +82,22 @@ export default function CalendarView({
         start
       ); // "YYYY-MM-DD"
       const taskName = ev.task_id ? tasksById.get(ev.task_id)?.name : null;
+      const project = ev.project_id ? projectsById.get(ev.project_id) : null;
+      const projectField = project?.field_id
+        ? (fieldsById.get(project.field_id)?.name ?? null)
+        : null;
       if (map.has(key))
         map.get(key)!.push({
           ...ev,
           start,
           end: end || new Date(start.getTime() + 30 * 60000),
           label: getEventLabel(ev, taskName),
+          projectName: project?.name ?? null,
+          projectField,
         });
     }
     return map;
-  }, [events, days, tasksById]);
+  }, [events, days, tasksById, projectsById, fieldsById]);
 
   function handleColumnClick(day: Date, e: React.MouseEvent<HTMLDivElement>) {
     if (e.target !== e.currentTarget) return; // ignore clicks on event blocks (they stop propagation)
@@ -179,9 +204,18 @@ export default function CalendarView({
                         onEventClick(ev);
                       }}
                       style={{ top, height }}
-                      className={`absolute right-1 left-1 overflow-hidden rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-tight ${meta.bg} ${meta.text}`}
+                      className={`absolute right-1 left-1 flex flex-col overflow-hidden rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-tight ${meta.bg} ${meta.text}`}
                     >
-                      <span className="font-medium">{ev.label}</span>
+                      <span className="truncate font-medium">
+                        {ev.label}
+                      </span>
+                      {ev.projectName && (
+                        <ProjectChip
+                          name={ev.projectName}
+                          fieldName={ev.projectField}
+                          className="mt-0.5"
+                        />
+                      )}
                     </button>
                   );
                 })}
