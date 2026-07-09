@@ -45,10 +45,10 @@
   --color-rust-600: #963830;
 
   /* Fonts */
-  --font-display: 'Roboto Flex', system-ui, sans-serif;
+  --font-display: 'Roboto Flex Variable', system-ui, sans-serif;
   --font-serif: 'Roboto Serif', Georgia, serif;
   --font-body: 'Inter', system-ui, sans-serif;
-  --font-mono: 'Roboto Mono', monospace;
+  --font-mono: 'Roboto Mono Variable', monospace;
 
   /* Shadows */
   --shadow-card:
