@@ -29,6 +29,9 @@ export default function ActiveTimerWidget() {
   }
 
   const { start } = parseRange(activeLog.duration);
+  // getActive() only ever returns a row whose range is still open (see
+  // timeTrackingApi.getActive / isOpenRange), which guarantees a start.
+  if (!start) return null;
   const task = tasks.find((t) => t.id === activeLog.task_id);
 
   return (

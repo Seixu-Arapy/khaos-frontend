@@ -1,6 +1,14 @@
-// src/components/projects/ProjectCard.jsx
 import { useNavigate } from 'react-router-dom';
 import { StatusBadge, PriorityBadge, DueBadge, FieldBadge } from '../common/ui';
+import type { Project } from '../../lib/types';
+
+interface ProjectCardProps {
+  project: Project;
+  fieldName?: string | null;
+  sectionCount?: number;
+  taskCount?: number;
+  doneCount?: number;
+}
 
 export default function ProjectCard({
   project,
@@ -8,9 +16,9 @@ export default function ProjectCard({
   sectionCount,
   taskCount,
   doneCount,
-}) {
+}: ProjectCardProps) {
   const navigate = useNavigate();
-  const pct = taskCount ? Math.round((doneCount / taskCount) * 100) : 0;
+  const pct = taskCount ? Math.round(((doneCount ?? 0) / taskCount) * 100) : 0;
 
   return (
     <button

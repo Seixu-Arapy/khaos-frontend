@@ -8,8 +8,23 @@ import {
   useSections,
 } from '../../hooks/useHierarchy';
 import { StatusBadge, ProjectChip } from '../common/ui';
+import type { Id, Status } from '../../lib/types';
 
-export default function CommandPalette({ open, onClose }) {
+interface CommandResult {
+  type: 'project' | 'task';
+  id: Id;
+  label: string;
+  status: Status;
+  projectName?: string;
+  fieldName?: string | null;
+}
+
+interface CommandPaletteProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
   const { data: projects = [] } = useProjects();
   const { data: tasks = [] } = useTasks();
@@ -34,9 +49,9 @@ export default function CommandPalette({ open, onClose }) {
     if (open) setQuery('');
   }, [open]);
 
-  const results = useMemo(() => {
+  const results = useMemo<CommandResult[]>(() => {
     const q = query.trim().toLowerCase();
-    const projectMatches = projects
+    const projectMatches: CommandResult[] = projects
       .filter((p) => !q || p.name.toLowerCase().includes(q))
       .slice(0, 6)
       .map((p) => ({
@@ -46,7 +61,7 @@ export default function CommandPalette({ open, onClose }) {
         status: p.status,
         fieldName: p.field_id ? fieldsById.get(p.field_id)?.name : null,
       }));
-    const taskMatches = tasks
+    const taskMatches: CommandResult[] = tasks
       .filter((t) => !q || t.name.toLowerCase().includes(q))
       .slice(0, 8)
       .map((t) => {
@@ -68,7 +83,7 @@ export default function CommandPalette({ open, onClose }) {
     return [...projectMatches, ...taskMatches];
   }, [query, projects, tasks, fieldsById, sectionsById, projectsById]);
 
-  function go(item) {
+  function go(item: CommandResult) {
     onClose();
     if (item.type === 'project') navigate(`/projects/${item.id}`);
     else navigate(`/tasks?taskId=${item.id}`);

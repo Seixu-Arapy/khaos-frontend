@@ -11,7 +11,7 @@ export default function TimezonePicker() {
   const current = getTimezone();
 
   // "America/Sao_Paulo" → "Sao Paulo"
-  const cityLabel = current.split('/').pop().replace(/_/g, ' ');
+  const cityLabel = (current.split('/').pop() ?? current).replace(/_/g, ' ');
 
   // Use Intl's native offset: "GMT-3", "GMT+5:30", etc.
   const offsetLabel = useMemo(() => {

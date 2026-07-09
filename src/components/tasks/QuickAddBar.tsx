@@ -9,6 +9,15 @@ import { parseQuickAdd } from '../../lib/quickAdd';
 import { PRIORITIES } from '../../lib/constants';
 import { Modal, Select, TextInput, Button } from '../common/ui';
 import { toDatetimeLocalValue } from '../../lib/dateUtils';
+import type { Id, Priority } from '../../lib/types';
+
+interface Draft {
+  name: string;
+  priority: Priority;
+  dueDate: Date | null;
+  projectId: Id | null;
+  sectionId: Id | null;
+}
 
 export default function QuickAddBar() {
   const { data: projects = [] } = useProjects();
@@ -16,14 +25,14 @@ export default function QuickAddBar() {
   const { create } = useTaskMutations();
 
   const [raw, setRaw] = useState('');
-  const [draft, setDraft] = useState(null); // { name, priority, dueDate, projectId, sectionId }
+  const [draft, setDraft] = useState<Draft | null>(null);
 
   const sectionsForProject = useMemo(
     () => sections.filter((s) => s.project_id === draft?.projectId),
     [sections, draft?.projectId]
   );
 
-  function handleSubmit(e) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!raw.trim()) return;
     const parsed = parseQuickAdd(raw, projects);
@@ -40,7 +49,7 @@ export default function QuickAddBar() {
   }
 
   function confirmCreate() {
-    if (!draft.sectionId || !draft.name.trim()) return;
+    if (!draft || !draft.sectionId || !draft.name.trim()) return;
     create.mutate(
       {
         section_id: draft.sectionId,
@@ -163,7 +172,10 @@ export default function QuickAddBar() {
                 <Select
                   value={draft.priority}
                   onChange={(e) =>
-                    setDraft({ ...draft, priority: e.target.value })
+                    setDraft({
+                      ...draft,
+                      priority: e.target.value as Priority,
+                    })
                   }
                 >
                   {PRIORITIES.map((p) => (

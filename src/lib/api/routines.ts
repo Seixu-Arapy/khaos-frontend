@@ -1,5 +1,12 @@
 import { supabase } from '../supabaseClient';
-import type { Event, Id, NewRoutine, Routine, RoutinePatch } from '../types';
+import type {
+  Event,
+  Id,
+  NewRoutine,
+  Routine,
+  RoutinePatch,
+  RoutineWithField,
+} from '../types';
 
 function unwrap<T>({ data, error }: { data: T | null; error: unknown }): T {
   if (error) throw error;
@@ -12,7 +19,7 @@ export interface ListWithEventsResult {
 }
 
 export const routinesApi = {
-  list: async (): Promise<unknown[]> => {
+  list: async (): Promise<RoutineWithField[]> => {
     const response = await supabase
       .from('routines')
       .select('*, fields(name)')

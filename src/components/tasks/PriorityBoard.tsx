@@ -5,12 +5,21 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  type DragEndEvent,
 } from '@dnd-kit/core';
-import { STATUSES, STATUS_META } from '../../lib/constants';
-import { PriorityBadge, ProjectChip } from '../common/ui';
+import { PRIORITIES, PRIORITY_META } from '../../lib/constants';
+import { StatusBadge, ProjectChip } from '../common/ui';
 import { useTaskMutations } from '../../hooks/useHierarchy';
+import type { ProjectInfo } from './TaskList';
+import type { Id, Priority, Task } from '../../lib/types';
 
-function Card({ task, projectInfo, onOpen }) {
+interface CardProps {
+  task: Task;
+  projectInfo?: ProjectInfo;
+  onOpen: (task: Task) => void;
+}
+
+function Card({ task, projectInfo, onOpen }: CardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: task.id });
   const style = transform
@@ -27,7 +36,7 @@ function Card({ task, projectInfo, onOpen }) {
     >
       <p className="mb-1.5 leading-snug">{task.name}</p>
       <div className="flex items-center justify-between gap-2">
-        <PriorityBadge priority={task.priority} />
+        <StatusBadge status={task.status} />
         {projectInfo?.name && (
           <ProjectChip
             name={projectInfo.name}
@@ -40,9 +49,16 @@ function Card({ task, projectInfo, onOpen }) {
   );
 }
 
-function Column({ priority, tasks, projectInfoById, onOpen }) {
+interface ColumnProps {
+  priority: Priority;
+  tasks: Task[];
+  projectInfoById: Map<Id, ProjectInfo>;
+  onOpen: (task: Task) => void;
+}
+
+function Column({ priority, tasks, projectInfoById, onOpen }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: priority });
-  const meta = STATUS_META[priority] || null;
+  const meta = PRIORITY_META[priority];
   return (
     <div
       ref={setNodeRef}
@@ -50,10 +66,10 @@ function Column({ priority, tasks, projectInfoById, onOpen }) {
     >
       <div className="border-ink-700 flex items-center gap-1.5 border-b px-3 py-2">
         <span
-          className={`h-1.5 w-1.5 rounded-full ${meta?.dot || 'bg-ink-500'}`}
-        />
-        <span className="text-ink-400 text-xs font-semibold tracking-wide uppercase">
-          {priority}
+          className="text-xs font-semibold tracking-wide uppercase"
+          style={{ color: meta.iconColor }}
+        >
+          {meta.label}
         </span>
         <span className="text-ink-600 ml-auto text-xs">{tasks.length}</span>
       </div>
@@ -71,31 +87,40 @@ function Column({ priority, tasks, projectInfoById, onOpen }) {
   );
 }
 
-export default function KanbanBoard({ tasks, projectInfoById, onOpenTask }) {
+interface PriorityBoardProps {
+  tasks: Task[];
+  projectInfoById: Map<Id, ProjectInfo>;
+  onOpenTask: (task: Task) => void;
+}
+
+export default function PriorityBoard({
+  tasks,
+  projectInfoById,
+  onOpenTask,
+}: PriorityBoardProps) {
   const { update } = useTaskMutations();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
 
-  function handleDragEnd(e) {
+  function handleDragEnd(e: DragEndEvent) {
     const { active, over } = e;
     if (!over) return;
-    const taskId = active.id;
-    const newStatus = over.id;
-    const task = tasks.find((t) => t.id === taskId);
-    if (task && task.status !== newStatus) {
-      update.mutate({ id: taskId, patch: { status: newStatus } });
+    const newPriority = over.id as Priority;
+    const task = tasks.find((t) => t.id === active.id);
+    if (task && task.priority !== newPriority) {
+      update.mutate({ id: task.id, patch: { priority: newPriority } });
     }
   }
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="flex gap-3 overflow-x-auto pb-2">
-        {STATUSES.map((status) => (
+        {PRIORITIES.map((priority) => (
           <Column
-            key={status}
-            priority={status}
-            tasks={tasks.filter((t) => t.status === status)}
+            key={priority}
+            priority={priority}
+            tasks={tasks.filter((t) => (t.priority || 'medium') === priority)}
             projectInfoById={projectInfoById}
             onOpen={onOpenTask}
           />

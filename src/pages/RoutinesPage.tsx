@@ -9,6 +9,7 @@ import {
   Select,
   EmptyState,
 } from '../components/common/ui';
+import type { NewRoutine, RoutineWithField } from '../lib/types';
 
 const FREQUENCY_OPTIONS = [
   { value: 'daily', label: 'Every day' },
@@ -30,7 +31,17 @@ const TIME_OPTIONS = [
   { value: 'night', label: 'Night (21–23)' },
 ];
 
-const EMPTY_FORM = {
+interface RoutineForm {
+  name: string;
+  frequency: string;
+  preferred_time: string;
+  estimate: string;
+  constraints: string;
+  field_id: string;
+  active: boolean;
+}
+
+const EMPTY_FORM: RoutineForm = {
   name: '',
   frequency: '1x_week',
   preferred_time: 'anytime',
@@ -40,12 +51,34 @@ const EMPTY_FORM = {
   active: true,
 };
 
-function RoutineModal({ initial, onClose, onSave, saving }) {
-  const { data: fields = [] } = useFields();
-  const [form, setForm] = useState(initial ?? EMPTY_FORM);
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+function formFromRoutine(routine: RoutineWithField): RoutineForm {
+  return {
+    name: routine.name,
+    frequency: routine.frequency,
+    preferred_time: routine.preferred_time ?? 'anytime',
+    estimate: routine.estimate != null ? String(routine.estimate) : '',
+    constraints: routine.constraints ?? '',
+    field_id: routine.field_id ?? '',
+    active: routine.active,
+  };
+}
 
-  function handleSubmit(e) {
+interface RoutineModalProps {
+  initial?: RoutineWithField | null;
+  onClose: () => void;
+  onSave: (payload: NewRoutine) => void;
+  saving: boolean;
+}
+
+function RoutineModal({ initial, onClose, onSave, saving }: RoutineModalProps) {
+  const { data: fields = [] } = useFields();
+  const [form, setForm] = useState<RoutineForm>(() =>
+    initial ? formFromRoutine(initial) : EMPTY_FORM
+  );
+  const set = <K extends keyof RoutineForm>(k: K, v: RoutineForm[K]) =>
+    setForm((f) => ({ ...f, [k]: v }));
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) return;
     onSave({
@@ -181,7 +214,7 @@ function RoutineModal({ initial, onClose, onSave, saving }) {
   );
 }
 
-function FrequencyLabel({ value }) {
+function FrequencyLabel({ value }: { value: string }) {
   return (
     <span className="text-copper-400 font-mono text-xs">
       {FREQUENCY_OPTIONS.find((o) => o.value === value)?.label ?? value}
@@ -189,7 +222,7 @@ function FrequencyLabel({ value }) {
   );
 }
 
-function TimeLabel({ value }) {
+function TimeLabel({ value }: { value: string | null }) {
   return (
     <span className="text-ink-400 text-xs">
       {TIME_OPTIONS.find((o) => o.value === value)?.label ?? value}
@@ -201,20 +234,21 @@ export default function RoutinesPage() {
   const { data: routines = [], isLoading } = useRoutines();
   const { create, update, remove } = useRoutineMutations();
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState<RoutineWithField | null>(null);
 
-  function handleCreate(payload) {
+  function handleCreate(payload: NewRoutine) {
     create.mutate(payload, { onSuccess: () => setModalOpen(false) });
   }
 
-  function handleUpdate(payload) {
+  function handleUpdate(payload: NewRoutine) {
+    if (!editing) return;
     update.mutate(
       { id: editing.id, patch: payload },
       { onSuccess: () => setEditing(null) }
     );
   }
 
-  function handleDelete(routine) {
+  function handleDelete(routine: RoutineWithField) {
     if (window.confirm(`Delete routine "${routine.name}"?`)) {
       remove.mutate(routine.id);
     }
@@ -309,7 +343,14 @@ export default function RoutinesPage() {
   );
 }
 
-function RoutineCard({ routine, onEdit, onDelete, onToggle }) {
+interface RoutineCardProps {
+  routine: RoutineWithField;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggle: () => void;
+}
+
+function RoutineCard({ routine, onEdit, onDelete, onToggle }: RoutineCardProps) {
   return (
     <div className="border-ink-700 bg-ink-800/40 flex items-start gap-3 rounded-lg border px-4 py-3">
       <div className="min-w-0 flex-1">

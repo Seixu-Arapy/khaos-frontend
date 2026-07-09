@@ -9,7 +9,7 @@ export default function TagsPage() {
   const { create, remove } = useTagMutations();
   const [name, setName] = useState('');
 
-  function handleSubmit(e) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
     create.mutate(name.trim());

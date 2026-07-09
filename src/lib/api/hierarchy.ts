@@ -1,6 +1,7 @@
 import { supabase } from '../supabaseClient';
 import { edgesFromOrder } from '../reorder';
 import type {
+  Field,
   FieldPatch,
   Id,
   NewField,
@@ -27,14 +28,14 @@ function unwrap<T>({ data, error }: { data: T | null; error: unknown }): T {
 
 // ---------- Fields ----------
 export const fieldsApi = {
-  list: async (): Promise<unknown[]> => {
+  list: async (): Promise<Field[]> => {
     const response = await supabase
       .from('fields')
       .select('*')
       .order('order', { ascending: true });
     return unwrap(response);
   },
-  create: async (payload: NewField): Promise<unknown> => {
+  create: async (payload: NewField): Promise<Field> => {
     const response = await supabase
       .from('fields')
       .insert(payload)
@@ -42,7 +43,7 @@ export const fieldsApi = {
       .single();
     return unwrap(response);
   },
-  update: async (id: Id, patch: FieldPatch): Promise<unknown> => {
+  update: async (id: Id, patch: FieldPatch): Promise<Field> => {
     const response = await supabase
       .from('fields')
       .update(patch)
@@ -51,9 +52,9 @@ export const fieldsApi = {
       .single();
     return unwrap(response);
   },
-  remove: async (id: Id): Promise<unknown> => {
+  remove: async (id: Id): Promise<void> => {
     const response = await supabase.from('fields').delete().eq('id', id);
-    return unwrap(response);
+    unwrap(response);
   },
 };
 

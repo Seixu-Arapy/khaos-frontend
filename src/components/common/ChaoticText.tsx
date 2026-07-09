@@ -25,11 +25,15 @@ const STRETCHES = [
 ];
 const STYLES = ['italic', 'no-italic'];
 
-function pick(arr) {
+function pick(arr: string[]): string {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function generateStyles(length, family, style) {
+function generateStyles(
+  length: number,
+  family?: string,
+  style?: string
+): string[] {
   return Array.from(
     { length },
     () =>
@@ -37,12 +41,19 @@ function generateStyles(length, family, style) {
   );
 }
 
+interface ChaoticTextProps {
+  text?: string;
+  className?: string;
+  family?: string;
+  style?: string;
+}
+
 export default function ChaoticText({
   text,
   className = '',
   family = '',
   style = '',
-}) {
+}: ChaoticTextProps) {
   const [styles, setStyles] = useState(() =>
     generateStyles(text?.length ?? 0, family, style)
   );
