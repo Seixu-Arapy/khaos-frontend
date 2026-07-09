@@ -1,6 +1,6 @@
 import { StatusBadge, PriorityBadge } from '../common/ui';
 import { formatDueCompact, minutesToHuman } from '../../lib/dateUtils';
-import type { FieldChange } from '../../lib/gemini/confirmationPreview';
+import type { FieldChange } from '../../lib/chat/confirmationPreview';
 import type { Status, Priority } from '../../lib/types';
 
 // Same visual language as MomentPrompt's ChangeChip, reused for the

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { runTurn, type ChatMessage as AgentMessage } from '../lib/gemini/agent';
+import { runTurn, type ChatMessage as AgentMessage } from '../lib/chat/agent';
 import {
   buildConfirmationPreview,
   type ConfirmationPreview,
-} from '../lib/gemini/confirmationPreview';
+} from '../lib/chat/confirmationPreview';
 import { useProcessingContext } from '../lib/processingContext';
 import { useActiveEntity } from '../lib/activeEntityContext';
 import { getTimezone } from '../lib/timezone';

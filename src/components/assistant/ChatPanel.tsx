@@ -3,7 +3,7 @@ import { Send, Trash2, User, Loader2, X, Link2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useChatAgent, type ChatMessage } from '../../hooks/useChatAgent';
 import { useActiveEntity } from '../../lib/activeEntityContext';
-import { parseMessageSegments } from '../../lib/gemini/entityRefs';
+import { parseMessageSegments } from '../../lib/chat/entityRefs';
 import { EntityChip } from './EntityChip';
 import ConfirmationCard from './ConfirmationCard';
 import KhaosIcon from '../common/KhaosIcon';

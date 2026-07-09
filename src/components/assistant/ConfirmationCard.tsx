@@ -2,7 +2,7 @@ import { ShieldAlert, Trash2, Plus } from 'lucide-react';
 import { Button } from '../common/ui';
 import { InlineEntityPreview } from './InlineEntityPreview';
 import { ChangeBadge } from './ChangeBadge';
-import type { ConfirmationPreview } from '../../lib/gemini/confirmationPreview';
+import type { ConfirmationPreview } from '../../lib/chat/confirmationPreview';
 
 interface ConfirmationCardProps {
   preview: ConfirmationPreview;

@@ -5,7 +5,7 @@ import { useAllTaskLogs } from '../../hooks/useTimeTracking';
 import { InlineEntityPreview } from './InlineEntityPreview';
 import { InlineEventPreview } from './InlineEventPreview';
 import { computeTaskProgress } from '../../lib/taskProgress';
-import type { ChatEntityType } from '../../lib/gemini/entityRefs';
+import type { ChatEntityType } from '../../lib/chat/entityRefs';
 import type { Task, Project, Field, Event, TaskLog } from '../../lib/types';
 
 interface EntityChipProps {
