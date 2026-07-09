@@ -126,7 +126,8 @@ export const WRITE_TOOLS = new Set([
 export const functionDeclarations = [
   {
     name: 'search_schema',
-    description: "Searches the database's live OpenAPI schema by keyword.",
+    description:
+      "Searches the database's schema (tables, columns, enum values, callable RPC functions) by keyword.",
     parametersJsonSchema: {
       type: 'object',
       properties: {
@@ -282,7 +283,7 @@ export async function executeTool(
 ): Promise<unknown> {
   switch (name) {
     case 'search_schema': {
-      return cleanPayload(await searchSchema((args as any).query));
+      return cleanPayload(searchSchema((args as any).query));
     }
     case 'query_rows': {
       const a = args as any;
