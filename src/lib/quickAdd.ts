@@ -3,6 +3,8 @@
 // type: "tomorrow 3pm", "next friday", "in 2 days", "#project", "!high".
 // Anything it can't confidently parse is left in the task name untouched.
 
+import type { Id, Priority, Project } from './types';
+
 const DAY_NAMES = [
   'sunday',
   'monday',
@@ -13,7 +15,7 @@ const DAY_NAMES = [
   'saturday',
 ];
 
-const PRIORITY_ALIASES = {
+const PRIORITY_ALIASES: Record<string, Priority> = {
   u: 'urgent',
   urgent: 'urgent',
   h: 'high',
@@ -25,7 +27,7 @@ const PRIORITY_ALIASES = {
   low: 'low',
 };
 
-function applyTimeOfDay(date, timeStr) {
+function applyTimeOfDay(date: Date, timeStr: string | undefined): Date {
   if (!timeStr) {
     date.setHours(9, 0, 0, 0); // sensible default
     return date;
@@ -41,18 +43,28 @@ function applyTimeOfDay(date, timeStr) {
   return date;
 }
 
-function nextWeekday(from, targetDay) {
+function nextWeekday(from: Date, targetDay: number): Date {
   const d = new Date(from);
   const diff = (targetDay - d.getDay() + 7) % 7 || 7;
   d.setDate(d.getDate() + diff);
   return d;
 }
 
-export function parseQuickAdd(rawInput, projects = []) {
+export interface ParsedQuickAdd {
+  name: string;
+  priority: Priority | null;
+  projectId: Id | null;
+  dueDate: Date | null;
+}
+
+export function parseQuickAdd(
+  rawInput: string,
+  projects: Project[] = []
+): ParsedQuickAdd {
   let text = rawInput;
-  let priority = null;
-  let projectId = null;
-  let dueDate = null;
+  let priority: Priority | null = null;
+  let projectId: Id | null = null;
+  let dueDate: Date | null = null;
 
   const timePattern = '(?:\\d{1,2}(?::\\d{2})?\\s?(?:am|pm)?)';
 

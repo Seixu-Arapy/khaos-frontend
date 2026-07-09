@@ -83,13 +83,7 @@ export function useOrderedSectionIds(
       (e) => ids.includes(e.section_previous) && ids.includes(e.section_next)
     )
     .map((e) => ({ prev: e.section_previous, next: e.section_next }));
-  // orderFromEdges (reorder.js) is JSDoc-typed for number[] ids, but this
-  // codebase's ids are uuid strings — the implementation is id-type-agnostic.
-  const typedOrderFromEdges = orderFromEdges as unknown as (
-    ids: Id[],
-    edges: { prev: Id; next: Id }[]
-  ) => Id[];
-  return typedOrderFromEdges(ids, edges);
+  return orderFromEdges(ids, edges);
 }
 
 // ---------- Mutations ----------

@@ -5,7 +5,14 @@
 // This module parses that text into {start, end} Dates and formats Dates
 // back into a literal Postgres will accept on insert/update.
 
-export function parseRange(rangeStr) {
+export interface ParsedRange {
+  start: Date | null;
+  end: Date | null;
+  lowerInclusive?: boolean;
+  upperInclusive?: boolean;
+}
+
+export function parseRange(rangeStr: unknown): ParsedRange {
   if (!rangeStr || typeof rangeStr !== 'string') {
     return { start: null, end: null };
   }
@@ -42,18 +49,24 @@ export function parseRange(rangeStr) {
   };
 }
 
-export function formatRange(start, end) {
+export function formatRange(
+  start: Date | string | null | undefined,
+  end: Date | string | null | undefined
+): string {
   const s = start ? new Date(start).toISOString() : '';
   const e = end ? new Date(end).toISOString() : '';
   return `[${s},${e})`;
 }
 
-export function isOpenRange(rangeStr) {
+export function isOpenRange(rangeStr: unknown): boolean {
   const { start, end } = parseRange(rangeStr);
   return Boolean(start) && !end;
 }
 
-export function rangeDurationMinutes(rangeStr, now = new Date()) {
+export function rangeDurationMinutes(
+  rangeStr: unknown,
+  now: Date = new Date()
+): number {
   const { start, end } = parseRange(rangeStr);
   if (!start) return 0;
   const endTime = end || now;

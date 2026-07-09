@@ -158,14 +158,11 @@ export const sectionsApi = {
       .from('sections_sequence')
       .delete()
       .in('section_next', orderedSectionIds);
-    // edgesFromOrder (reorder.js) builds these via a computed key, so TS
-    // can't see the result as the named { section_previous, section_next }
-    // shape it actually has — remove this cast once reorder.js is TS.
     const rows = edgesFromOrder(
       orderedSectionIds,
       'section_previous',
       'section_next'
-    ) as { section_previous: Id; section_next: Id }[];
+    );
     if (rows.length) {
       const response = await supabase.from('sections_sequence').insert(rows);
       unwrap(response);

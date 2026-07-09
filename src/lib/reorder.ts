@@ -3,14 +3,17 @@
 // helpers turn that edge list into an ordered array, and back again.
 
 /**
- * @param {number[]} ids - all ids that belong to this list (e.g. every task in a section)
- * @param {Array<{prev:number,next:number}>} edges - edges scoped to this list
- * @returns {number[]} ids in order
+ * @param ids - all ids that belong to this list (e.g. every task in a section)
+ * @param edges - edges scoped to this list
+ * @returns ids in order
  */
-export function orderFromEdges(ids, edges) {
+export function orderFromEdges<T>(
+  ids: T[],
+  edges: { prev: T; next: T }[]
+): T[] {
   const idSet = new Set(ids);
-  const nextOf = new Map();
-  const hasIncoming = new Set();
+  const nextOf = new Map<T, T>();
+  const hasIncoming = new Set<T>();
 
   edges.forEach(({ prev, next }) => {
     if (idSet.has(prev) && idSet.has(next)) {
@@ -22,11 +25,11 @@ export function orderFromEdges(ids, edges) {
   let head = ids.find((id) => !hasIncoming.has(id));
   if (head === undefined) head = ids[0];
 
-  const ordered = [];
-  const seen = new Set();
-  let current = head;
+  const ordered: T[] = [];
+  const seen = new Set<T>();
+  let current: T | undefined = head;
 
-  while (current !== undefined && current !== null && !seen.has(current)) {
+  while (current !== undefined && !seen.has(current)) {
     ordered.push(current);
     seen.add(current);
     current = nextOf.get(current);
@@ -45,7 +48,11 @@ export function orderFromEdges(ids, edges) {
  * Moves `movedId` so it sits at `targetIndex` within `orderedIds`, returning
  * a new ordered array. Does not touch the database.
  */
-export function moveInOrder(orderedIds, movedId, targetIndex) {
+export function moveInOrder<T>(
+  orderedIds: T[],
+  movedId: T,
+  targetIndex: number
+): T[] {
   const withoutMoved = orderedIds.filter((id) => id !== movedId);
   const clampedIndex = Math.max(0, Math.min(targetIndex, withoutMoved.length));
   withoutMoved.splice(clampedIndex, 0, movedId);
@@ -56,10 +63,18 @@ export function moveInOrder(orderedIds, movedId, targetIndex) {
  * Turns an ordered id array into the edge rows to persist, e.g.
  * [{ task_previous: 1, task_next: 2 }, { task_previous: 2, task_next: 3 }]
  */
-export function edgesFromOrder(orderedIds, prevKey, nextKey) {
-  const rows = [];
+export function edgesFromOrder<T, P extends string, N extends string>(
+  orderedIds: T[],
+  prevKey: P,
+  nextKey: N
+): ({ [K in P]: T } & { [K in N]: T })[] {
+  const rows: ({ [K in P]: T } & { [K in N]: T })[] = [];
   for (let i = 0; i < orderedIds.length - 1; i++) {
-    rows.push({ [prevKey]: orderedIds[i], [nextKey]: orderedIds[i + 1] });
+    rows.push(
+      { [prevKey]: orderedIds[i], [nextKey]: orderedIds[i + 1] } as {
+        [K in P]: T;
+      } & { [K in N]: T }
+    );
   }
   return rows;
 }

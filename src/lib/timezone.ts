@@ -4,9 +4,11 @@
 // Defaults to the browser's own IANA timezone (usually correct).
 // ---------------------------------------------------------------------------
 
+export type DateInput = Date | string | number | null | undefined;
+
 const STORAGE_KEY = 'logbook.timezone';
 
-export function getTimezone() {
+export function getTimezone(): string {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored && Intl.supportedValuesOf('timeZone').includes(stored))
@@ -17,7 +19,7 @@ export function getTimezone() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
-export function setTimezone(tz) {
+export function setTimezone(tz: string): void {
   try {
     localStorage.setItem(STORAGE_KEY, tz);
     // Reload so all cached date computations refresh.
@@ -34,7 +36,7 @@ export function setTimezone(tz) {
 // local time by most browsers. We fix this by appending "Z".
 // ---------------------------------------------------------------------------
 
-export function parseMomentTime(timeStr) {
+export function parseMomentTime(timeStr: unknown): Date | null {
   if (!timeStr) return null;
   const s = String(timeStr).trim();
   // Already has a timezone marker — parse as-is.
@@ -48,24 +50,37 @@ export function parseMomentTime(timeStr) {
 // We use Intl directly (no extra deps) so we can pass an explicit timezone.
 // ---------------------------------------------------------------------------
 
-function fmt(date, options, tz) {
+function fmt(
+  date: DateInput,
+  options: Intl.DateTimeFormatOptions,
+  tz?: string
+): string {
   return new Intl.DateTimeFormat('default', {
     ...options,
     timeZone: tz || getTimezone(),
-  }).format(new Date(date));
+  }).format(new Date(date ?? NaN));
+}
+
+interface FormatInTzOptions {
+  weekday?: Intl.DateTimeFormatOptions['weekday'];
+  year?: Intl.DateTimeFormatOptions['year'];
+  month?: Intl.DateTimeFormatOptions['month'];
+  day?: Intl.DateTimeFormatOptions['day'];
+  hour?: Intl.DateTimeFormatOptions['hour'];
+  minute?: Intl.DateTimeFormatOptions['minute'];
 }
 
 export function formatInTz(
-  dateInput,
-  { weekday, year, month, day, hour, minute } = {},
-  tz
-) {
+  dateInput: DateInput,
+  { weekday, year, month, day, hour, minute }: FormatInTzOptions = {},
+  tz?: string
+): string {
   if (!dateInput) return '';
   return fmt(dateInput, { weekday, year, month, day, hour, minute }, tz);
 }
 
 // Returns the HH:mm string in the user's timezone
-export function formatTime(dateInput, tz) {
+export function formatTime(dateInput: DateInput, tz?: string): string {
   if (!dateInput) return '';
   return fmt(
     dateInput,
@@ -75,7 +90,7 @@ export function formatTime(dateInput, tz) {
 }
 
 // Returns "d MMM yyyy" in the user's timezone
-export function formatDate(dateInput, tz) {
+export function formatDate(dateInput: DateInput, tz?: string): string {
   if (!dateInput) return '';
   return fmt(
     dateInput,
@@ -85,7 +100,7 @@ export function formatDate(dateInput, tz) {
 }
 
 // Human-friendly relative label: "Today, 14:30", "Tomorrow, 09:00", etc.
-export function formatDueInTz(dateInput, tz) {
+export function formatDueInTz(dateInput: DateInput, tz?: string): string | null {
   if (!dateInput) return null;
   const d = new Date(dateInput);
   const zone = tz || getTimezone();
@@ -107,14 +122,18 @@ export function formatDueInTz(dateInput, tz) {
 }
 
 // Checks whether a date is overdue in the user's timezone
-export function isOverdueInTz(dateInput, status, tz) {
+export function isOverdueInTz(
+  dateInput: DateInput,
+  status?: string | null,
+  _tz?: string
+): boolean {
   if (!dateInput) return false;
   if (status === 'done' || status === 'cancelled') return false;
   return new Date(dateInput) < new Date();
 }
 
 // Checks whether a date falls on today in the user's timezone
-export function isTodayInTz(dateInput, tz) {
+export function isTodayInTz(dateInput: DateInput, tz?: string): boolean {
   if (!dateInput) return false;
   const zone = tz || getTimezone();
   const a = partsInTz(new Date(dateInput), zone);
@@ -124,18 +143,21 @@ export function isTodayInTz(dateInput, tz) {
 
 // Converts a UTC Date to the value an <input type="datetime-local"> expects,
 // expressed in the user's timezone (not the system locale).
-export function toDatetimeLocalInTz(dateInput, tz) {
+export function toDatetimeLocalInTz(dateInput: DateInput, tz?: string): string {
   if (!dateInput) return '';
   const zone = tz || getTimezone();
   const d = new Date(dateInput);
   const p = partsInTz(d, zone);
-  const pad = (n) => String(n).padStart(2, '0');
+  const pad = (n: number) => String(n).padStart(2, '0');
   return `${p.year}-${pad(p.month)}-${pad(p.day)}T${pad(p.hour)}:${pad(p.minute)}`;
 }
 
 // Parses the value from <input type="datetime-local"> as if it is in the
 // user's timezone, returning a UTC Date.
-export function fromDatetimeLocalInTz(localStr, tz) {
+export function fromDatetimeLocalInTz(
+  localStr: string | null | undefined,
+  tz?: string
+): Date | null {
   if (!localStr) return null;
   const zone = tz || getTimezone();
   // e.g. "2024-06-21T14:30"
@@ -154,7 +176,16 @@ export function fromDatetimeLocalInTz(localStr, tz) {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function partsInTz(date, tz) {
+interface TzParts {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+}
+
+function partsInTz(date: Date, tz: string): TzParts {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
     year: 'numeric',
@@ -166,7 +197,8 @@ function partsInTz(date, tz) {
     hour12: false,
   }).formatToParts(date);
 
-  const get = (type) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  const get = (type: string) =>
+    Number(parts.find((p) => p.type === type)?.value ?? 0);
   return {
     year: get('year'),
     month: get('month'),
@@ -177,7 +209,7 @@ function partsInTz(date, tz) {
   };
 }
 
-function getUtcOffsetMs(date, tz) {
+function getUtcOffsetMs(date: Date, tz: string): number {
   // Reconstruct the wall-clock time in tz as if it were UTC, then subtract.
   const p = partsInTz(date, tz);
   const wallAsUtc = Date.UTC(
@@ -192,14 +224,14 @@ function getUtcOffsetMs(date, tz) {
 }
 
 // Simple Julian Day Number for day-difference arithmetic without importing date-fns
-function julianDay(y, m, d) {
+function julianDay(y: number, m: number, d: number): number {
   return (
     Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d - 1524
   );
 }
 
 // All IANA timezone names available in this browser — used by the picker.
-export function getAllTimezones() {
+export function getAllTimezones(): string[] {
   try {
     return Intl.supportedValuesOf('timeZone');
   } catch {

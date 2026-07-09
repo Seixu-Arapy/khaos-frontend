@@ -13,7 +13,9 @@ import {
   formatTime,
   parseMomentTime,
   getTimezone,
+  type DateInput,
 } from './timezone';
+import type { Status } from './types';
 
 export { parseMomentTime };
 
@@ -33,7 +35,9 @@ const EN_MONTHS = [
 ];
 
 // Returns { day: '06', month: 'DEC' } in the user's timezone
-export function formatDueCompact(dateInput) {
+export function formatDueCompact(
+  dateInput: DateInput
+): { day: string; month: string } | null {
   if (!dateInput) return null;
   const tz = getTimezone();
   const d = new Date(dateInput);
@@ -47,19 +51,22 @@ export function formatDueCompact(dateInput) {
   return { day, month: EN_MONTHS[month] };
 }
 
-export function formatDue(dateInput) {
+export function formatDue(dateInput: DateInput): string | null {
   return formatDueInTz(dateInput);
 }
 
-export function isOverdue(dateInput, status) {
+export function isOverdue(
+  dateInput: DateInput,
+  status?: Status | null
+): boolean {
   return isOverdueInTz(dateInput, status);
 }
 
-export function isToday(dateInput) {
+export function isToday(dateInput: DateInput): boolean {
   return isTodayInTz(dateInput);
 }
 
-export function minutesToHuman(mins) {
+export function minutesToHuman(mins: number | null | undefined): string {
   if (!mins || mins <= 0) return '0m';
   const h = Math.floor(mins / 60);
   const m = Math.round(mins % 60);
@@ -68,33 +75,38 @@ export function minutesToHuman(mins) {
   return `${h}h ${m}m`;
 }
 
-export function elapsedSince(dateInput) {
+export function elapsedSince(dateInput: DateInput): string {
   if (!dateInput) return '';
   return formatDistanceToNowStrict(new Date(dateInput));
 }
 
 // mm:ss or h:mm:ss live readout for the running timer widget
-export function liveStopwatch(startDate, nowDate = new Date()) {
+export function liveStopwatch(
+  startDate: Date | string | number,
+  nowDate: Date = new Date()
+): string {
   const ms = Math.max(0, nowDate.getTime() - new Date(startDate).getTime());
   const totalSeconds = Math.floor(ms / 1000);
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
-  const pad = (n) => String(n).padStart(2, '0');
+  const pad = (n: number) => String(n).padStart(2, '0');
   return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 }
 
 // For <input type="datetime-local"> — converts a UTC date to local wall-clock value
-export function toDatetimeLocalValue(dateInput) {
+export function toDatetimeLocalValue(dateInput: DateInput): string {
   return toDatetimeLocalInTz(dateInput);
 }
 
 // Parses the string from <input type="datetime-local"> back to a UTC Date
-export function fromDatetimeLocalValue(localStr) {
+export function fromDatetimeLocalValue(
+  localStr: string | null | undefined
+): Date | null {
   return fromDatetimeLocalInTz(localStr);
 }
 
 // Format just the time portion (HH:mm) in user's timezone — used by calendar
-export function formatTimeOnly(dateInput) {
+export function formatTimeOnly(dateInput: DateInput): string {
   return formatTime(dateInput);
 }
