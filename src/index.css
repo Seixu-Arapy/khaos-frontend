@@ -121,4 +121,16 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /* Neutral texture for a logged-time segment with no matching schedule —
+     deliberately not a color, so it never competes with event-type hues. */
+  .log-rail-gap {
+    background-image: repeating-linear-gradient(
+      135deg,
+      var(--color-ink-400) 0,
+      var(--color-ink-400) 1.5px,
+      transparent 1.5px,
+      transparent 4px
+    );
+  }
 }

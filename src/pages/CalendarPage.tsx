@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useEvents } from '../hooks/useEvents';
 import { useTasks, useProjects, useFields } from '../hooks/useHierarchy';
 import { useAllTaskLogs } from '../hooks/useTimeTracking';
 import { Button } from '../components/common/ui';
-import CalendarView from '../components/calendar/CalendarView';
+import CalendarView, { type DueItem } from '../components/calendar/CalendarView';
 import EventModal from '../components/calendar/EventModal';
 import type { Event, Task, Project, Field, TaskLog } from '../lib/types';
 
 export default function CalendarPage() {
+  const navigate = useNavigate();
   const { data: events = [] } = useEvents() as { data: Event[] };
   const { data: tasks = [] } = useTasks() as { data: Task[] };
   const { data: projects = [] } = useProjects() as { data: Project[] };
@@ -37,6 +38,12 @@ export default function CalendarPage() {
     }
   }
 
+  function handleMilestoneClick(item: DueItem) {
+    navigate(
+      item.type === 'task' ? `/tasks?taskId=${item.id}` : `/projects/${item.id}`
+    );
+  }
+
   return (
     <div className="flex h-full flex-col px-6 py-5">
       <div className="mb-3 flex items-center justify-between">
@@ -54,6 +61,7 @@ export default function CalendarPage() {
         taskLogs={taskLogs}
         onSlotClick={setCreatingAt}
         onEventClick={setEditingEvent}
+        onMilestoneClick={handleMilestoneClick}
       />
 
       {creatingAt && (
