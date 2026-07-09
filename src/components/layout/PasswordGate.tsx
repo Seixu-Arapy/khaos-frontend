@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { KhaosTitle } from '../common/KhaosLogo';
 
 const HASH = import.meta.env.VITE_APP_PASSWORD_HASH;
 const SESSION_KEY = 'khaos.auth.v1';
 
-async function sha256(str) {
+async function sha256(str: string): Promise<string> {
   const buf = await crypto.subtle.digest(
     'SHA-256',
     new TextEncoder().encode(str)
@@ -14,7 +15,7 @@ async function sha256(str) {
     .join('');
 }
 
-function isAuthenticated() {
+function isAuthenticated(): boolean {
   try {
     return sessionStorage.getItem(SESSION_KEY) === HASH;
   } catch {
@@ -22,8 +23,12 @@ function isAuthenticated() {
   }
 }
 
+interface PasswordGateProps {
+  children: ReactNode;
+}
+
 // If no password hash is configured (dev mode), skip the gate entirely.
-export function PasswordGate({ children }) {
+export function PasswordGate({ children }: PasswordGateProps) {
   const [authed, setAuthed] = useState(() => !HASH || isAuthenticated());
   const [value, setValue] = useState('');
   const [error, setError] = useState(false);
@@ -31,7 +36,7 @@ export function PasswordGate({ children }) {
 
   if (authed) return children;
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!value.trim()) return;
     setChecking(true);
@@ -40,7 +45,9 @@ export function PasswordGate({ children }) {
     if (hash === HASH) {
       try {
         sessionStorage.setItem(SESSION_KEY, HASH);
-      } catch {}
+      } catch {
+        // storage unavailable
+      }
       setAuthed(true);
     } else {
       setError(true);

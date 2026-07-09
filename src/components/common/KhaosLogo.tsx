@@ -1,7 +1,11 @@
 import KhaosIcon from '../common/KhaosIcon'; // Ajusta o caminho relativo se necessário
 import ChaoticText from './ChaoticText';
 
-export function KhaosLogo({ spinning }) {
+interface KhaosLogoProps {
+  spinning?: boolean;
+}
+
+export function KhaosLogo({ spinning }: KhaosLogoProps) {
   return (
     <div className="flex items-center gap-2">
       <KhaosIcon
@@ -15,7 +19,11 @@ export function KhaosLogo({ spinning }) {
   );
 }
 
-export function KhaosTitle({ className }) {
+interface KhaosTitleProps {
+  className?: string;
+}
+
+export function KhaosTitle({ className }: KhaosTitleProps) {
   return (
     <ChaoticText
       text="Khaos"

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   Plus,
   Trash2,
@@ -43,8 +44,15 @@ import { useTags, useTagLinks, useTagMutations } from '../../hooks/useTags';
 import { useNotes, useNoteMutations } from '../../hooks/useMoments';
 import { useTaskSequence, useSequenceMutations } from '../../hooks/useSequence';
 import { wouldCreateCycle } from '../../lib/sequenceGraph';
+import type { Id, Priority, Status, Task, WorkTag } from '../../lib/types';
 
-function Section({ title, children, action }) {
+interface SectionProps {
+  title: ReactNode;
+  children: ReactNode;
+  action?: ReactNode;
+}
+
+function Section({ title, children, action }: SectionProps) {
   return (
     <div className="border-ink-700 border-t pt-3.5 first:border-0 first:pt-0">
       <div className="mb-2 flex items-center justify-between">
@@ -58,7 +66,13 @@ function Section({ title, children, action }) {
   );
 }
 
-function SequenceChip({ task, onOpen, onRemove }) {
+interface SequenceChipProps {
+  task: Task;
+  onOpen?: (task: Task) => void;
+  onRemove: () => void;
+}
+
+function SequenceChip({ task, onOpen, onRemove }: SequenceChipProps) {
   return (
     <span className="bg-ink-700 text-ink-200 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs">
       <button
@@ -81,7 +95,24 @@ function SequenceChip({ task, onOpen, onRemove }) {
   );
 }
 
-export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
+interface SeqPicker {
+  kind: 'before' | 'after';
+  search: string;
+}
+
+interface TaskDetailModalProps {
+  taskId: Id;
+  task: Task;
+  onClose: () => void;
+  onOpenTask: (task: Task) => void;
+}
+
+export default function TaskDetailModal({
+  taskId,
+  task,
+  onClose,
+  onOpenTask,
+}: TaskDetailModalProps) {
   const { update, remove } = useTaskMutations();
   const { data: sections = [] } = useSections();
   const { data: projects = [] } = useProjects();
@@ -104,8 +135,8 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
   );
   const { before, after } = useTaskSequence(task.id, tasksById);
   const sequenceMutations = useSequenceMutations();
-  const [seqPicker, setSeqPicker] = useState(null);
-  const [seqError, setSeqError] = useState(null);
+  const [seqPicker, setSeqPicker] = useState<SeqPicker | null>(null);
+  const [seqError, setSeqError] = useState<string | null>(null);
 
   const [newItem, setNewItem] = useState('');
   const [newNote, setNewNote] = useState('');
@@ -114,11 +145,10 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
   const [showDueTime, setShowDueTime] = useState(() => {
     if (!task.due) return false;
     const timePart = task.due.split('T')[1];
-    return timePart && !timePart.startsWith('00:00:00');
+    return Boolean(timePart) && !timePart.startsWith('00:00:00');
   });
 
   const section = sections.find((s) => s.id === task.section_id);
-  const project = projects.find((p) => p.id === section?.project_id);
   const isActive = activeLog?.task_id === task.id;
   const otherTimerRunning = activeLog && activeLog.task_id !== task.id;
 
@@ -128,7 +158,7 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
   );
   const taskTags = taskTagLinks
     .map((l) => allTags.find((t) => t.id === l.work_tag_id))
-    .filter(Boolean);
+    .filter((t): t is WorkTag => Boolean(t));
   const availableTags = allTags.filter(
     (t) => !taskTags.some((tt) => tt.id === t.id)
   );
@@ -171,7 +201,11 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
     };
   }, [task.due]);
 
-  function handleDueChange(dateStr, timeStr, forceTimeActive) {
+  function handleDueChange(
+    dateStr: string,
+    timeStr: string,
+    forceTimeActive?: boolean
+  ) {
     if (!dateStr) {
       patch({ due: null });
       return;
@@ -193,7 +227,8 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
     patch({ due: localDate.toISOString() });
   }
 
-  function handleAddSequence(otherTask) {
+  function handleAddSequence(otherTask: Task) {
+    if (!seqPicker) return;
     const previousId = seqPicker.kind === 'before' ? otherTask.id : task.id;
     const nextId = seqPicker.kind === 'before' ? task.id : otherTask.id;
 
@@ -206,11 +241,19 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
     setSeqPicker(null);
   }
 
-  function patch(fields) {
+  function patch(fields: {
+    name?: string;
+    section_id?: string;
+    status?: Status;
+    priority?: Priority;
+    estimate?: number | null;
+    due?: string | null;
+    target?: string | null;
+  }) {
     update.mutate({ id: task.id, patch: fields });
   }
 
-  function addItem(e) {
+  function addItem(e: React.FormEvent) {
     e.preventDefault();
     if (!newItem.trim()) return;
     itemMutations.create.mutate({
@@ -221,17 +264,11 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
     setNewItem('');
   }
 
-  function addNote(e) {
+  function addNote(e: React.FormEvent) {
     e.preventDefault();
     if (!newNote.trim()) return;
     noteMutations.addNote.mutate(newNote.trim());
     setNewNote('');
-  }
-
-  function handleDelete() {
-    if (window.confirm(`Delete "${task.name}"? This can't be undone.`)) {
-      remove.mutate(task.id, { onSuccess: onClose });
-    }
   }
 
   return (
@@ -288,7 +325,7 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
               </label>
               <Select
                 value={task.status}
-                onChange={(e) => patch({ status: e.target.value })}
+                onChange={(e) => patch({ status: e.target.value as Status })}
                 className="w-full"
               >
                 {STATUSES.map((s) => (
@@ -304,7 +341,9 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
               </label>
               <Select
                 value={task.priority || 'medium'}
-                onChange={(e) => patch({ priority: e.target.value })}
+                onChange={(e) =>
+                  patch({ priority: e.target.value as Priority })
+                }
                 className="w-full"
               >
                 {PRIORITIES.map((p) => (
@@ -391,7 +430,7 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
             </span>
           </label>
           <TargetEditor
-            value={task.target}
+            value={task.target as string | null}
             due={task.due}
             onChange={(v) => patch({ target: v })}
           />
@@ -620,7 +659,7 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
               <Button
                 size="sm"
                 variant="secondary"
-                disabled={otherTimerRunning}
+                disabled={Boolean(otherTimerRunning)}
                 title={
                   otherTimerRunning
                     ? 'Stop the other running timer first'
@@ -708,7 +747,7 @@ export default function TaskDetailModal({ taskId, task, onClose, onOpenTask }) {
   );
 }
 
-function clsxDone(done) {
+function clsxDone(done: boolean): string {
   return done
     ? 'flex-1 text-sm text-ink-600 line-through'
     : 'flex-1 text-sm text-ink-200';

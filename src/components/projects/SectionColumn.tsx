@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   GripVertical,
   Plus,
@@ -6,50 +7,23 @@ import {
   Trash2,
   CalendarRange,
 } from 'lucide-react';
-import {
-  DndContext,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-  arrayMove,
-} from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Select, Modal, TargetBadge } from '../common/ui';
 import TargetEditor from '../common/TargetEditor';
-import { STATUS_META } from '../../lib/constants';
+import { STATUSES, STATUS_META } from '../../lib/constants';
 import {
   useTaskMutations,
   useSectionMutations,
 } from '../../hooks/useHierarchy';
 import TaskRow from '../tasks/TaskRow';
+import type { Id, Section, Status, Task } from '../../lib/types';
 
-function SortableTaskRow({ task, onOpen }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
-  return (
-    <TaskRow
-      task={task}
-      onOpen={onOpen}
-      dragRef={setNodeRef}
-      dragStyle={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.4 : 1,
-      }}
-      dragHandleProps={{ ...attributes, ...listeners }}
-    />
-  );
+interface SectionColumnProps {
+  section: Section;
+  orderedTasks: Task[];
+  onOpenTask: (task: Task) => void;
+  dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
 }
 
 export default function SectionColumn({
@@ -57,27 +31,15 @@ export default function SectionColumn({
   orderedTasks,
   onOpenTask,
   dragHandleProps,
-}) {
-  const { create: createTask, reorder: reorderTasks } = useTaskMutations();
+}: SectionColumnProps) {
+  const { create: createTask } = useTaskMutations();
   const { update: updateSection, remove: removeSection } =
     useSectionMutations();
   const [newTaskName, setNewTaskName] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [targetOpen, setTargetOpen] = useState(false);
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
-  );
 
-  function handleDragEnd(e) {
-    const { active, over } = e;
-    if (!over || active.id === over.id) return;
-    const ids = orderedTasks.map((t) => t.id);
-    const oldIndex = ids.indexOf(active.id);
-    const newIndex = ids.indexOf(over.id);
-    reorderTasks.mutate({ orderedIds: arrayMove(ids, oldIndex, newIndex) });
-  }
-
-  function addTask(e) {
+  function addTask(e: React.FormEvent) {
     e.preventDefault();
     if (!newTaskName.trim()) return;
     createTask.mutate({
@@ -113,7 +75,7 @@ export default function SectionColumn({
           title="Edit target"
         >
           {section.target ? (
-            <TargetBadge target={section.target} />
+            <TargetBadge target={section.target as string | null} />
           ) : (
             <CalendarRange size={14} />
           )}
@@ -123,12 +85,12 @@ export default function SectionColumn({
           onChange={(e) =>
             updateSection.mutate({
               id: section.id,
-              patch: { status: e.target.value },
+              patch: { status: e.target.value as Status },
             })
           }
           className="py-1! text-xs!"
         >
-          {Object.keys(STATUS_META).map((s) => (
+          {STATUSES.map((s) => (
             <option key={s} value={s}>
               {STATUS_META[s].label}
             </option>
@@ -158,22 +120,11 @@ export default function SectionColumn({
       </div>
 
       <div className="p-2">
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <SortableContext
-            items={orderedTasks.map((t) => t.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <div className="space-y-0.5">
-              {orderedTasks.map((task) => (
-                <SortableTaskRow
-                  key={task.id}
-                  task={task}
-                  onOpen={onOpenTask}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+        <div className="space-y-0.5">
+          {orderedTasks.map((task) => (
+            <TaskRow key={task.id} task={task} onOpen={onOpenTask} />
+          ))}
+        </div>
 
         <form
           onSubmit={addTask}
@@ -195,7 +146,7 @@ export default function SectionColumn({
         title={`Target — ${section.name}`}
       >
         <TargetEditor
-          value={section.target}
+          value={section.target as string | null}
           due={section.due}
           onChange={(v) =>
             updateSection.mutate({ id: section.id, patch: { target: v } })
@@ -206,7 +157,17 @@ export default function SectionColumn({
   );
 }
 
-export function SortableSectionWrapper({ id, children }) {
+interface SortableSectionWrapperProps {
+  id: Id;
+  children: (
+    dragProps: Record<string, unknown>
+  ) => ReactNode;
+}
+
+export function SortableSectionWrapper({
+  id,
+  children,
+}: SortableSectionWrapperProps) {
   const {
     attributes,
     listeners,
