@@ -99,6 +99,9 @@ const looseFiltersSchema = {
   description:
     'Row filters, combined with AND. Each entry MUST have all three keys column, operator and value — never a plain {column: value} map. ' +
     'Example: to filter event_type = scheduled, pass [{"column":"event_type","operator":"eq","value":"scheduled"}]. ' +
+    'Range-typed columns (e.g. tstzrange columns like "duration" or "schedule") have no separate start/end column to filter — ' +
+    'to test overlap with a window, use operator "ov" with a Postgres range literal value, ' +
+    'e.g. [{"column":"duration","operator":"ov","value":"[2026-07-09 00:00:00,2026-07-10 00:00:00)"}] to find events on 2026-07-09. ' +
     'Prefer a real array of these objects; a JSON-encoded string of the same shape is also accepted.',
   items: {
     type: 'object',
