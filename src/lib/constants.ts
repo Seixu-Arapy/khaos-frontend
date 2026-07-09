@@ -159,15 +159,27 @@ interface EventTypeMeta {
   label: string;
   text: string;
   bg: string;
+  border: string;
 }
 
 export const EVENT_TYPE_META: Record<EventType, EventTypeMeta> = {
-  fixed: { label: 'Fixed', text: 'text-rust-500', bg: 'bg-rust-500/10' },
-  scheduled: { label: 'Plan', text: 'text-teal-400', bg: 'bg-teal-500/10' },
+  fixed: {
+    label: 'Fixed',
+    text: 'text-rust-500',
+    bg: 'bg-rust-500/10',
+    border: 'border-rust-500',
+  },
+  scheduled: {
+    label: 'Plan',
+    text: 'text-teal-400',
+    bg: 'bg-teal-500/10',
+    border: 'border-teal-400',
+  },
   routine: {
     label: 'Routine',
     text: 'text-copper-400',
     bg: 'bg-copper-500/10',
+    border: 'border-copper-400',
   },
 };
 

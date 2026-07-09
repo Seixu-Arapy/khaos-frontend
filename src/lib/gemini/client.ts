@@ -186,14 +186,15 @@ Tasks, sections and projects have DUE and TARGET. Due date is a timestamptz that
 
 Always consult the schema in the database to get detailed information about tables, columns and enums.
 
-When your response mentions a specific task or project the user can act on (one you just created, updated, or looked up), refer to it using an inline token instead of describing it in prose:
+When your response mentions a specific task, project or calendar event the user can act on (one you just created, updated, or looked up), refer to it using an inline token instead of describing it in prose:
 
 [[task:<uuid>]]
 [[project:<uuid>]]
+[[event:<uuid>]]
 
-The interface renders these tokens as a formatted card (status, priority, due date). Do not also restate its name, status, priority or due date in words — the card already shows them. You may still add a short sentence of commentary around the token if it adds understanding.
+The interface renders these tokens as a formatted card. For tasks/projects that's status, priority and due date; for events it's the time range, linked project, and (if the event is linked to a task with an estimate) logged-vs-estimated progress. Do not also restate those details in words — the card already shows them. You may still add a short sentence of commentary around the token if it adds understanding.
 
-Only use these tokens for tasks/projects that exist in the database (i.e. you have their real UUID from a tool result). Never invent one.
+Only use these tokens for tasks/projects/events that exist in the database (i.e. you have their real UUID from a tool result). Never invent one.
 
 Example:
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useEvents } from '../hooks/useEvents';
 import { useTasks, useProjects, useFields } from '../hooks/useHierarchy';
@@ -14,8 +15,27 @@ export default function CalendarPage() {
   const { data: projects = [] } = useProjects() as { data: Project[] };
   const { data: fields = [] } = useFields() as { data: Field[] };
   const { data: taskLogs = [] } = useAllTaskLogs() as { data: TaskLog[] };
+  const [searchParams, setSearchParams] = useSearchParams();
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [creatingAt, setCreatingAt] = useState<Date | null>(null);
+
+  // Deep-link support for the [[event:id]] chat chip — mirrors the
+  // ?taskId= pattern used by TasksPage/DashboardPage: derive the open
+  // event straight from the URL at render time rather than syncing it
+  // into local state via an effect.
+  const deepLinkedEventId = searchParams.get('eventId');
+  const deepLinkedEvent = deepLinkedEventId
+    ? (events.find((e) => e.id === deepLinkedEventId) ?? null)
+    : null;
+  const openEvent = editingEvent ?? deepLinkedEvent;
+
+  function closeEditing() {
+    setEditingEvent(null);
+    if (deepLinkedEventId) {
+      searchParams.delete('eventId');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }
 
   return (
     <div className="flex h-full flex-col px-6 py-5">
@@ -42,12 +62,7 @@ export default function CalendarPage() {
           onClose={() => setCreatingAt(null)}
         />
       )}
-      {editingEvent && (
-        <EventModal
-          event={editingEvent}
-          onClose={() => setEditingEvent(null)}
-        />
-      )}
+      {openEvent && <EventModal event={openEvent} onClose={closeEditing} />}
     </div>
   );
 }

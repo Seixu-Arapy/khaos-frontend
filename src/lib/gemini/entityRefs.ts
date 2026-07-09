@@ -1,9 +1,9 @@
 // Tokens que o assistente pode emitir na resposta final para referenciar uma
-// entidade real (task ou project) já persistida, ex: "[[task:3fa8...]]".
+// entidade real (task, project ou event) já persistida, ex: "[[task:3fa8...]]".
 // O ChatPanel troca esses tokens por um chip formatado (EntityChip) em vez
 // de deixar o modelo descrever a entidade em prosa.
 
-export type ChatEntityType = 'task' | 'project';
+export type ChatEntityType = 'task' | 'project' | 'event';
 
 export interface TextSegment {
   type: 'text';
@@ -18,7 +18,7 @@ export interface EntitySegment {
 
 export type MessageSegment = TextSegment | EntitySegment;
 
-const ENTITY_REF_RE = /\[\[(task|project):([0-9a-fA-F-]{8,})\]\]/g;
+const ENTITY_REF_RE = /\[\[(task|project|event):([0-9a-fA-F-]{8,})\]\]/g;
 
 export function parseMessageSegments(text: string): MessageSegment[] {
   const segments: MessageSegment[] = [];
