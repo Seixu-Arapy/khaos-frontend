@@ -318,60 +318,65 @@ export default function CalendarView({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-3 flex items-center gap-2">
-        <button
-          onClick={() => setAnchor(addDays(anchor, -daysToShow))}
-          className="text-ink-400 hover:bg-ink-800 rounded p-1"
-        >
-          <ChevronLeft size={16} />
-        </button>
-        <button
-          onClick={() => setAnchor(addDays(anchor, daysToShow))}
-          className="text-ink-400 hover:bg-ink-800 rounded p-1"
-        >
-          <ChevronRight size={16} />
-        </button>
-        <button
-          onClick={() => setAnchor(defaultAnchorFor(daysToShow))}
-          className="border-ink-700 text-ink-300 hover:bg-ink-800 rounded border px-2 py-0.5 text-xs"
-        >
-          Today
-        </button>
-        <span className="text-ink-300 ml-2 text-sm">
-          {format(days[0], 'MMM d')} –{' '}
-          {format(days[days.length - 1], 'MMM d, yyyy')}
-        </span>
-        <div className="border-ink-700 ml-2 flex overflow-hidden rounded border text-xs">
-          {DAY_COUNT_OPTIONS.map((n) => (
-            <button
-              key={n}
-              onClick={() => {
-                setDaysToShow(n);
-                setAnchor(defaultAnchorFor(n));
-              }}
-              className={`px-2 py-0.5 ${
-                daysToShow === n
-                  ? 'bg-ink-700 text-ink-100'
-                  : 'text-ink-400 hover:bg-ink-800'
-              }`}
-            >
-              {n}d
-            </button>
-          ))}
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setAnchor(addDays(anchor, -daysToShow))}
+            className="text-ink-400 hover:bg-ink-800 rounded p-1.5 sm:p-1"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <button
+            onClick={() => setAnchor(addDays(anchor, daysToShow))}
+            className="text-ink-400 hover:bg-ink-800 rounded p-1.5 sm:p-1"
+          >
+            <ChevronRight size={16} />
+          </button>
+          <button
+            onClick={() => setAnchor(defaultAnchorFor(daysToShow))}
+            className="border-ink-700 text-ink-300 hover:bg-ink-800 rounded border px-2 py-1 text-xs sm:py-0.5"
+          >
+            Today
+          </button>
+          <span className="text-ink-300 ml-1 text-sm sm:ml-2">
+            {format(days[0], 'MMM d')} –{' '}
+            {format(days[days.length - 1], 'MMM d, yyyy')}
+          </span>
         </div>
-        <button
-          onClick={() => setShowLoggedTime((v) => !v)}
-          className="text-ink-300 ml-auto flex items-center gap-2 text-xs"
-        >
-          <span
-            className={`relative inline-block h-[17px] w-[30px] rounded-full transition-colors ${showLoggedTime ? 'bg-teal-500' : 'bg-ink-700'}`}
+
+        <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+          <div className="border-ink-700 flex overflow-hidden rounded border text-xs">
+            {DAY_COUNT_OPTIONS.map((n) => (
+              <button
+                key={n}
+                onClick={() => {
+                  setDaysToShow(n);
+                  setAnchor(defaultAnchorFor(n));
+                }}
+                className={`px-2.5 py-1 sm:px-2 sm:py-0.5 ${
+                  daysToShow === n
+                    ? 'bg-ink-700 text-ink-100'
+                    : 'text-ink-400 hover:bg-ink-800'
+                }`}
+              >
+                {n}d
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setShowLoggedTime((v) => !v)}
+            className="text-ink-300 flex items-center gap-2 text-xs"
           >
             <span
-              className={`bg-ink-100 absolute top-0.5 h-[13px] w-[13px] rounded-full transition-all ${showLoggedTime ? 'right-0.5' : 'left-0.5'}`}
-            />
-          </span>
-          Show logged time
-        </button>
+              className={`relative inline-block h-[17px] w-[30px] shrink-0 rounded-full transition-colors ${showLoggedTime ? 'bg-teal-500' : 'bg-ink-700'}`}
+            >
+              <span
+                className={`bg-ink-100 absolute top-0.5 h-[13px] w-[13px] rounded-full transition-all ${showLoggedTime ? 'right-0.5' : 'left-0.5'}`}
+              />
+            </span>
+            Show logged time
+          </button>
+        </div>
       </div>
 
       <div
