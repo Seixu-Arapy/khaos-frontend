@@ -44,6 +44,12 @@
   --color-rust-500: #b5483d;
   --color-rust-600: #963830;
 
+  --color-violet: #7a5fa0;
+  --color-violet-50: #efeaf7;
+  --color-violet-400: #9478b8;
+  --color-violet-500: #7a5fa0;
+  --color-violet-600: #634b81;
+
   /* Fonts */
   --font-display: 'Roboto Flex Variable', system-ui, sans-serif;
   --font-serif: 'Roboto Serif', Georgia, serif;

@@ -9,6 +9,9 @@ import {
   CornerUpLeft,
   CornerDownRight,
   Clock,
+  Flag,
+  Target,
+  DraftingCompass,
 } from 'lucide-react';
 import {
   Modal,
@@ -17,6 +20,7 @@ import {
   Button,
   FieldBadge,
   Tag,
+  TaskProgressBar,
 } from '../common/ui';
 import TargetEditor from '../common/TargetEditor';
 import { STATUSES, PRIORITIES } from '../../lib/constants';
@@ -26,6 +30,7 @@ import {
   parseMomentTime,
 } from '../../lib/dateUtils';
 import { parseRange, rangeDurationMinutes } from '../../lib/range';
+import { computeTaskProgress } from '../../lib/taskProgress';
 import {
   useTaskMutations,
   useTaskItems,
@@ -74,6 +79,45 @@ function describeMoment(moment: Moment): string {
   }
   if (moment.value) return `${label}: ${moment.value}`;
   return label;
+}
+
+// One glyph per time-related moment type, matching the same icon a live
+// field uses elsewhere (Flag for Due, bullseye for Target, drafting compass
+// for Estimate, Play/Square for the task log). Scheduled gets a plain dot
+// rather than a 7th shape — created/status/priority/note stay iconless.
+function MomentIcon({ moment }: { moment: Moment }) {
+  switch (moment.moment_type) {
+    case 'due':
+      return <Flag size={13} className="text-copper-400 mt-0.5 shrink-0" />;
+    case 'target':
+      return <Target size={13} className="text-ink-400 mt-0.5 shrink-0" />;
+    case 'estimate':
+      return (
+        <DraftingCompass size={13} className="text-ink-400 mt-0.5 shrink-0" />
+      );
+    case 'started':
+      return (
+        <Play
+          size={12}
+          fill="currentColor"
+          className="text-copper-500 mt-0.5 shrink-0"
+        />
+      );
+    case 'stopped':
+      return (
+        <Square
+          size={12}
+          fill="currentColor"
+          className="text-ink-400 mt-0.5 shrink-0"
+        />
+      );
+    case 'scheduled':
+      return (
+        <span className="bg-violet-400 mt-1.5 h-2 w-2 shrink-0 rounded-full" />
+      );
+    default:
+      return null;
+  }
 }
 
 interface SectionProps {
@@ -140,7 +184,7 @@ function AddButton({ active, onClick, children }: AddButtonProps) {
       onClick={onClick}
       className={`flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-[10px] transition-colors ${
         active
-          ? 'border-copper-500 text-copper-400 bg-copper-950/20'
+          ? 'border-copper-500 text-copper-400 bg-copper-500/10'
           : 'border-ink-700 text-ink-500 hover:text-ink-300'
       }`}
     >
@@ -281,6 +325,7 @@ export default function TaskDetailModal({
     (sum, log) => sum + rangeDurationMinutes(log.duration),
     0
   );
+  const progress = computeTaskProgress(task, logs);
 
   const linkedSequenceIds = useMemo(
     () =>
@@ -481,15 +526,27 @@ export default function TaskDetailModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-ink-500 mb-1 block text-xs font-medium">
-                Estimate (min)
+                Estimate
               </label>
-              <TextInput
-                type="number"
-                min="0"
-                value={estimateDraft}
-                onChange={(e) => setEstimateDraft(e.target.value)}
-                onBlur={flushEstimate}
-              />
+              <div className="border-ink-600 bg-ink-800 focus-within:border-copper-400 flex items-center gap-2 rounded border px-3 py-2">
+                <DraftingCompass size={15} className="text-ink-500 shrink-0" />
+                <input
+                  type="number"
+                  min="0"
+                  value={estimateDraft}
+                  onChange={(e) => setEstimateDraft(e.target.value)}
+                  onBlur={flushEstimate}
+                  className="text-ink-100 font-mono! w-full min-w-0 bg-transparent text-sm focus:outline-none"
+                />
+                <span className="text-ink-500 shrink-0 text-xs">min</span>
+              </div>
+              {progress && (
+                <TaskProgressBar
+                  progress={progress}
+                  size="full"
+                  className="mt-1.5"
+                />
+              )}
             </div>
 
             <div>
@@ -509,7 +566,7 @@ export default function TaskDetailModal({
                     }}
                     className={`flex items-center gap-0.5 rounded border px-1 text-[10px] transition-colors ${
                       showDueTime
-                        ? 'border-copper-500 text-copper-400 bg-copper-950/20'
+                        ? 'border-copper-500 text-copper-400 bg-copper-500/10'
                         : 'border-ink-700 text-ink-500 hover:text-ink-300'
                     }`}
                   >
@@ -829,17 +886,20 @@ export default function TaskDetailModal({
                 className="group bg-ink-900 text-ink-300 rounded px-2.5 py-2 text-sm"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    {moment.moment_type !== 'note' && (
-                      <p className="text-ink-400 text-xs font-medium">
-                        {describeMoment(moment)}
-                      </p>
-                    )}
-                    {moment.moment_note && (
-                      <p className="whitespace-pre-wrap">
-                        {moment.moment_note}
-                      </p>
-                    )}
+                  <div className="flex min-w-0 flex-1 items-start gap-1.5">
+                    <MomentIcon moment={moment} />
+                    <div className="min-w-0 flex-1">
+                      {moment.moment_type !== 'note' && (
+                        <p className="text-ink-400 text-xs font-medium">
+                          {describeMoment(moment)}
+                        </p>
+                      )}
+                      {moment.moment_note && (
+                        <p className="whitespace-pre-wrap">
+                          {moment.moment_note}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <button
                     onClick={() => noteMutations.remove.mutate(moment.id)}

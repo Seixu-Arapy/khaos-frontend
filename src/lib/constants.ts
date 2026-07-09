@@ -160,26 +160,33 @@ interface EventTypeMeta {
   text: string;
   bg: string;
   border: string;
+  // Border-style carries the fixed/scheduled/routine distinction now, not a
+  // per-type icon — solid means firm/immovable, dotted means not firm
+  // (flexible plan or recurring), and color tells those two apart.
+  borderStyle: string;
 }
 
 export const EVENT_TYPE_META: Record<EventType, EventTypeMeta> = {
   fixed: {
     label: 'Fixed',
-    text: 'text-rust-500',
-    bg: 'bg-rust-500/10',
-    border: 'border-rust-500',
-  },
-  scheduled: {
-    label: 'Plan',
     text: 'text-teal-400',
     bg: 'bg-teal-500/10',
     border: 'border-teal-400',
+    borderStyle: 'border-solid',
+  },
+  scheduled: {
+    label: 'Plan',
+    text: 'text-violet-400',
+    bg: 'bg-violet-500/10',
+    border: 'border-violet-400',
+    borderStyle: 'border-dotted',
   },
   routine: {
     label: 'Routine',
-    text: 'text-copper-400',
-    bg: 'bg-copper-500/10',
-    border: 'border-copper-400',
+    text: 'text-teal-400',
+    bg: 'bg-teal-500/10',
+    border: 'border-teal-400',
+    borderStyle: 'border-dotted',
   },
 };
 

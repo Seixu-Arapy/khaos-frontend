@@ -20,7 +20,9 @@ import {
   ChevronsUp,
   ChevronUp,
   ChevronDown,
-  CalendarRange,
+  Target,
+  Flag,
+  DraftingCompass,
   type LucideIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -326,6 +328,9 @@ interface DueBadgeProps {
   status?: Status | null;
 }
 
+// Plain icon + text, deliberately no border or background — that absence of
+// chrome is what keeps the copper-colored default from reading as a
+// clickable Add button, which owns the bordered-pill look everywhere else.
 export function DueBadge({ due, status }: DueBadgeProps) {
   if (!due) return null;
   const parts = formatDueCompact(due);
@@ -333,11 +338,14 @@ export function DueBadge({ due, status }: DueBadgeProps) {
   const overdue = isOverdue(due, status);
 
   return (
-    <span className="relative inline-flex items-center">
-      <span
-        className={`relative font-mono text-xs tracking-tight ${overdue && 'animate-pulse'}`}
-        style={{ color: overdue ? '#f87171' : '#828DA0' }}
-      >
+    <span
+      className={clsx(
+        'inline-flex items-center gap-1 font-mono text-xs tracking-tight',
+        overdue ? 'text-rust-500 animate-pulse' : 'text-copper-400'
+      )}
+    >
+      <Flag size={11} className="shrink-0" />
+      <span>
         <span className="font-bold">{parts.day}</span>
         <span>{parts.month}</span>
       </span>
@@ -362,7 +370,7 @@ export function TargetBadge({ target }: TargetBadgeProps) {
 
   return (
     <span className="border-ink-600 text-ink-400 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[11px] tracking-tight">
-      <CalendarRange size={11} className="shrink-0" />
+      <Target size={11} className="shrink-0" />
       <span>
         <span className="font-bold">{startParts.day}</span>
         {startParts.month}
@@ -475,25 +483,40 @@ const PROGRESS_LEVEL_COLOR: Record<TaskProgress['level'], string> = {
 interface TaskProgressBarProps {
   progress: TaskProgress;
   className?: string;
+  // 'compact' (default): bar + numbers only, no icon — task rows, kanban
+  // cards, calendar, chat mentions, anywhere already busy with other icons.
+  // 'full': adds the drafting-compass identity icon and spells out
+  // "logged / estimated" — the task detail modal only, where the field
+  // stands alone with no surrounding context to lean on.
+  size?: 'compact' | 'full';
 }
 
-// Estimated-vs-logged meter for a task-linked event — same module reused on
-// the calendar grid and in [[event:id]] chat mentions. sage/copper/rust for
-// under/near/over the estimate, kept separate from any type accent color.
-export function TaskProgressBar({ progress, className }: TaskProgressBarProps) {
+// Estimated-vs-logged meter — the one Estimate badge, in two densities.
+// sage/copper/rust for under/near/over the estimate, kept separate from any
+// event-type accent color even where the hex happens to match.
+export function TaskProgressBar({
+  progress,
+  className,
+  size = 'compact',
+}: TaskProgressBarProps) {
   const filled = Math.min(
     PROGRESS_BAR_LENGTH,
     Math.round((progress.pct / 100) * PROGRESS_BAR_LENGTH)
   );
   const empty = PROGRESS_BAR_LENGTH - filled;
+  const full = size === 'full';
 
   return (
     <div
       className={clsx(
-        'flex flex-wrap items-center gap-x-1.5 gap-y-0 font-mono text-[10px] leading-tight',
+        'flex flex-wrap items-center gap-x-1.5 gap-y-0 font-mono leading-tight',
+        full ? 'text-sm' : 'text-[10px]',
         className
       )}
     >
+      {full && (
+        <DraftingCompass size={15} className="text-ink-400 shrink-0" />
+      )}
       <span className="shrink-0 tracking-[-1px]">
         <span className={PROGRESS_LEVEL_COLOR[progress.level]}>
           {'▰'.repeat(filled)}
@@ -501,8 +524,9 @@ export function TaskProgressBar({ progress, className }: TaskProgressBarProps) {
         <span className="text-ink-700">{'▱'.repeat(empty)}</span>
       </span>
       <span className="text-ink-400 shrink-0 whitespace-nowrap">
-        {minutesToHuman(progress.loggedMinutes)} /{' '}
-        {minutesToHuman(progress.estimateMinutes)}
+        {full
+          ? `${minutesToHuman(progress.loggedMinutes)} logged / ${minutesToHuman(progress.estimateMinutes)} estimated`
+          : `${minutesToHuman(progress.loggedMinutes)} / ${minutesToHuman(progress.estimateMinutes)}`}
       </span>
     </div>
   );

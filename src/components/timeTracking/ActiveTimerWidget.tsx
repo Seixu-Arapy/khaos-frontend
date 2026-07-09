@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Square, Timer } from 'lucide-react';
+import { Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useActiveTimer, useTimerMutations } from '../../hooks/useTimeTracking';
 import { useTasks } from '../../hooks/useHierarchy';
@@ -22,8 +22,8 @@ export default function ActiveTimerWidget() {
   if (!activeLog) {
     return (
       <div className="border-ink-700 text-ink-500 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs">
-        <Timer size={14} />
-        No timer running
+        <span className="bg-ink-600 h-1.5 w-1.5 shrink-0 rounded-full" />
+        Not logging
       </div>
     );
   }

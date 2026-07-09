@@ -158,7 +158,7 @@ export default function TargetEditor({
                 }}
                 className={`flex items-center gap-0.5 rounded border px-1 text-[10px] transition-colors ${
                   showStartTime
-                    ? 'border-copper-500 text-copper-400 bg-copper-950/20'
+                    ? 'border-copper-500 text-copper-400 bg-copper-500/10'
                     : 'border-ink-700 text-ink-500 hover:text-ink-300'
                 }`}
               >
@@ -228,7 +228,7 @@ export default function TargetEditor({
                 }}
                 className={`flex items-center gap-0.5 rounded border px-1 text-[10px] transition-colors ${
                   showEndTime
-                    ? 'border-copper-500 text-copper-400 bg-copper-950/20'
+                    ? 'border-copper-500 text-copper-400 bg-copper-500/10'
                     : 'border-ink-700 text-ink-500 hover:text-ink-300'
                 }`}
               >

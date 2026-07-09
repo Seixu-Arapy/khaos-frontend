@@ -484,9 +484,9 @@ export default function CalendarView({
                         onEventClick(ev);
                       }}
                       style={{ top, height, opacity: ev.isDone ? 0.38 : 1 }}
-                      className={`absolute left-1 flex flex-col overflow-hidden rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-tight ${showLoggedTime ? 'right-2.5' : 'right-1'} ${meta.bg} ${meta.text} ${
+                      className={`absolute left-1 flex flex-col overflow-hidden rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-tight ${showLoggedTime ? 'right-2.5' : 'right-1'} ${meta.bg} ${meta.text} ${meta.border} ${meta.borderStyle} ${
                         ev.isLate && !ev.isDone
-                          ? 'border-red-400 animate-pulse'
+                          ? 'border-rust-500! border-solid! animate-pulse'
                           : ''
                       }`}
                     >

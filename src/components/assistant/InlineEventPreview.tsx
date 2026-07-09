@@ -30,7 +30,7 @@ export function InlineEventPreview({
 
   return (
     <div
-      className={`bg-ink-900 border-ink-700 rounded-md border border-l-4 px-2.5 py-2 ${meta.border}`}
+      className={`bg-ink-900 border-ink-700 rounded-md border border-l-4 px-2.5 py-2 ${meta.border} ${meta.borderStyle}`}
     >
       <div className="grid grid-cols-[38px_1fr] items-baseline gap-x-2 gap-y-0.5">
         {start && (
