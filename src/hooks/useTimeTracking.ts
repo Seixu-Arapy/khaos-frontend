@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { timeTrackingApi } from '../lib/api/timeTracking';
+import type { Id, TaskLogPatch } from '../lib/types';
 
 export function useActiveTimer() {
   return useQuery({
@@ -9,10 +10,10 @@ export function useActiveTimer() {
   });
 }
 
-export function useTaskLogs(taskId) {
+export function useTaskLogs(taskId: Id | undefined) {
   return useQuery({
     queryKey: ['taskLogs', taskId],
-    queryFn: () => timeTrackingApi.listByTask(taskId),
+    queryFn: () => timeTrackingApi.listByTask(taskId as Id),
     enabled: Boolean(taskId),
   });
 }
@@ -32,19 +33,20 @@ export function useTimerMutations() {
   };
   return {
     start: useMutation({
-      mutationFn: (taskId) => timeTrackingApi.start(taskId),
+      mutationFn: (taskId: Id) => timeTrackingApi.start(taskId),
       onSuccess: invalidateAll,
     }),
     stop: useMutation({
-      mutationFn: timeTrackingApi.stop,
+      mutationFn: () => timeTrackingApi.stop(),
       onSuccess: invalidateAll,
     }),
     updateLog: useMutation({
-      mutationFn: ({ id, patch }) => timeTrackingApi.update(id, patch),
+      mutationFn: ({ id, patch }: { id: Id; patch: TaskLogPatch }) =>
+        timeTrackingApi.update(id, patch),
       onSuccess: invalidateAll,
     }),
     removeLog: useMutation({
-      mutationFn: timeTrackingApi.remove,
+      mutationFn: (id: Id) => timeTrackingApi.remove(id),
       onSuccess: invalidateAll,
     }),
   };

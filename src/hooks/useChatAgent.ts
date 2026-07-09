@@ -69,40 +69,38 @@ export function useChatAgent() {
   );
 
   const sendMessage = useCallback(
-    async (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed) return;
-
-      const userTimeZone = getTimezone();
-
-      const userLocalDateTime = new Date().toLocaleString('en-US', {
-        timeZone: userTimeZone,
-        dateStyle: 'long',
-        timeStyle: 'short',
-      });
-      const userIsoString = new Date().toISOString();
-
-      let contextNote = `[Temporal Context: The user's current local time is ${userLocalDateTime} (Timezone: ${userTimeZone}). The current global UTC time is ${userIsoString}. Use this local time to resolve relative dates like 'today', 'tomorrow', or 'next Monday', but remember that database operations expect standardized times.]\n`;
-
-      if (activeEntity) {
-        contextNote += `[UI Context: the person currently has this open on screen — ${activeEntity.type} "${activeEntity.name}" (id: ${activeEntity.id}). If their message refers to "this"/"it" without naming something else, assume it's this.]\n`;
-      }
-
-      contextNote += '\n';
-
-      const userMessageText = contextNote + trimmed;
+    async (inputText: string) => {
+      if (!inputText.trim() || isSending) return;
 
       setIsSending(true);
       setAssistantProcessing(true);
 
+      const activeCtx = activeEntity
+        ? `[UI Context: user is currently looking at ${activeEntity.type} ${activeEntity.id}]\n`
+        : '';
+      const timeCtx = `[Temporal Context: current_time is ${new Date().toISOString()}, timezone is ${getTimezone()}]\n`;
+      const fullUserContent = `${timeCtx}${activeCtx}${inputText}`;
+
+      const newUserAgentMessage: AgentMessage = {
+        role: 'user',
+        content: fullUserContent,
+      };
+
+      setMessages((prev) => [...prev, newUserAgentMessage]);
+
       try {
-        const { updatedHistory } = await runTurn(messages, userMessageText, {
-          onPendingWrite: requestConfirmation,
-        });
+        const { updatedHistory } = await runTurn(
+          [...messages, newUserAgentMessage],
+          {
+            onPendingWrite: (name, args) => requestConfirmation(name, args),
+          }
+        );
+
         setMessages(updatedHistory);
       } catch (err) {
-        setMessages((m) => [
-          ...m,
+        console.error(err);
+        setMessages((prev) => [
+          ...prev,
           {
             role: 'assistant',
             content: `Something went wrong: ${(err as Error).message}`,
@@ -114,7 +112,13 @@ export function useChatAgent() {
         setAssistantProcessing(false);
       }
     },
-    [messages, requestConfirmation, activeEntity, setAssistantProcessing]
+    [
+      messages,
+      requestConfirmation,
+      activeEntity,
+      setAssistantProcessing,
+      isSending,
+    ]
   );
 
   const clearHistory = useCallback(() => {
@@ -122,9 +126,6 @@ export function useChatAgent() {
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
-  // Only user turns and the assistant's final text reply are shown.
-  // Intermediate assistant messages that only carry tool_calls (content is
-  // null) and every 'tool' role response are internal plumbing, not chat.
   const uiMessages: ChatMessage[] = messages
     .filter(
       (m) => (m.role === 'user' || m.role === 'assistant') && Boolean(m.content)

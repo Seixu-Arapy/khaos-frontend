@@ -1,8 +1,6 @@
 import OpenAI from 'openai';
 
 const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-// Confirme o modelo atual em https://console.groq.com/docs/models —
-// "llama-3.1-70b-versatile" foi descontinuado pela Groq.
 export const MODEL_NAME =
   import.meta.env.VITE_LLM_MODEL || 'llama-3.3-70b-versatile';
 
@@ -10,8 +8,6 @@ if (!apiKey) {
   console.error('Missing VITE_GROQ_API_KEY no arquivo .env');
 }
 
-// A chave fica exposta no bundle do cliente (mesmo risco que já existia com
-// VITE_GEMINI_API_KEY). Para produção, considere um proxy serverless.
 export const client = new OpenAI({
   apiKey,
   dangerouslyAllowBrowser: true,
@@ -188,12 +184,6 @@ Routine tasks are stored in \`routines\`. These are habits and recurrent tasks t
 
 Tasks, sections and projects have DUE and TARGET. Due date is a timestamptz that's fixed, by a client or a contract. A target is a tstzrange that represents the desired window that the user wants to execute that, and not an external deadline.
 
-examples (replace today with proper time format)
-"What are my delayed tasks?" = query tasks where due < today
-"What are my tasks due to today?" = query tasks where due == today
-"What are my tasks scheduled for today?" = query events where duration ov today
-"What are my tasks that I could work today?" = query tasks where target ov or is less than today
-
 Always consult the schema in the database to get detailed information about tables, columns and enums.
 
 When your response mentions a specific task or project the user can act on (one you just created, updated, or looked up), refer to it using an inline token instead of describing it in prose:
@@ -210,4 +200,12 @@ Example:
 "Created. [[task:3fa85f64-5717-4562-b3fc-2c963f66afa6]]"
 
 Anytime you render a list of results, number them, and remember the order, as it will be used as a guide for the next request.
+
+---
+
+SHORTCUTS
+
+* tasks for [date]/scheduled tasks = events where event_type = scheduled with associated task_id
+
+
 `;

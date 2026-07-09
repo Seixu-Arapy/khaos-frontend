@@ -11,6 +11,8 @@ import MomentPrompt from './MomentPrompt';
 import { momentsApi } from '../../lib/api/moments';
 import ChaoticText from '../common/ChaoticText';
 
+const MAX_TEXTAREA_LINES = 5;
+
 interface ChatPromptItem {
   id: string;
   entityRef: any;
@@ -69,6 +71,28 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
+// Resizes a textarea to fit its content, up to `maxLines` — beyond that it
+// stops growing and becomes internally scrollable instead.
+function autoResizeTextarea(el: HTMLTextAreaElement, maxLines: number) {
+  const style = getComputedStyle(el);
+  const lineHeight = parseFloat(style.lineHeight) || 20;
+  const paddingTop = parseFloat(style.paddingTop) || 0;
+  const paddingBottom = parseFloat(style.paddingBottom) || 0;
+  const borderTop = parseFloat(style.borderTopWidth) || 0;
+  const borderBottom = parseFloat(style.borderBottomWidth) || 0;
+  const maxHeight =
+    lineHeight * maxLines +
+    paddingTop +
+    paddingBottom +
+    borderTop +
+    borderBottom;
+
+  el.style.height = 'auto';
+  const contentHeight = el.scrollHeight;
+  el.style.height = `${Math.min(contentHeight, maxHeight)}px`;
+  el.style.overflowY = contentHeight > maxHeight ? 'auto' : 'hidden';
+}
+
 /**
  * Shared chat UI — used as the persistent desktop sidebar, the mobile
  * bottom-sheet, and the standalone /assistant route.
@@ -88,6 +112,7 @@ export default function ChatPanel({
   } = useChatAgent();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { activeEntity, clearActiveEntity } = useActiveEntity();
 
   const [momentPrompts, setMomentPrompts] = useState<ChatPromptItem[]>([]);
@@ -112,9 +137,20 @@ export default function ChatPanel({
     });
   }, [messages, pending, momentPrompts]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!input.trim() || isSending) return;
+  // Grow/shrink the textarea as the person types, capped at MAX_TEXTAREA_LINES.
+  useEffect(() => {
+    if (textareaRef.current) {
+      autoResizeTextarea(textareaRef.current, MAX_TEXTAREA_LINES);
+    }
+  }, [input]);
+
+  const hasPendingPrompt = momentPrompts.some(
+    (p) => p.status === 'pending' || p.status === 'error'
+  );
+  const isCurrentlySaving = momentPrompts.some((p) => p.status === 'saving');
+
+  async function submit() {
+    if (!input.trim() || isSending || isCurrentlySaving) return;
 
     // Find the first prompt that is still waiting for input ('pending' or 'error')
     const activePromptIndex = momentPrompts.findIndex(
@@ -148,7 +184,6 @@ export default function ChatPanel({
           )
         );
       } catch {
-        // Linter issue resolved: 'err' catch variable removed completely
         setMomentPrompts((prev) =>
           prev.map((p, idx) =>
             idx === activePromptIndex ? { ...p, status: 'error' } : p
@@ -159,14 +194,23 @@ export default function ChatPanel({
       return;
     }
 
-    sendMessage(input);
+    const toSend = input;
     setInput('');
+    sendMessage(toSend);
   }
 
-  const hasPendingPrompt = momentPrompts.some(
-    (p) => p.status === 'pending' || p.status === 'error'
-  );
-  const isCurrentlySaving = momentPrompts.some((p) => p.status === 'saving');
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    submit();
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    // Cmd/Ctrl+Enter sends. Plain Enter just inserts a newline (default behavior).
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      submit();
+    }
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -266,18 +310,21 @@ export default function ChatPanel({
 
       <form
         onSubmit={handleSubmit}
-        className="border-ink-700 flex shrink-0 items-center gap-2 border-t p-3"
+        className="border-ink-700 flex shrink-0 items-end gap-2 border-t p-3"
       >
-        <input
+        <textarea
+          ref={textareaRef}
+          rows={1}
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder={
             hasPendingPrompt
               ? 'Type the reason for this change...'
-              : 'Ask Khaos…'
+              : 'Ask Khaos… (⌘+Enter to send)'
           }
           disabled={isSending || isCurrentlySaving}
-          className="border-ink-700 bg-ink-800 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 flex-1 rounded-full border px-4 py-2.5 text-sm focus:outline-hidden disabled:opacity-60"
+          className="border-ink-700 bg-ink-800 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 flex-1 resize-none rounded-2xl border px-4 py-2.5 text-sm leading-normal focus:outline-hidden disabled:opacity-60"
         />
         <button
           type="submit"

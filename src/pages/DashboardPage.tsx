@@ -102,7 +102,7 @@ export default function DashboardPage() {
                   <TaskRow
                     key={task.id}
                     task={task}
-                    project={project?.name}
+                    projectName={project?.name}
                     projectField={fieldNameForProject(project)}
                     onOpen={openTask_}
                   />
@@ -126,7 +126,7 @@ export default function DashboardPage() {
                   <TaskRow
                     key={task.id}
                     task={task}
-                    project={project?.name}
+                    projectName={project?.name}
                     projectField={fieldNameForProject(project)}
                     onOpen={openTask_}
                   />
@@ -181,6 +181,7 @@ export default function DashboardPage() {
           taskId={openTask.id}
           task={openTask}
           onClose={closeTask}
+          onOpenTask={openTask_}
         />
       )}
     </div>
