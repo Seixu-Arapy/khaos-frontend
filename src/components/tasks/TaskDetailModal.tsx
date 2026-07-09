@@ -44,7 +44,36 @@ import { useTags, useTagLinks, useTagMutations } from '../../hooks/useTags';
 import { useNotes, useNoteMutations } from '../../hooks/useMoments';
 import { useTaskSequence, useSequenceMutations } from '../../hooks/useSequence';
 import { wouldCreateCycle } from '../../lib/sequenceGraph';
-import type { Id, Priority, Status, Task, WorkTag } from '../../lib/types';
+import type {
+  Id,
+  Moment,
+  MomentType,
+  Priority,
+  Status,
+  Task,
+  WorkTag,
+} from '../../lib/types';
+
+const MOMENT_TYPE_LABELS: Partial<Record<MomentType, string>> = {
+  created: 'Created',
+  due: 'Due date',
+  estimate: 'Estimate',
+  status: 'Status',
+  started: 'Started',
+  stopped: 'Stopped',
+  scheduled: 'Scheduled',
+  target: 'Target',
+  priority: 'Priority',
+};
+
+function describeMoment(moment: Moment): string {
+  const label = MOMENT_TYPE_LABELS[moment.moment_type] ?? moment.moment_type;
+  if (moment.previous_value && moment.value) {
+    return `${label}: ${moment.previous_value} → ${moment.value}`;
+  }
+  if (moment.value) return `${label}: ${moment.value}`;
+  return label;
+}
 
 interface SectionProps {
   title: ReactNode;
@@ -95,6 +124,30 @@ function SequenceChip({ task, onOpen, onRemove }: SequenceChipProps) {
   );
 }
 
+interface AddButtonProps {
+  active?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}
+
+// Standard "add" CTA — same bordered-pill pattern as the Due/Target "Add
+// time" toggles, so every add trigger in the modal reads the same way.
+function AddButton({ active, onClick, children }: AddButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-[10px] transition-colors ${
+        active
+          ? 'border-copper-500 text-copper-400 bg-copper-950/20'
+          : 'border-ink-700 text-ink-500 hover:text-ink-300'
+      }`}
+    >
+      <Plus size={10} /> {children}
+    </button>
+  );
+}
+
 interface SeqPicker {
   kind: 'before' | 'after';
   search: string;
@@ -124,7 +177,7 @@ export default function TaskDetailModal({
   const { data: allTags = [] } = useTags();
   const { data: tagLinks = [] } = useTagLinks();
   const tagMutations = useTagMutations();
-  const { data: notes = [] } = useNotes({ task_id: taskId });
+  const { data: moments = [] } = useNotes({ task_id: taskId });
   const noteMutations = useNoteMutations({ task_id: taskId });
 
   const { data: allTasks = [] } = useTasks();
@@ -406,6 +459,7 @@ export default function TaskDetailModal({
                   onChange={(e) => {
                     handleDueChange(e.target.value, dueValues.time);
                   }}
+                  className="w-full"
                 />
                 {showDueTime && dueValues.date && (
                   <TextInput
@@ -414,6 +468,7 @@ export default function TaskDetailModal({
                     onChange={(e) => {
                       handleDueChange(dueValues.date, e.target.value, true);
                     }}
+                    className="w-20 shrink-0 text-center"
                   />
                 )}
               </div>
@@ -438,69 +493,73 @@ export default function TaskDetailModal({
 
         <Section title="Sequence">
           <div className="space-y-3">
-            <div>
-              <div className="mb-1 flex items-center justify-between">
-                <span className="text-ink-400 flex items-center gap-1 text-xs font-medium">
-                  <CornerUpLeft size={12} /> Previous tasks
-                </span>
-                <button
-                  onClick={() => {
-                    setSeqError(null);
-                    setSeqPicker({ kind: 'before', search: '' });
-                  }}
-                  className="text-copper-400 hover:text-copper-300 text-xs"
-                >
-                  + Add
-                </button>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-ink-400 flex items-center gap-1 text-xs font-medium">
+                    <CornerUpLeft size={12} /> Previous tasks
+                  </span>
+                  <AddButton
+                    active={seqPicker?.kind === 'before'}
+                    onClick={() => {
+                      setSeqError(null);
+                      setSeqPicker({ kind: 'before', search: '' });
+                    }}
+                  >
+                    Add
+                  </AddButton>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {before.map((t) => (
+                    <SequenceChip
+                      key={t.id}
+                      task={t}
+                      onOpen={onOpenTask}
+                      onRemove={() =>
+                        sequenceMutations.remove.mutate({
+                          previousId: t.id,
+                          nextId: task.id,
+                        })
+                      }
+                    />
+                  ))}
+                  {!before.length && (
+                    <p className="text-ink-600 text-xs">None</p>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {before.map((t) => (
-                  <SequenceChip
-                    key={t.id}
-                    task={t}
-                    onOpen={onOpenTask}
-                    onRemove={() =>
-                      sequenceMutations.remove.mutate({
-                        previousId: t.id,
-                        nextId: task.id,
-                      })
-                    }
-                  />
-                ))}
-                {!before.length && <p className="text-ink-600 text-xs">None</p>}
-              </div>
-            </div>
 
-            <div>
-              <div className="mb-1 flex items-center justify-between">
-                <span className="text-ink-400 flex items-center gap-1 text-xs font-medium">
-                  <CornerDownRight size={12} /> Next tasks
-                </span>
-                <button
-                  onClick={() => {
-                    setSeqError(null);
-                    setSeqPicker({ kind: 'after', search: '' });
-                  }}
-                  className="text-copper-400 hover:text-copper-300 text-xs"
-                >
-                  + Add
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {after.map((t) => (
-                  <SequenceChip
-                    key={t.id}
-                    task={t}
-                    onOpen={onOpenTask}
-                    onRemove={() =>
-                      sequenceMutations.remove.mutate({
-                        previousId: task.id,
-                        nextId: t.id,
-                      })
-                    }
-                  />
-                ))}
-                {!after.length && <p className="text-ink-600 text-xs">None</p>}
+              <div>
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-ink-400 flex items-center gap-1 text-xs font-medium">
+                    <CornerDownRight size={12} /> Next tasks
+                  </span>
+                  <AddButton
+                    active={seqPicker?.kind === 'after'}
+                    onClick={() => {
+                      setSeqError(null);
+                      setSeqPicker({ kind: 'after', search: '' });
+                    }}
+                  >
+                    Add
+                  </AddButton>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {after.map((t) => (
+                    <SequenceChip
+                      key={t.id}
+                      task={t}
+                      onOpen={onOpenTask}
+                      onRemove={() =>
+                        sequenceMutations.remove.mutate({
+                          previousId: task.id,
+                          nextId: t.id,
+                        })
+                      }
+                    />
+                  ))}
+                  {!after.length && <p className="text-ink-600 text-xs">None</p>}
+                </div>
               </div>
             </div>
 
@@ -551,12 +610,12 @@ export default function TaskDetailModal({
         <Section
           title="Tags"
           action={
-            <button
+            <AddButton
+              active={tagPickerOpen}
               onClick={() => setTagPickerOpen((o) => !o)}
-              className="text-copper-400 hover:text-copper-300 text-xs"
             >
-              + Add tag
-            </button>
+              Add tag
+            </AddButton>
           }
         >
           <div className="flex flex-wrap gap-1.5">
@@ -696,27 +755,41 @@ export default function TaskDetailModal({
           </div>
         </Section>
 
-        <Section title="Notes">
+        <Section title="Moments">
           <div className="space-y-2">
-            {notes.map((note) => (
+            {moments.map((moment) => (
               <div
-                key={note.id}
+                key={moment.id}
                 className="group bg-ink-900 text-ink-300 rounded px-2.5 py-2 text-sm"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <p className="whitespace-pre-wrap">{note.moment_note}</p>
+                  <div className="min-w-0 flex-1">
+                    {moment.moment_type !== 'note' && (
+                      <p className="text-ink-400 text-xs font-medium">
+                        {describeMoment(moment)}
+                      </p>
+                    )}
+                    {moment.moment_note && (
+                      <p className="whitespace-pre-wrap">
+                        {moment.moment_note}
+                      </p>
+                    )}
+                  </div>
                   <button
-                    onClick={() => noteMutations.remove.mutate(note.id)}
+                    onClick={() => noteMutations.remove.mutate(moment.id)}
                     className="opacity-0 group-hover:opacity-100"
                   >
                     <X size={12} className="text-ink-500 hover:text-rust-500" />
                   </button>
                 </div>
                 <p className="text-ink-600 mt-1 text-[11px]">
-                  {formatDue(parseMomentTime(note.created_at))}
+                  {formatDue(parseMomentTime(moment.created_at))}
                 </p>
               </div>
             ))}
+            {!moments.length && (
+              <p className="text-ink-600 text-xs">No moments yet</p>
+            )}
           </div>
           <form onSubmit={addNote} className="mt-2 flex items-center gap-1.5">
             <TextInput
