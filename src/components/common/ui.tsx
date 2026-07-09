@@ -25,10 +25,11 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_META, PRIORITY_META } from '../../lib/constants';
-import { formatDueCompact, isOverdue } from '../../lib/dateUtils';
+import { formatDueCompact, isOverdue, minutesToHuman } from '../../lib/dateUtils';
 import { parseRange } from '../../lib/range';
 import { getFieldMeta } from '../../lib/fieldsConfig';
 import type { Status, Priority } from '../../lib/types';
+import type { TaskProgress } from '../../lib/taskProgress';
 
 const STATUS_ICONS: Record<string, LucideIcon> = {
   MessageCircle,
@@ -456,5 +457,48 @@ export function ProjectChip({ name, fieldName, className }: ProjectChipProps) {
       <FieldBadge fieldName={fieldName} size="xs" />
       <span className="truncate">{name}</span>
     </span>
+  );
+}
+
+const PROGRESS_BAR_LENGTH = 8;
+const PROGRESS_LEVEL_COLOR: Record<TaskProgress['level'], string> = {
+  ok: 'text-sage-500',
+  warn: 'text-copper-500',
+  over: 'text-rust-500',
+};
+
+interface TaskProgressBarProps {
+  progress: TaskProgress;
+  className?: string;
+}
+
+// Estimated-vs-logged meter for a task-linked event — same module reused on
+// the calendar grid and in [[event:id]] chat mentions. sage/copper/rust for
+// under/near/over the estimate, kept separate from any type accent color.
+export function TaskProgressBar({ progress, className }: TaskProgressBarProps) {
+  const filled = Math.min(
+    PROGRESS_BAR_LENGTH,
+    Math.round((progress.pct / 100) * PROGRESS_BAR_LENGTH)
+  );
+  const empty = PROGRESS_BAR_LENGTH - filled;
+
+  return (
+    <div
+      className={clsx(
+        'flex flex-wrap items-center gap-x-1.5 gap-y-0 font-mono text-[10px] leading-tight',
+        className
+      )}
+    >
+      <span className="shrink-0 tracking-[-1px]">
+        <span className={PROGRESS_LEVEL_COLOR[progress.level]}>
+          {'▰'.repeat(filled)}
+        </span>
+        <span className="text-ink-700">{'▱'.repeat(empty)}</span>
+      </span>
+      <span className="text-ink-400 shrink-0 whitespace-nowrap">
+        {minutesToHuman(progress.loggedMinutes)} /{' '}
+        {minutesToHuman(progress.estimateMinutes)}
+      </span>
+    </div>
   );
 }

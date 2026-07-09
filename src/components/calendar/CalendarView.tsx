@@ -5,8 +5,9 @@ import { parseRange } from '../../lib/range';
 import { EVENT_TYPE_META } from '../../lib/constants';
 import { getTimezone } from '../../lib/timezone';
 import { getEventLabel } from '../../lib/eventLabel';
-import { ProjectChip } from '../common/ui';
-import type { Event, Task, Project, Field } from '../../lib/types';
+import { ProjectChip, TaskProgressBar } from '../common/ui';
+import { computeTaskProgress, type TaskProgress } from '../../lib/taskProgress';
+import type { Event, Task, Project, Field, TaskLog } from '../../lib/types';
 
 const HOUR_HEIGHT = 48; // px
 const DAY_HEIGHT = HOUR_HEIGHT * 24;
@@ -17,6 +18,7 @@ type PositionedEvent = Event & {
   label: string;
   projectName: string | null;
   projectField: string | null;
+  progress: TaskProgress | null;
 };
 
 // Ticks once a minute so the current-time line drifts without re-deriving
@@ -48,6 +50,7 @@ interface CalendarViewProps {
   tasks?: Task[];
   projects?: Project[];
   fields?: Field[];
+  taskLogs?: TaskLog[];
   onSlotClick: (date: Date) => void;
   onEventClick: (event: Event) => void;
 }
@@ -57,6 +60,7 @@ export default function CalendarView({
   tasks = [],
   projects = [],
   fields = [],
+  taskLogs = [],
   onSlotClick,
   onEventClick,
 }: CalendarViewProps) {
@@ -80,6 +84,15 @@ export default function CalendarView({
     () => new Map(fields.map((f) => [f.id, f])),
     [fields]
   );
+  const logsByTask = useMemo(() => {
+    const map = new Map<string, TaskLog[]>();
+    for (const log of taskLogs) {
+      if (!log.task_id) continue;
+      if (!map.has(log.task_id)) map.set(log.task_id, []);
+      map.get(log.task_id)!.push(log);
+    }
+    return map;
+  }, [taskLogs]);
 
   const eventsByDay = useMemo(() => {
     const map = new Map<string, PositionedEvent[]>(
@@ -93,23 +106,27 @@ export default function CalendarView({
       const key = new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(
         start
       ); // "YYYY-MM-DD"
-      const taskName = ev.task_id ? tasksById.get(ev.task_id)?.name : null;
+      const task = ev.task_id ? tasksById.get(ev.task_id) : null;
       const project = ev.project_id ? projectsById.get(ev.project_id) : null;
       const projectField = project?.field_id
         ? (fieldsById.get(project.field_id)?.name ?? null)
+        : null;
+      const progress = task
+        ? computeTaskProgress(task, logsByTask.get(task.id) ?? [])
         : null;
       if (map.has(key))
         map.get(key)!.push({
           ...ev,
           start,
           end: end || new Date(start.getTime() + 30 * 60000),
-          label: getEventLabel(ev, taskName),
+          label: getEventLabel(ev, task?.name),
           projectName: project?.name ?? null,
           projectField,
+          progress,
         });
     }
     return map;
-  }, [events, days, tasksById, projectsById, fieldsById]);
+  }, [events, days, tasksById, projectsById, fieldsById, logsByTask]);
 
   function handleColumnClick(day: Date, e: React.MouseEvent<HTMLDivElement>) {
     if (e.target !== e.currentTarget) return; // ignore clicks on event blocks (they stop propagation)
@@ -227,14 +244,20 @@ export default function CalendarView({
                       style={{ top, height }}
                       className={`absolute right-1 left-1 flex flex-col overflow-hidden rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-tight ${meta.bg} ${meta.text}`}
                     >
-                      <span className="truncate font-medium">
+                      <span className="shrink-0 truncate font-medium">
                         {ev.label}
                       </span>
                       {ev.projectName && (
                         <ProjectChip
                           name={ev.projectName}
                           fieldName={ev.projectField}
-                          className="mt-0.5"
+                          className="mt-0.5 shrink-0"
+                        />
+                      )}
+                      {ev.progress && (
+                        <TaskProgressBar
+                          progress={ev.progress}
+                          className="mt-0.5 shrink-0"
                         />
                       )}
                     </button>

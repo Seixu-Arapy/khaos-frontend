@@ -2,16 +2,18 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useEvents } from '../hooks/useEvents';
 import { useTasks, useProjects, useFields } from '../hooks/useHierarchy';
+import { useAllTaskLogs } from '../hooks/useTimeTracking';
 import { Button } from '../components/common/ui';
 import CalendarView from '../components/calendar/CalendarView';
 import EventModal from '../components/calendar/EventModal';
-import type { Event, Task, Project, Field } from '../lib/types';
+import type { Event, Task, Project, Field, TaskLog } from '../lib/types';
 
 export default function CalendarPage() {
   const { data: events = [] } = useEvents() as { data: Event[] };
   const { data: tasks = [] } = useTasks() as { data: Task[] };
   const { data: projects = [] } = useProjects() as { data: Project[] };
   const { data: fields = [] } = useFields() as { data: Field[] };
+  const { data: taskLogs = [] } = useAllTaskLogs() as { data: TaskLog[] };
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [creatingAt, setCreatingAt] = useState<Date | null>(null);
 
@@ -29,6 +31,7 @@ export default function CalendarPage() {
         tasks={tasks}
         projects={projects}
         fields={fields}
+        taskLogs={taskLogs}
         onSlotClick={setCreatingAt}
         onEventClick={setEditingEvent}
       />
