@@ -175,6 +175,14 @@ function describeColumn(col: ColumnDef, enums: Map<string, EnumDef>): string {
   if (!col.nullable && !col.hasDefault) parts.push('required');
   if (col.description) parts.push(`— ${col.description}`);
   if (enumDef?.description) parts.push(`(${enumDef.description})`);
+  // There is no separate "start time" column on range-typed columns like
+  // tstzrange — the model otherwise guesses at a nonexistent "start"/
+  // "starts_at"/"created_at" column instead of filtering the range itself.
+  if (/range$/i.test(col.type)) {
+    parts.push(
+      `[range column: to test overlap with a window, filter with operator "ov" and a Postgres range literal value, e.g. {"column":"${col.name}","operator":"ov","value":"[2026-07-09 00:00:00,2026-07-10 00:00:00)"}]`
+    );
+  }
   return parts.join(' ');
 }
 
@@ -193,20 +201,27 @@ export function searchSchema(query: string): {
   rpcFunctions: { name: string; args: string; returns: string; description: string | null }[];
 } {
   const { enums, tables, functions } = getParsedSchema();
-  const q = (query || '').toLowerCase().trim();
+  // Split on whitespace and match on ANY token — models often search with a
+  // table+column guess ("events start") rather than a single keyword, and a
+  // literal whole-string substring match would find nothing for that.
+  const tokens = (query || '')
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  function tableMatchesToken(t: TableDef, token: string): boolean {
+    if (t.name.toLowerCase().includes(token)) return true;
+    if (t.description?.toLowerCase().includes(token)) return true;
+    return t.columns.some((c) => {
+      if (c.name.toLowerCase().includes(token)) return true;
+      if (c.description?.toLowerCase().includes(token)) return true;
+      const enumDef = enums.get(c.type);
+      return enumDef?.values.some((v) => v.toLowerCase().includes(token)) ?? false;
+    });
+  }
 
   const matchedTables = [...tables.values()]
-    .filter((t) => {
-      if (!q) return true;
-      if (t.name.toLowerCase().includes(q)) return true;
-      if (t.description?.toLowerCase().includes(q)) return true;
-      return t.columns.some((c) => {
-        if (c.name.toLowerCase().includes(q)) return true;
-        if (c.description?.toLowerCase().includes(q)) return true;
-        const enumDef = enums.get(c.type);
-        return enumDef?.values.some((v) => v.toLowerCase().includes(q)) ?? false;
-      });
-    })
+    .filter((t) => !tokens.length || tokens.some((token) => tableMatchesToken(t, token)))
     .map((t) => ({
       table: t.name,
       description: t.description,
@@ -216,7 +231,12 @@ export function searchSchema(query: string): {
 
   const matchedRpcs = functions
     .filter(
-      (f) => !q || f.name.toLowerCase().includes(q) || f.description?.toLowerCase().includes(q)
+      (f) =>
+        !tokens.length ||
+        tokens.some(
+          (token) =>
+            f.name.toLowerCase().includes(token) || f.description?.toLowerCase().includes(token)
+        )
     )
     .map((f) => ({ name: f.name, args: f.args, returns: f.returns, description: f.description }));
 
