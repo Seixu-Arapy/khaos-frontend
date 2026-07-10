@@ -571,6 +571,82 @@ COMMENT ON FUNCTION "public"."trg_moment_target"() IS 'Trigger function focused 
 
 
 
+CREATE OR REPLACE FUNCTION "public"."trg_reopen_project_on_section_add"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  v_project_status public.status;
+begin
+  if NEW.project_id is null then
+    return NEW;
+  end if;
+
+  if TG_OP = 'UPDATE' and OLD.project_id is not distinct from NEW.project_id then
+    return NEW;
+  end if;
+
+  select status into v_project_status
+  from public.projects
+  where id = NEW.project_id;
+
+  if v_project_status = 'cancelled' then
+    raise exception 'Cannot add a section to a cancelled project';
+  elsif v_project_status = 'done' then
+    update public.projects
+    set status = 'in_progress'
+    where id = NEW.project_id;
+  end if;
+
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_reopen_project_on_section_add"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_reopen_project_on_section_add"() IS 'Guards sections being (re)assigned to a project: blocks the move into a cancelled project and reopens a done project back to in_progress.';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."trg_reopen_section_on_task_add"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+declare
+  v_section_status public.status;
+begin
+  if NEW.section_id is null then
+    return NEW;
+  end if;
+
+  if TG_OP = 'UPDATE' and OLD.section_id is not distinct from NEW.section_id then
+    return NEW;
+  end if;
+
+  select status into v_section_status
+  from public.sections
+  where id = NEW.section_id;
+
+  if v_section_status = 'cancelled' then
+    raise exception 'Cannot add a task to a cancelled section';
+  elsif v_section_status = 'done' then
+    update public.sections
+    set status = 'in_progress'
+    where id = NEW.section_id;
+  end if;
+
+  return NEW;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."trg_reopen_section_on_task_add"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."trg_reopen_section_on_task_add"() IS 'Guards tasks being (re)assigned to a section: blocks the move into a cancelled section and reopens a done section back to in_progress.';
+
+
+
 CREATE OR REPLACE FUNCTION "public"."trg_section_sequence_unlock_next"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -1836,6 +1912,22 @@ CREATE OR REPLACE TRIGGER "tg_task_delete_cascade" BEFORE UPDATE ON "public"."ta
 
 
 
+CREATE OR REPLACE TRIGGER "trg_reopen_project_on_section_add" BEFORE INSERT OR UPDATE OF "project_id" ON "public"."sections" FOR EACH ROW EXECUTE FUNCTION "public"."trg_reopen_project_on_section_add"();
+
+
+
+COMMENT ON TRIGGER "trg_reopen_project_on_section_add" ON "public"."sections" IS 'Blocks assigning a section to a cancelled project and reopens a done project to in_progress when a section is (re)added to it.';
+
+
+
+CREATE OR REPLACE TRIGGER "trg_reopen_section_on_task_add" BEFORE INSERT OR UPDATE OF "section_id" ON "public"."tasks" FOR EACH ROW EXECUTE FUNCTION "public"."trg_reopen_section_on_task_add"();
+
+
+
+COMMENT ON TRIGGER "trg_reopen_section_on_task_add" ON "public"."tasks" IS 'Blocks assigning a task to a cancelled section and reopens a done section to in_progress when a task is (re)added to it.';
+
+
+
 CREATE OR REPLACE TRIGGER "trg_section_sequence_unlock_next" AFTER DELETE OR UPDATE ON "public"."sections_sequence" FOR EACH ROW EXECUTE FUNCTION "public"."trg_section_sequence_unlock_next"();
 
 
@@ -2278,6 +2370,18 @@ GRANT ALL ON FUNCTION "public"."trg_moment_stopped"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."trg_moment_target"() TO "anon";
 GRANT ALL ON FUNCTION "public"."trg_moment_target"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."trg_moment_target"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_reopen_project_on_section_add"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_reopen_project_on_section_add"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_reopen_project_on_section_add"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."trg_reopen_section_on_task_add"() TO "anon";
+GRANT ALL ON FUNCTION "public"."trg_reopen_section_on_task_add"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."trg_reopen_section_on_task_add"() TO "service_role";
 
 
 
