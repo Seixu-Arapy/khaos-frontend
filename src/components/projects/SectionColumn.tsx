@@ -6,6 +6,7 @@ import {
   MoreVertical,
   Trash2,
   CalendarRange,
+  Info,
 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -69,6 +70,12 @@ export default function SectionColumn({
           }
           className="text-ink-100 flex-1 bg-transparent text-sm font-medium focus:outline-none"
         />
+        <span
+          className="text-ink-600 hover:text-ink-300 flex shrink-0 items-center"
+          title="Tasks below are ordered by target start date, then due date — tasks with neither go last."
+        >
+          <Info size={13} />
+        </span>
         <button
           onClick={() => setTargetOpen(true)}
           className="text-ink-500 hover:text-ink-200 flex shrink-0 items-center"
