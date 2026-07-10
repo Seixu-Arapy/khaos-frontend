@@ -22,13 +22,15 @@ import {
   FieldBadge,
   Tag,
   TaskProgressBar,
+  StatusPicker,
+  PriorityPicker,
 } from '../common/ui';
 import TargetEditor from '../common/TargetEditor';
-import { STATUSES, PRIORITIES } from '../../lib/constants';
 import {
   minutesToHuman,
   formatDue,
   parseMomentTime,
+  isOverdue,
 } from '../../lib/dateUtils';
 import { parseRange, rangeDurationMinutes } from '../../lib/range';
 import { computeTaskProgress } from '../../lib/taskProgress';
@@ -488,40 +490,14 @@ export default function TaskDetailModal({
         <div className="space-y-3">
           {/* Linha 1: Status | Priority */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-ink-500 mb-1 block text-xs font-medium">
-                Status
-              </label>
-              <Select
-                value={task.status}
-                onChange={(e) => patch({ status: e.target.value as Status })}
-                className="w-full"
-              >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s.replace('_', ' ')}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div>
-              <label className="text-ink-500 mb-1 block text-xs font-medium">
-                Priority
-              </label>
-              <Select
-                value={task.priority || 'medium'}
-                onChange={(e) =>
-                  patch({ priority: e.target.value as Priority })
-                }
-                className="w-full"
-              >
-                {PRIORITIES.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </Select>
-            </div>
+            <StatusPicker
+              value={task.status}
+              onChange={(status) => patch({ status })}
+            />
+            <PriorityPicker
+              value={task.priority}
+              onChange={(priority) => patch({ priority })}
+            />
           </div>
 
           {/* Linha 2: Estimate | Due Date (+ Hora opcional) */}
@@ -553,7 +529,15 @@ export default function TaskDetailModal({
 
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label className="text-ink-500 block text-xs font-medium">
+                <label className="text-ink-500 flex items-center gap-1 text-xs font-medium">
+                  <Flag
+                    size={11}
+                    className={
+                      isOverdue(task.due, task.status)
+                        ? 'text-rust-500'
+                        : 'text-copper-400'
+                    }
+                  />
                   Due
                 </label>
                 {dueValues.date && (

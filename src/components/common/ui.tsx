@@ -26,7 +26,12 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
-import { STATUS_META, PRIORITY_META } from '../../lib/constants';
+import {
+  STATUS_META,
+  PRIORITY_META,
+  STATUSES,
+  PRIORITIES,
+} from '../../lib/constants';
 import { formatDueCompact, isOverdue, minutesToHuman } from '../../lib/dateUtils';
 import { parseRange } from '../../lib/range';
 import { getFieldMeta } from '../../lib/fieldsConfig';
@@ -125,6 +130,101 @@ export function PriorityBadge({
     >
       <Icon size={Math.round(px * 0.55)} />
     </span>
+  );
+}
+
+interface StatusPickerProps {
+  value?: Status | null;
+  onChange: (status: Status) => void;
+}
+
+// Radio-style status selector, styled straight off StatusBadge — same
+// icon-in-circle + acronym, same circleBg. No visible "Status" caption above
+// it; the icon + acronym already reads as the label everywhere else in the
+// app. Unselected options dim rather than disappear, so the full set stays
+// scannable at a glance.
+export function StatusPicker({ value, onChange }: StatusPickerProps) {
+  return (
+    <div
+      className="flex flex-wrap gap-1"
+      role="radiogroup"
+      aria-label="Status"
+    >
+      {STATUSES.map((s) => {
+        const meta = STATUS_META[s];
+        const active = s === value;
+        return (
+          <button
+            key={s}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            title={meta.label}
+            onClick={() => onChange(s)}
+            style={{
+              backgroundColor: meta.circleBg,
+              boxShadow: active ? `0 0 0 1.5px ${meta.iconColor}` : 'none',
+            }}
+            className={clsx(
+              'inline-flex items-center gap-1 rounded-full py-0.5 pr-2 pl-0.5 transition-all',
+              active ? 'opacity-100' : 'opacity-45 hover:opacity-75'
+            )}
+          >
+            <StatusIcon status={s} size={18} />
+            <span
+              className="font-mono text-[10px] font-semibold tracking-wider uppercase"
+              style={{ color: meta.iconColor }}
+            >
+              {meta.acronym}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+interface PriorityPickerProps {
+  value?: Priority | null;
+  onChange: (priority: Priority) => void;
+}
+
+// Same idea for Priority — icon-only circles matching PriorityBadge's own
+// look (no background chip, that's the point), minus its "urgent" bounce,
+// which belongs to a single live badge, not a menu of options.
+export function PriorityPicker({ value, onChange }: PriorityPickerProps) {
+  return (
+    <div
+      className="flex items-center gap-1.5"
+      role="radiogroup"
+      aria-label="Priority"
+    >
+      {PRIORITIES.map((p) => {
+        const meta = PRIORITY_META[p];
+        const Icon = PRIORITY_ICONS[meta.icon] || ChevronUp;
+        const active = p === (value ?? 'medium');
+        return (
+          <button
+            key={p}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            title={meta.label}
+            onClick={() => onChange(p)}
+            style={{
+              color: meta.iconColor,
+              boxShadow: active ? `0 0 0 1.5px ${meta.iconColor}` : 'none',
+            }}
+            className={clsx(
+              'inline-flex h-7 w-7 items-center justify-center rounded-full transition-all',
+              active ? 'opacity-100' : 'opacity-40 hover:opacity-70'
+            )}
+          >
+            <Icon size={15} />
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
