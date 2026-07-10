@@ -3,6 +3,7 @@ import {
   StatusBadge,
   PriorityBadge,
   DueBadge,
+  TargetBadge,
   ProjectChip,
 } from '../common/ui';
 import { minutesToHuman } from '../../lib/dateUtils';
@@ -86,6 +87,7 @@ export default function TaskRow({
               {seqCounts!.after}
             </span>
           )}
+          <TargetBadge target={task.target as string | null} />
           <DueBadge due={task.due} status={task.status} />
         </button>
 
