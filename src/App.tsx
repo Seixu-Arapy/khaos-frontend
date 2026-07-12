@@ -8,6 +8,7 @@ import CalendarPage from './pages/CalendarPage';
 import TagsPage from './pages/TagsPage';
 import AssistantPage from './pages/AssistantPage';
 import RoutinesPage from './pages/RoutinesPage';
+import ComponentsGalleryPage from './pages/dev/ComponentsGalleryPage';
 
 export default function App() {
   return (
@@ -21,6 +22,9 @@ export default function App() {
         <Route path="/tags" element={<TagsPage />} />
         <Route path="/routines" element={<RoutinesPage />} />
         <Route path="/assistant" element={<AssistantPage />} />
+        {import.meta.env.DEV && (
+          <Route path="/dev/components" element={<ComponentsGalleryPage />} />
+        )}
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
