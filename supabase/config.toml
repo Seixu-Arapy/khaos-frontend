@@ -85,6 +85,14 @@ policy = "per_worker"
 inspector_port = 8083
 deno_version = 2
 
+[functions.anthropic-proxy]
+# Platform-level JWT verification also blocks the browser's CORS preflight
+# (OPTIONS carries no Authorization header, so the gateway 401s it before
+# the function's own CORS headers ever get attached — the browser reports
+# that as a CORS failure, not a clean 401). Auth is checked inside the
+# function instead — see supabase/functions/anthropic-proxy/index.ts.
+verify_jwt = false
+
 [analytics]
 enabled = false
 port = 54327
