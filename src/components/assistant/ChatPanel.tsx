@@ -8,19 +8,10 @@ import { EntityChip } from './EntityChip';
 import ConfirmationCard from './ConfirmationCard';
 import KhaosIcon from '../common/KhaosIcon';
 import MomentPrompt from './MomentPrompt';
-import { momentsApi } from '../../lib/api/moments';
+import { useMomentPrompts } from '../../lib/momentPromptsContext';
 import ChaoticText from '../common/ChaoticText';
 
 const MAX_TEXTAREA_LINES = 5;
-
-interface ChatPromptItem {
-  id: string;
-  entityRef: any;
-  entityName?: string;
-  changes: any[];
-  status: 'pending' | 'saving' | 'saved' | 'error';
-  savedNote?: string;
-}
 
 function MessageContent({ text }: { text: string }) {
   const segments = parseMessageSegments(text);
@@ -115,20 +106,7 @@ export default function ChatPanel({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { activeEntity, clearActiveEntity } = useActiveEntity();
 
-  const [momentPrompts, setMomentPrompts] = useState<ChatPromptItem[]>([]);
-
-  useEffect(() => {
-    function handleExternalMoment(e: Event) {
-      const prompt = (e as CustomEvent).detail;
-      setMomentPrompts((prev) => [...prev, { ...prompt, status: 'pending' }]);
-    }
-    window.addEventListener('external-moment-detected', handleExternalMoment);
-    return () =>
-      window.removeEventListener(
-        'external-moment-detected',
-        handleExternalMoment
-      );
-  }, []);
+  const { prompts: momentPrompts, saveNote, skipNote } = useMomentPrompts();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -144,56 +122,8 @@ export default function ChatPanel({
     }
   }, [input]);
 
-  const hasPendingPrompt = momentPrompts.some(
-    (p) => p.status === 'pending' || p.status === 'error'
-  );
-  const isCurrentlySaving = momentPrompts.some((p) => p.status === 'saving');
-
   async function submit() {
-    if (!input.trim() || isSending || isCurrentlySaving) return;
-
-    // Find the first prompt that is still waiting for input ('pending' or 'error')
-    const activePromptIndex = momentPrompts.findIndex(
-      (p) => p.status === 'pending' || p.status === 'error'
-    );
-
-    if (activePromptIndex !== -1) {
-      const activePrompt = momentPrompts[activePromptIndex];
-      const noteText = input.trim();
-
-      // Update status to saving
-      setMomentPrompts((prev) =>
-        prev.map((p, idx) =>
-          idx === activePromptIndex ? { ...p, status: 'saving' } : p
-        )
-      );
-      setInput(''); // Quick UI clear
-
-      try {
-        await momentsApi.attachNoteToLatestChange(
-          activePrompt.entityRef,
-          noteText
-        );
-
-        // Finalize state to permanently saved with its note text inside the chat log
-        setMomentPrompts((prev) =>
-          prev.map((p, idx) =>
-            idx === activePromptIndex
-              ? { ...p, status: 'saved', savedNote: noteText }
-              : p
-          )
-        );
-      } catch {
-        setMomentPrompts((prev) =>
-          prev.map((p, idx) =>
-            idx === activePromptIndex ? { ...p, status: 'error' } : p
-          )
-        );
-        setInput(noteText); // Restore text to chat bar on failure
-      }
-      return;
-    }
-
+    if (!input.trim() || isSending) return;
     const toSend = input;
     setInput('');
     sendMessage(toSend);
@@ -291,6 +221,9 @@ export default function ChatPanel({
             changes={prompt.changes}
             status={prompt.status}
             savedNote={prompt.savedNote}
+            authoredBy={prompt.authoredBy}
+            onSave={(note) => saveNote(prompt.id, note)}
+            onSkip={() => skipNote(prompt.id)}
           />
         ))}
 
@@ -318,17 +251,13 @@ export default function ChatPanel({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={
-            hasPendingPrompt
-              ? 'Type the reason for this change...'
-              : 'Ask Khaos… (⌘+Enter to send)'
-          }
-          disabled={isSending || isCurrentlySaving}
+          placeholder="Ask Khaos… (⌘+Enter to send)"
+          disabled={isSending}
           className="border-ink-700 bg-ink-800 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 flex-1 resize-none rounded-2xl border px-4 py-2.5 text-sm leading-normal focus:outline-hidden disabled:opacity-60"
         />
         <button
           type="submit"
-          disabled={isSending || !input.trim() || isCurrentlySaving}
+          disabled={isSending || !input.trim()}
           className="bg-copper-500 text-ink-900 hover:bg-copper-400 flex h-10 w-10 shrink-0 items-center justify-center rounded-full disabled:opacity-40"
         >
           <Send size={16} />

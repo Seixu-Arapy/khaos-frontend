@@ -186,6 +186,7 @@ export type Database = {
       }
       moments: {
         Row: {
+          authored_by: string
           created_at: string
           event_id: string | null
           id: string
@@ -198,6 +199,7 @@ export type Database = {
           value: string | null
         }
         Insert: {
+          authored_by?: string
           created_at?: string
           event_id?: string | null
           id?: string
@@ -210,6 +212,7 @@ export type Database = {
           value?: string | null
         }
         Update: {
+          authored_by?: string
           created_at?: string
           event_id?: string | null
           id?: string

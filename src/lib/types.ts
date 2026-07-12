@@ -57,6 +57,7 @@ export type Status = Enums['status'];
 export type Priority = Enums['priority'];
 export type EventType = Enums['event_types'];
 export type MomentType = Enums['moment_types'];
+export type MomentAuthor = 'user' | 'system' | 'assistant';
 
 // entity_types no longer exists as a DB enum — moments/work_tag_entities use
 // direct FK columns now (see EntityRef below) instead of a generic

@@ -13,6 +13,7 @@ import {
   Flag,
   Target,
   DraftingCompass,
+  Bot,
 } from 'lucide-react';
 import {
   Modal,
@@ -881,8 +882,15 @@ export default function TaskDetailModal({
                         </p>
                       )}
                       {moment.moment_note && (
-                        <p className="whitespace-pre-wrap">
-                          {moment.moment_note}
+                        <p className="flex items-start gap-1 whitespace-pre-wrap">
+                          {moment.authored_by !== 'user' && (
+                            <Bot
+                              size={12}
+                              className="text-ink-500 mt-0.5 shrink-0"
+                              aria-label={`Note ${moment.authored_by === 'assistant' ? 'written by the assistant' : 'auto-generated'}`}
+                            />
+                          )}
+                          <span>{moment.moment_note}</span>
                         </p>
                       )}
                     </div>

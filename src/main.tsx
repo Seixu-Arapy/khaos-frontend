@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import { ProcessingProvider } from './lib/processingContext';
 import { ActiveEntityProvider } from './lib/activeEntityContext';
+import { MomentPromptsProvider } from './lib/momentPromptsContext';
 import { PasswordGate } from './components/layout/PasswordGate';
 import './index.css';
 
@@ -23,11 +24,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <PasswordGate>
       <QueryClientProvider client={queryClient}>
         <ProcessingProvider>
-          <ActiveEntityProvider>
-            <BrowserRouter>
-              <App />
-            </BrowserRouter>
-          </ActiveEntityProvider>
+          <MomentPromptsProvider>
+            <ActiveEntityProvider>
+              <BrowserRouter>
+                <App />
+              </BrowserRouter>
+            </ActiveEntityProvider>
+          </MomentPromptsProvider>
         </ProcessingProvider>
       </QueryClientProvider>
     </PasswordGate>

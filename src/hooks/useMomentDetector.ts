@@ -2,6 +2,10 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProcessingContext } from '../lib/processingContext'; // IMPORTADO DO SEU CONTEXTO
+import {
+  useMomentPrompts,
+  type NewMomentPrompt,
+} from '../lib/momentPromptsContext';
 
 type WatchedTable = 'tasks' | 'projects' | 'sections';
 
@@ -24,18 +28,11 @@ const ENTITY_FK_COLUMN: Record<WatchedTable, string> = {
   sections: 'section_id',
 };
 
-interface MomentPrompt {
-  id: string;
-  entityRef: Record<string, string>;
-  entityName: string;
-  changes: { field: string; label: string; from: unknown; to: unknown }[];
-}
-
 function buildPrompt(
   table: WatchedTable,
   oldRow: Record<string, unknown>,
   newRow: Record<string, unknown>
-): MomentPrompt | null {
+): NewMomentPrompt | null {
   const watched = WATCHED_FIELDS[table] || [];
   const changes = watched.filter((col) => oldRow[col] !== newRow[col]);
   if (!changes.length) return null;
@@ -58,6 +55,7 @@ function buildPrompt(
 export function useMomentDetector() {
   const qc = useQueryClient();
   const { isAssistantProcessing } = useProcessingContext();
+  const { addPrompt } = useMomentPrompts();
 
   const isLlmChangingRef = useRef(false);
   useEffect(() => {
@@ -84,11 +82,7 @@ export function useMomentDetector() {
 
               const prompt = buildPrompt(table, oldRow, newRow);
               if (prompt) {
-                window.dispatchEvent(
-                  new CustomEvent('external-moment-detected', {
-                    detail: prompt,
-                  })
-                );
+                addPrompt(prompt);
               }
 
               qc.invalidateQueries({
@@ -103,7 +97,5 @@ export function useMomentDetector() {
     return () => {
       channels.forEach((ch) => supabase.removeChannel(ch));
     };
-  }, [qc]);
-
-  return { current: null, dismiss: () => {}, pendingCount: 0 };
+  }, [qc, addPrompt]);
 }

@@ -1175,7 +1175,9 @@ CREATE TABLE IF NOT EXISTS "public"."moments" (
     "moment_note" "text",
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "previous_value" "text",
-    CONSTRAINT "chk_single_entity" CHECK (("num_nonnulls"("project_id", "section_id", "task_id", "event_id") = 1))
+    "authored_by" "text" DEFAULT 'user'::"text" NOT NULL,
+    CONSTRAINT "chk_single_entity" CHECK (("num_nonnulls"("project_id", "section_id", "task_id", "event_id") = 1)),
+    CONSTRAINT "chk_moments_authored_by" CHECK (("authored_by" = ANY (ARRAY['user'::"text", 'system'::"text", 'assistant'::"text"])))
 );
 
 
@@ -1223,6 +1225,10 @@ COMMENT ON COLUMN "public"."moments"."created_at" IS 'Timestamp when this log/mo
 
 
 COMMENT ON COLUMN "public"."moments"."previous_value" IS 'The value prior to the change (the "from" state), alongside the "value" column which stores the new value (the "to" state). Null for moment_types that do not represent a field transition (e.g., created, note, definition).';
+
+
+
+COMMENT ON COLUMN "public"."moments"."authored_by" IS 'Who supplied moment_note: user (typed by a person), system (app-generated boilerplate, e.g. a skipped note prompt), or assistant (written directly by the LLM).';
 
 
 

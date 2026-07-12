@@ -1,12 +1,13 @@
-import React from 'react';
+import { useState } from 'react';
 import {
   MessageSquarePlus,
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Bot,
 } from 'lucide-react';
-import type { Status, Priority } from '../../lib/types';
-import { StatusBadge, PriorityBadge } from '../common/ui';
+import type { Status, Priority, MomentAuthor } from '../../lib/types';
+import { StatusBadge, PriorityBadge, Button } from '../common/ui';
 import { formatDueCompact, minutesToHuman } from '../../lib/dateUtils';
 import clsx from 'clsx';
 
@@ -21,6 +22,9 @@ interface ChatMomentPromptProps {
   changes: ChangeItem[];
   status: 'pending' | 'saving' | 'saved' | 'error';
   savedNote?: string;
+  authoredBy?: MomentAuthor;
+  onSave: (note: string) => void;
+  onSkip: () => void;
 }
 
 function ChangeChip({ change }: { change: ChangeItem }) {
@@ -100,11 +104,30 @@ export default function ChatMomentPrompt({
   changes,
   status,
   savedNote,
+  authoredBy,
+  onSave,
+  onSkip,
 }: ChatMomentPromptProps) {
+  const [noteText, setNoteText] = useState('');
   const isPending = status === 'pending';
   const isSaving = status === 'saving';
   const isSaved = status === 'saved';
   const hasError = status === 'error';
+  const isAnswering = isPending || hasError;
+  const wasSkipped = isSaved && authoredBy === 'system';
+
+  function handleSave() {
+    const trimmed = noteText.trim();
+    if (!trimmed || isSaving) return;
+    onSave(trimmed);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSave();
+    }
+  }
 
   return (
     <div className="my-2 flex gap-2.5 transition-all duration-300">
@@ -151,23 +174,59 @@ export default function ChatMomentPrompt({
 
         {isSaved && savedNote && (
           <div className="text-ink-400 my-2 border-l-2 border-emerald-500/30 pl-2 text-xs italic">
-            "{savedNote}"
+            {wasSkipped && (
+              <span className="text-ink-500 mr-1 inline-flex items-center gap-1 not-italic">
+                <Bot size={11} />
+              </span>
+            )}
+            &ldquo;{savedNote}&rdquo;
           </div>
         )}
 
-        <p
-          className={clsx(
-            'text-xs transition-colors',
-            isSaved && 'font-medium text-emerald-500/80',
-            hasError && 'font-medium text-rose-400',
-            (isPending || isSaving) && 'text-ink-400'
-          )}
-        >
-          {isSaved && 'Context saved to moment.'}
-          {hasError &&
-            'Failed to save context. Text restored to input. Try again.'}
-          {(isPending || isSaving) && 'Why did you make this modification?'}
-        </p>
+        {isAnswering && (
+          <div className="mt-1 space-y-2">
+            <textarea
+              autoFocus
+              rows={2}
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Why did you make this modification?"
+              disabled={isSaving}
+              className="border-ink-700 bg-ink-900 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 w-full resize-none rounded-md border px-2.5 py-2 text-xs leading-relaxed focus:outline-hidden disabled:opacity-60"
+            />
+            {hasError && (
+              <p className="text-xs font-medium text-rose-400">
+                Failed to save context. Try again.
+              </p>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onSkip}
+                disabled={isSaving}
+              >
+                Skip
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleSave}
+                disabled={isSaving || !noteText.trim()}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {isSaved && (
+          <p className="text-xs font-medium text-emerald-500/80">
+            {wasSkipped ? 'No context provided.' : 'Context saved to moment.'}
+          </p>
+        )}
       </div>
     </div>
   );
