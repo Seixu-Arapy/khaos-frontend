@@ -1,17 +1,29 @@
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
-const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-export const MODEL_NAME =
-  import.meta.env.VITE_LLM_MODEL || 'llama-3.3-70b-versatile';
+export const MODEL_NAME = import.meta.env.VITE_LLM_MODEL || 'claude-sonnet-5';
 
-if (!apiKey) {
-  console.error('Missing VITE_GROQ_API_KEY no arquivo .env');
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error(
+    'Missing Supabase env vars no arquivo .env — needed both for Supabase ' +
+      'itself and for reaching the Claude proxy function below.'
+  );
 }
 
-export const client = new OpenAI({
-  apiKey,
+// The Anthropic API key never reaches the browser. This client is pointed
+// at a Supabase Edge Function (supabase/functions/anthropic-proxy) that
+// injects the real key server-side and forwards the request to
+// api.anthropic.com — the `apiKey` below is never sent anywhere that
+// matters, it just satisfies the SDK's constructor.
+export const client = new Anthropic({
+  apiKey: 'unused-key-lives-server-side',
+  baseURL: `${supabaseUrl}/functions/v1/anthropic-proxy`,
   dangerouslyAllowBrowser: true,
-  baseURL: 'https://api.groq.com/openai/v1',
+  defaultHeaders: {
+    Authorization: `Bearer ${supabaseAnonKey}`,
+  },
 });
 
 export const TONE_INSTRUCTION = `
@@ -173,13 +185,13 @@ A \`project\` is something with a beginning and an end.
 A \`field\` is an area of interest in someone's life.
 
 A \`task\` can be logged to track time for statistics
-That's a \`task_log\`. 
+That's a \`task_log\`.
 If a task is being logged, query \`active_task_log\`.
 To stop it, call RPC \`stop_active_task\`.
 
 An \`event\` is an occurrence with defined time of start and end.
 If an \`event\` is fixed, it's a meeting, a class, something you can't arbitrarily move. It's not necessarily connected to a \`project\` or a \`task\`.
-You can schedule \`tasks\` as a scheduled \`event\`. Tasks have a \`schedule\` column, a tstzrange with a suggested time window for them to be done. When asked to schedule a task, you have to create an scheduled \`event\` based on that. 
+You can schedule \`tasks\` as a scheduled \`event\`. Tasks have a \`schedule\` column, a tstzrange with a suggested time window for them to be done. When asked to schedule a task, you have to create an scheduled \`event\` based on that.
 
 A \`moment\` is automatically registered when a task, section, project or event is created or modified. It registers the old and the new value. For this reason, whenever you use a tool to modify an entity's status, priority, due date, or estimate, you must extract the user's intent or rationale from the conversation history and provide it in the 'reason' parameter. Never leave the context undocumented.
 

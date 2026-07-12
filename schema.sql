@@ -203,7 +203,7 @@ CREATE OR REPLACE FUNCTION "public"."insert_moment"("p_entity_column" "text", "p
     LANGUAGE "plpgsql"
     AS $_$
 begin
-  if p_entity_column not in ('project_id', 'section_id', 'task_id', 'event_id') then
+  if p_entity_column not in ('project_id', 'section_id', 'task_id', 'routine_id') then
     raise exception 'insert_moment: invalid entity column "%"', p_entity_column;
   end if;
 
@@ -220,11 +220,11 @@ ALTER FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" 
 
 COMMENT ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text", "p_previous_value" "text") IS 'A core utility function designed to dynamically insert records into the "moments" table. 
 
-It abstracts the exclusive relationship constraint of the schema by accepting the target entity column name ("project_id", "section_id", "task_id", or "event_id") as a parameter and validating it against an explicit whitelist. Using dynamic SQL execution, it programmatically assigns the UUID to the correct entity column while ensuring all other entity foreign keys default to NULL, guaranteeing data integrity. 
+It abstracts the exclusive relationship constraint of the schema by accepting the target entity column name ("project_id", "section_id", "task_id", or "routine_id") as a parameter and validating it against an explicit whitelist. Using dynamic SQL execution, it programmatically assigns the UUID to the correct entity column while ensuring all other entity foreign keys default to NULL, guaranteeing data integrity.
 
 Parameters:
 - p_entity_column: Whitelisted column name representing the linked entity.
-- p_entity_id: The UUID of the specific project, section, task, or event.
+- p_entity_id: The UUID of the specific project, section, task, or routine.
 - p_moment_type: The enum metric or lifestyle aspect being logged.
 - p_value: The new state value (the "to" state).
 - p_note: Optional qualitative contextual notes.
@@ -239,6 +239,7 @@ CREATE OR REPLACE FUNCTION "public"."moment_entity_column"("p_table" "text") RET
     when 'projects' then 'project_id'
     when 'sections' then 'section_id'
     when 'tasks'    then 'task_id'
+    when 'routines' then 'routine_id'
   end;
 $$;
 
@@ -475,13 +476,19 @@ begin
       v_column := 'project_id';
       v_entity_id := new.project_id;
     else
-      v_column := 'event_id';
-      v_entity_id := new.id;
+      -- A standalone event with no linked task or project (a fixed
+      -- meeting/appointment) doesn't get a moment: scheduling a task as an
+      -- event already logs the moment against the task above, and tracking
+      -- fixed events on their own isn't useful. See moments' dropped
+      -- event_id column.
+      v_column := null;
     end if;
 
     v_previous := case when TG_OP = 'UPDATE' then lower(old.duration)::text else null end;
 
-    perform insert_moment(v_column, v_entity_id, 'scheduled', lower(new.duration)::text, null, v_previous);
+    if v_column is not null then
+      perform insert_moment(v_column, v_entity_id, 'scheduled', lower(new.duration)::text, null, v_previous);
+    end if;
   end if;
   return new;
 end;
@@ -491,7 +498,7 @@ $$;
 ALTER FUNCTION "public"."trg_moment_scheduled"() OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."trg_moment_scheduled"() IS 'Advanced trigger function operating on INSERT and UPDATE events if an entity is scheduled. It evaluates duration modifications, automatically resolves the context priority (task_id, project_id, or event_id), and records time block allocations. For updates, it captures the lower bound of the prior duration range as previous_value alongside the new lower bound duration as value.';
+COMMENT ON FUNCTION "public"."trg_moment_scheduled"() IS 'Advanced trigger function operating on INSERT and UPDATE events if an entity is scheduled. It evaluates duration modifications and automatically resolves the context priority (task_id, then project_id); a standalone event with neither (a fixed meeting/appointment) does not produce a moment. For updates, it captures the lower bound of the prior duration range as previous_value alongside the new lower bound duration as value.';
 
 
 
@@ -1169,14 +1176,14 @@ CREATE TABLE IF NOT EXISTS "public"."moments" (
     "project_id" "uuid",
     "section_id" "uuid",
     "task_id" "uuid",
-    "event_id" "uuid",
+    "routine_id" "uuid",
     "moment_type" "public"."moment_types" DEFAULT 'note'::"public"."moment_types" NOT NULL,
     "value" "text",
     "moment_note" "text",
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "previous_value" "text",
     "authored_by" "text" DEFAULT 'user'::"text" NOT NULL,
-    CONSTRAINT "chk_single_entity" CHECK (("num_nonnulls"("project_id", "section_id", "task_id", "event_id") = 1)),
+    CONSTRAINT "chk_single_entity" CHECK (("num_nonnulls"("project_id", "section_id", "task_id", "routine_id") = 1)),
     CONSTRAINT "chk_moments_authored_by" CHECK (("authored_by" = ANY (ARRAY['user'::"text", 'system'::"text", 'assistant'::"text"])))
 );
 
@@ -1184,7 +1191,7 @@ CREATE TABLE IF NOT EXISTS "public"."moments" (
 ALTER TABLE "public"."moments" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."moments" IS 'Historical timeline log tracking state changes, status updates, estimate modifications, notes, and lifecycle events. Note: Exactly ONE entity foreign key (project_id, section_id, task_id, or event_id) must be populated per record; all others must be NULL.';
+COMMENT ON TABLE "public"."moments" IS 'Historical timeline log tracking state changes, status updates, estimate modifications, notes, and lifecycle events. Note: Exactly ONE entity foreign key (project_id, section_id, task_id, or routine_id) must be populated per record; all others must be NULL. Events do not get moments — scheduling a task as an event already logs against the task, and standalone (fixed) events aren't tracked.';
 
 
 
@@ -1192,19 +1199,19 @@ COMMENT ON COLUMN "public"."moments"."id" IS 'Primary key (UUID) of the moment l
 
 
 
-COMMENT ON COLUMN "public"."moments"."project_id" IS 'Linked project ID (UUID) if this log belongs to a project lifecycle. Must be NULL if section_id, task_id, or event_id is populated.';
+COMMENT ON COLUMN "public"."moments"."project_id" IS 'Linked project ID (UUID) if this log belongs to a project lifecycle. Must be NULL if section_id, task_id, or routine_id is populated.';
 
 
 
-COMMENT ON COLUMN "public"."moments"."section_id" IS 'Linked section ID (UUID) if this log belongs to a section. Must be NULL if project_id, task_id, or event_id is populated.';
+COMMENT ON COLUMN "public"."moments"."section_id" IS 'Linked section ID (UUID) if this log belongs to a section. Must be NULL if project_id, task_id, or routine_id is populated.';
 
 
 
-COMMENT ON COLUMN "public"."moments"."task_id" IS 'Linked task ID (UUID) if this log belongs to a task lifecycle. Must be NULL if project_id, section_id, or event_id is populated.';
+COMMENT ON COLUMN "public"."moments"."task_id" IS 'Linked task ID (UUID) if this log belongs to a task lifecycle. Must be NULL if project_id, section_id, or routine_id is populated.';
 
 
 
-COMMENT ON COLUMN "public"."moments"."event_id" IS 'Linked event ID (UUID) if this log tracks an event modification. Must be NULL if project_id, section_id, or task_id is populated.';
+COMMENT ON COLUMN "public"."moments"."routine_id" IS 'Linked routine ID (UUID) if this log belongs to a recurring routine. Must be NULL if project_id, section_id, or task_id is populated.';
 
 
 
@@ -1607,7 +1614,7 @@ CREATE TABLE IF NOT EXISTS "public"."work_tags" (
 ALTER TABLE "public"."work_tags" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."work_tags" IS 'AI-generated taxonomy reflecting the core operational nature of the work. Used by the AI to detect execution patterns, analyze structural metrics (e.g., how long task types usually take), and auto-suggest sub-tasks or project templates based on previous similar initiatives.';
+COMMENT ON TABLE "public"."work_tags" IS 'Taxonomy reflecting the core operational nature of the work, settable by the user directly or assigned by the AI. Used by the AI to detect execution patterns, analyze structural metrics (e.g., how long task types usually take), and auto-suggest sub-tasks or project templates based on previous similar initiatives.';
 
 
 
@@ -1738,7 +1745,7 @@ CREATE INDEX "idx_moment_tag_entities_task" ON "public"."moment_tag_entities" US
 
 
 
-CREATE INDEX "idx_moments_event" ON "public"."moments" USING "btree" ("event_id") WHERE ("event_id" IS NOT NULL);
+CREATE INDEX "idx_moments_routine" ON "public"."moments" USING "btree" ("routine_id") WHERE ("routine_id" IS NOT NULL);
 
 
 
@@ -2048,7 +2055,7 @@ ALTER TABLE ONLY "public"."moment_tag_entities"
 
 
 ALTER TABLE ONLY "public"."moments"
-    ADD CONSTRAINT "moments_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE CASCADE;
+    ADD CONSTRAINT "moments_routine_id_fkey" FOREIGN KEY ("routine_id") REFERENCES "public"."routines"("id") ON DELETE CASCADE;
 
 
 

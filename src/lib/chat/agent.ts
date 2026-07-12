@@ -1,4 +1,4 @@
-import type OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import {
   client,
   MODEL_NAME,
@@ -9,30 +9,40 @@ import {
   executeTool,
   normalizeToolName,
   WRITE_TOOLS,
-  functionDeclarations,
+  TOOL_DEFINITIONS,
 } from './tools';
 
 const MAX_TOOL_ROUNDS = 6;
 const MAX_HISTORY_MESSAGES = 14;
-const MAX_API_RETRIES = 3; // retries specifically for Groq's tool_use_failed generation errors
+const MAX_TOKENS = 4096;
 
-const formattedTools = functionDeclarations.map((fd) => ({
-  type: 'function' as const,
-  function: {
-    name: fd.name,
-    description: fd.description,
-    parameters: fd.parametersJsonSchema,
+// Static, byte-for-byte identical on every call — required for prompt
+// caching to actually hit. Don't interpolate anything dynamic in here (a
+// date, a user name); put per-turn context in the user message instead,
+// same as useChatAgent.ts already does with its [Temporal Context: ...] /
+// [UI Context: ...] prefixes.
+const SYSTEM_PROMPT_TEXT = `
+<system_instructions>
+${SYSTEM_INSTRUCTION}
+</system_instructions>
+
+<tone_and_behavior>
+${TONE_INSTRUCTION}
+</tone_and_behavior>
+`.trim();
+
+const SYSTEM_BLOCKS: Anthropic.TextBlockParam[] = [
+  {
+    type: 'text',
+    text: SYSTEM_PROMPT_TEXT,
+    cache_control: { type: 'ephemeral' },
   },
-}));
+];
 
-export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant' | 'tool';
-  content?: string | null;
-  tool_calls?: any[];
-  tool_call_id?: string;
-  name?: string;
-  isError?: boolean;
-}
+// History is stored directly in Anthropic's own wire format — no bespoke
+// interface to keep in sync with the API. `isError` is the one UI-only
+// field layered on top.
+export type ChatMessage = Anthropic.MessageParam & { isError?: boolean };
 
 interface RunTurnOptions {
   onPendingWrite: (
@@ -41,246 +51,118 @@ interface RunTurnOptions {
   ) => Promise<boolean>;
 }
 
+export function extractText(content: ChatMessage['content']): string {
+  if (typeof content === 'string') return content;
+  return content
+    .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+    .map((block) => block.text)
+    .join('\n');
+}
+
+// A user message is safe to start a trimmed window on only if it's a real
+// user turn, not a continuation carrying tool_result blocks for a prior
+// assistant tool_use — cutting there would strand tool_result blocks with
+// no matching tool_use in the visible history, which the API rejects.
+function isFreshUserTurn(message: ChatMessage): boolean {
+  if (message.role !== 'user') return false;
+  if (typeof message.content === 'string') return true;
+  return !message.content.some((block) => block.type === 'tool_result');
+}
+
 function trimHistory(
   messages: ChatMessage[],
   maxMessages: number
 ): ChatMessage[] {
   if (messages.length <= maxMessages) return messages;
-  const systemPrompt = messages[0]?.role === 'system' ? messages[0] : null;
-  const rest = systemPrompt ? messages.slice(1) : messages;
-  let sliceFrom = Math.max(0, rest.length - maxMessages);
-  while (sliceFrom > 0 && rest[sliceFrom].role === 'tool') sliceFrom--;
-  const trimmed = rest.slice(sliceFrom);
-  return systemPrompt ? [systemPrompt, ...trimmed] : trimmed;
-}
-
-// Groq's tool-use models occasionally fail to produce a function call that
-// passes Groq's own validation. This surfaces as a 400 with
-// code "tool_use_failed" / message "Failed to call a function…". It's a
-// generation-time failure on Groq's side.
-function isToolUseFailedError(err: any): boolean {
-  const code = err?.error?.code || err?.code;
-  const message = err?.error?.message || err?.message || '';
-  return (
-    code === 'tool_use_failed' || /Failed to call a function/i.test(message)
-  );
-}
-
-// Strips every tool-related artifact from the history: assistant
-// `tool_calls`, and `tool`-role messages entirely (folded into a short
-// system-visible note instead of being dropped silently). Groq appears to
-// still choke on tool_use_failed even when `tools` is omitted from the
-// request if earlier messages reference tool calls — so a genuine
-// tools-less fallback has to scrub the history, not just the request
-// params.
-function stripToolArtifacts(messages: any[]): any[] {
-  const cleaned: any[] = [];
-  for (const m of messages) {
-    if (m.role === 'tool') continue; // drop raw tool results
-    if (m.role === 'assistant' && m.tool_calls?.length) {
-      // Keep the message only if it also has real text content; otherwise
-      // it was purely a tool-call carrier and contributes nothing once
-      // tool_calls is stripped.
-      if (m.content) cleaned.push({ role: 'assistant', content: m.content });
-      continue;
-    }
-    cleaned.push({ role: m.role, content: m.content ?? '' });
-  }
-  return cleaned;
-}
-
-async function completeWithRetry(
-  sanitizedMessages: any[],
-  { allowTools, retries }: { allowTools: boolean; retries: number }
-) {
-  let lastErr: unknown;
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      return await client.chat.completions.create({
-        model: MODEL_NAME,
-        messages: sanitizedMessages,
-        ...(allowTools
-          ? { tools: formattedTools, tool_choice: 'auto' as const }
-          : {}),
-      });
-    } catch (err) {
-      lastErr = err;
-      if (!isToolUseFailedError(err) || attempt === retries) throw err;
-      await new Promise((r) =>
-        setTimeout(r, 300 * (attempt + 1) + Math.random() * 200)
-      );
-    }
-  }
-  throw lastErr;
-}
-
-interface FallbackTier {
-  allowTools: boolean;
-  retries: number;
-  scrub: boolean;
-}
-
-// Ordered from best (tools enabled, most retries) to worst (tools disabled,
-// history scrubbed of every tool artifact) — see isToolUseFailedError for
-// why Groq needs a ladder here instead of a single retry policy.
-const FALLBACK_TIERS: FallbackTier[] = [
-  { allowTools: true, retries: MAX_API_RETRIES, scrub: false },
-  { allowTools: false, retries: 1, scrub: false },
-  { allowTools: false, retries: 1, scrub: true },
-];
-
-// Works through FALLBACK_TIERS in order, degrading the request each time
-// Groq rejects it with tool_use_failed. Returns null once every tier is
-// exhausted; any other kind of error propagates immediately.
-async function completeWithFallback(sanitizedMessages: any[]) {
-  for (const tier of FALLBACK_TIERS) {
-    const messages = tier.scrub
-      ? stripToolArtifacts(sanitizedMessages)
-      : sanitizedMessages;
-    try {
-      const response = await completeWithRetry(messages, tier);
-      return { response, degraded: tier.scrub };
-    } catch (err) {
-      if (!isToolUseFailedError(err)) throw err;
-    }
-  }
-  return null;
+  let sliceFrom = Math.max(0, messages.length - maxMessages);
+  while (sliceFrom > 0 && !isFreshUserTurn(messages[sliceFrom])) sliceFrom--;
+  return messages.slice(sliceFrom);
 }
 
 export async function runTurn(
   history: ChatMessage[],
   { onPendingWrite }: RunTurnOptions
 ): Promise<{ updatedHistory: ChatMessage[]; text: string }> {
-  let currentMessages = [...history];
-
-  if (currentMessages.length === 0 || currentMessages[0].role !== 'system') {
-    const combinedSystemPrompt = `
-<system_instructions>
-${SYSTEM_INSTRUCTION}
-</system_instructions>
-
-<tone_and_behavior>
-${TONE_INSTRUCTION}
-</tone_and_behavior>
-    `.trim();
-    currentMessages.unshift({ role: 'system', content: combinedSystemPrompt });
-  }
-
+  const currentMessages = trimHistory(history, MAX_HISTORY_MESSAGES);
   let rounds = 0;
 
   while (rounds < MAX_TOOL_ROUNDS) {
-    currentMessages = trimHistory(currentMessages, MAX_HISTORY_MESSAGES);
-
-    const sanitizedMessages = currentMessages.map((m) => {
-      const cleaned: any = { role: m.role, content: m.content ?? null };
-      if (m.tool_calls) {
-        cleaned.tool_calls = m.tool_calls.map((tc: any) => ({
-          id: tc.id,
-          type: 'function',
-          function: {
-            name: tc.function.name,
-            arguments:
-              typeof tc.function.arguments === 'string'
-                ? tc.function.arguments
-                : JSON.stringify(tc.function.arguments),
-          },
-        }));
-      }
-      if (m.tool_call_id) cleaned.tool_call_id = m.tool_call_id;
-      if (m.name) cleaned.name = m.name;
-      return cleaned;
-    });
-
-    const fallback = await completeWithFallback(sanitizedMessages);
-    if (!fallback) {
-      // Every tier failed — give up gracefully rather than throwing a raw
-      // API error up into the UI. Falls through to the shared return below.
+    let response: Anthropic.Message;
+    try {
+      response = await client.messages.create({
+        model: MODEL_NAME,
+        max_tokens: MAX_TOKENS,
+        system: SYSTEM_BLOCKS,
+        tools: TOOL_DEFINITIONS,
+        messages: currentMessages,
+      });
+    } catch (err) {
       currentMessages.push({
         role: 'assistant',
         content:
-          "I couldn't complete that — the request tripped up the model's tool-calling step. Try rephrasing, or splitting it into smaller steps.",
+          err instanceof Anthropic.RateLimitError
+            ? "I'm being rate-limited right now. Give it a moment and try again."
+            : "I couldn't complete that — something went wrong reaching the model.",
         isError: true,
       });
       break;
     }
 
-    const { response, degraded } = fallback;
-    const assistantMessage = response.choices[0].message;
-    currentMessages.push({
-      role: 'assistant',
-      content: assistantMessage.content ?? null,
-      tool_calls: assistantMessage.tool_calls,
-    });
+    currentMessages.push({ role: 'assistant', content: response.content });
 
-    // A degraded (scrubbed, tools-less) completion never carries
-    // tool_calls — stop here rather than trying to process any.
-    if (degraded) break;
+    // The server-side tool loop (web search etc. — not in play today, but
+    // harmless to handle) hit its internal iteration cap. Re-sending the
+    // conversation as-is resumes it; no extra "continue" message needed.
+    if (response.stop_reason === 'pause_turn') continue;
 
-    if (assistantMessage.tool_calls?.length) {
-      rounds++;
-      // Only function tools are declared (see formattedTools above); Groq
-      // never returns the custom-tool variant, but the SDK types the field
-      // as a union of both.
-      const toolCalls = assistantMessage.tool_calls.filter(
-        (tc): tc is OpenAI.ChatCompletionMessageFunctionToolCall =>
-          tc.type === 'function'
-      );
-      for (const tc of toolCalls) {
-        let args: Record<string, unknown>;
-        try {
-          args =
-            typeof tc.function.arguments === 'string'
-              ? JSON.parse(tc.function.arguments)
-              : tc.function.arguments;
-        } catch (parseErr) {
-          currentMessages.push({
-            role: 'tool',
-            tool_call_id: tc.id,
-            name: tc.function.name,
-            content: JSON.stringify({
-              error: `Could not parse arguments for "${tc.function.name}": ${(parseErr as Error).message}`,
-            }),
-          });
-          continue;
+    const toolUses = response.content.filter(
+      (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use'
+    );
+
+    if (!toolUses.length) break;
+
+    rounds++;
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const toolUse of toolUses) {
+      let result: unknown;
+      try {
+        // Normalize aliased/mis-cased tool names (e.g. the model calling
+        // "update_row" instead of the declared "update_rows") before the
+        // write-confirmation check — otherwise an aliased write tool would
+        // skip user confirmation and execute straight away.
+        const toolName = normalizeToolName(toolUse.name);
+        const args = toolUse.input as Record<string, unknown>;
+        if (WRITE_TOOLS.has(toolName)) {
+          const approved = await onPendingWrite(toolName, args);
+          result = approved
+            ? await executeTool(toolName, args)
+            : {
+                declined: true,
+                message: 'The person chose not to run this action.',
+              };
+        } else {
+          result = await executeTool(toolName, args);
         }
-
-        let result: unknown;
-        try {
-          // Normalize aliased/mis-cased tool names (e.g. the model calling
-          // "update_row" instead of the declared "update_rows") before the
-          // write-confirmation check — otherwise an aliased write tool
-          // would skip user confirmation and execute straight away.
-          const toolName = normalizeToolName(tc.function.name);
-          if (WRITE_TOOLS.has(toolName)) {
-            const approved = await onPendingWrite(toolName, args);
-            result = approved
-              ? await executeTool(toolName, args)
-              : {
-                  declined: true,
-                  message: 'The person chose not to run this action.',
-                };
-          } else {
-            result = await executeTool(toolName, args);
-          }
-        } catch (err) {
-          result = { error: (err as Error).message };
-        }
-
-        currentMessages.push({
-          role: 'tool',
-          tool_call_id: tc.id,
-          name: tc.function.name,
-          content: JSON.stringify(result),
-        });
+      } catch (err) {
+        result = { error: (err as Error).message };
       }
-    } else {
-      break;
+
+      toolResults.push({
+        type: 'tool_result',
+        tool_use_id: toolUse.id,
+        content: JSON.stringify(result),
+      });
     }
+
+    // Anthropic requires every tool_result for a turn's tool_use blocks to
+    // arrive together in a single user message, not split across several.
+    currentMessages.push({ role: 'user', content: toolResults });
   }
 
   const lastMessage = currentMessages[currentMessages.length - 1];
   return {
     updatedHistory: currentMessages,
-    text: lastMessage.role === 'assistant' ? lastMessage.content || '' : '',
+    text: lastMessage.role === 'assistant' ? extractText(lastMessage.content) : '',
   };
 }

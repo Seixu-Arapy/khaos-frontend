@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { runTurn, type ChatMessage as AgentMessage } from '../lib/chat/agent';
+import {
+  runTurn,
+  extractText,
+  type ChatMessage as AgentMessage,
+} from '../lib/chat/agent';
 import {
   buildConfirmationPreview,
   type ConfirmationPreview,
@@ -11,7 +15,8 @@ import { getTimezone } from '../lib/timezone';
 const STORAGE_KEY = 'logbook.chatHistory.v1';
 
 // UI-facing shape — this is what ChatPanel and the rest of the app render.
-// Kept separate from AgentMessage (system/tool/tool_calls) on purpose.
+// Kept separate from AgentMessage, whose content is Anthropic's own
+// text/tool_use/tool_result content-block union, not plain display text.
 export interface ChatMessage {
   id: string;
   role: 'user' | 'model';
@@ -127,13 +132,22 @@ export function useChatAgent() {
   }, []);
 
   const uiMessages: ChatMessage[] = messages
-    .filter(
-      (m) => (m.role === 'user' || m.role === 'assistant') && Boolean(m.content)
-    )
-    .map((m, index) => {
-      let textToShow = m.content || '';
-
-      if (m.role === 'user') {
+    .map((m, index) => ({ m, index }))
+    .filter(({ m }) => m.role === 'user' || m.role === 'assistant')
+    .map(({ m, index }) => ({
+      id: `${m.role}-${index}`,
+      role: m.role === 'assistant' ? ('model' as const) : ('user' as const),
+      // extractText reads only text blocks — a user turn that's actually a
+      // tool_result continuation, or an assistant turn that's purely a
+      // tool_use with no accompanying text, both collapse to '' here and
+      // get filtered out below, same as a falsy `content` did before.
+      text: extractText(m.content),
+      isError: m.isError,
+    }))
+    .filter(({ text }) => Boolean(text))
+    .map(({ id, role, text, isError }) => {
+      let textToShow = text;
+      if (role === 'user') {
         textToShow = textToShow.replace(
           /^\[Temporal Context:[\s\S]*?\]\s*/g,
           ''
@@ -141,13 +155,7 @@ export function useChatAgent() {
         textToShow = textToShow.replace(/^\[UI Context:[\s\S]*?\]\s*/g, '');
         textToShow = textToShow.replace(/^\[Context:[\s\S]*?\]\s*/g, '');
       }
-
-      return {
-        id: `${m.role}-${index}`,
-        role: m.role === 'assistant' ? ('model' as const) : ('user' as const),
-        text: textToShow,
-        isError: m.isError,
-      };
+      return { id, role, text: textToShow, isError };
     });
 
   return {

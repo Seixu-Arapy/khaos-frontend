@@ -7,12 +7,15 @@ import {
   type NewMomentPrompt,
 } from '../lib/momentPromptsContext';
 
-type WatchedTable = 'tasks' | 'projects' | 'sections';
+type WatchedTable = 'tasks' | 'projects' | 'sections' | 'routines';
 
 const WATCHED_FIELDS: Record<WatchedTable, string[]> = {
   tasks: ['status', 'due', 'estimate', 'priority'],
   projects: ['status', 'due', 'priority'],
   sections: ['status', 'due'],
+  // routines have neither status, due, nor priority columns — only
+  // estimate is watchable for now.
+  routines: ['estimate'],
 };
 
 const FIELD_LABEL: Record<string, string> = {
@@ -26,6 +29,7 @@ const ENTITY_FK_COLUMN: Record<WatchedTable, string> = {
   tasks: 'task_id',
   projects: 'project_id',
   sections: 'section_id',
+  routines: 'routine_id',
 };
 
 function buildPrompt(

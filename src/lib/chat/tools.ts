@@ -1,3 +1,4 @@
+import type Anthropic from '@anthropic-ai/sdk';
 import { supabase } from '../supabaseClient';
 import { searchSchema } from './schemaSearch';
 
@@ -87,13 +88,10 @@ function cleanPayload(obj: any): any {
   return obj;
 }
 
-// IMPORTANT: Groq validates the raw tool-call JSON against this schema
-// *before* our code ever runs (that's what the "tool call validation
-// failed" 400 is). The model frequently emits `filters` as a JSON *string*
-// instead of a real array (and `ascending`/`limit` as strings too), so a
-// schema that only accepts the "correct" type causes Groq itself to reject
-// otherwise-fine tool calls. We accept both shapes here and coerce in
-// executeTool() below.
+// Defensive typing: models occasionally emit `filters` as a JSON *string*
+// instead of a real array (and `ascending`/`limit` as strings too). Accept
+// both shapes here and coerce in executeTool() below, rather than rejecting
+// an otherwise-fine tool call over a cosmetic type mismatch.
 const looseFiltersSchema = {
   type: ['array', 'string'],
   description:
@@ -128,12 +126,18 @@ export const WRITE_TOOLS = new Set([
   'call_rpc',
 ]);
 
-export const functionDeclarations = [
+// Anthropic's native tool shape: {name, description, input_schema}. Passed
+// straight through as the `tools` param on client.messages.create — no
+// wrapping needed the way OpenAI's {type:'function', function:{...}} did.
+// Explicit `Anthropic.Tool[]` annotation matters here, not just style: without
+// it TS widens each input_schema.type to `string`, which no longer satisfies
+// Tool's `"object"` literal requirement.
+export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   {
     name: 'search_schema',
     description:
       "Searches the database's schema (tables, columns, enum values, callable RPC functions) by keyword.",
-    parametersJsonSchema: {
+    input_schema: {
       type: 'object',
       properties: {
         query: { type: 'string', description: 'Keyword to search for.' },
@@ -145,7 +149,7 @@ export const functionDeclarations = [
   {
     name: 'query_rows',
     description: `Reads rows from a table (SELECT). Allowed tables: fields, projects, sections, tasks, task_items, task_logs, events, routines, moments, moment_tags, work_tags, moment_tag_entities, work_tag_entities, sections_sequence, tasks_sequence.`,
-    parametersJsonSchema: {
+    input_schema: {
       type: 'object',
       properties: {
         table: { type: 'string', enum: ALLOWED_TABLES },
@@ -171,7 +175,7 @@ export const functionDeclarations = [
   {
     name: 'insert_row',
     description: `Inserts a single new row into a table. Allowed tables: ${ALLOWED_TABLES.join(', ')}.`,
-    parametersJsonSchema: {
+    input_schema: {
       type: 'object',
       properties: {
         table: { type: 'string', enum: ALLOWED_TABLES },
@@ -188,7 +192,7 @@ export const functionDeclarations = [
   {
     name: 'update_rows',
     description: `Updates rows matching given filters. Allowed tables: ${ALLOWED_TABLES.join(', ')}.`,
-    parametersJsonSchema: {
+    input_schema: {
       type: 'object',
       properties: {
         table: { type: 'string', enum: ALLOWED_TABLES },
@@ -206,7 +210,7 @@ export const functionDeclarations = [
   {
     name: 'delete_rows',
     description: `Deletes rows matching given filters. Allowed tables: ${ALLOWED_TABLES.join(', ')}.`,
-    parametersJsonSchema: {
+    input_schema: {
       type: 'object',
       properties: {
         table: { type: 'string', enum: ALLOWED_TABLES },
@@ -219,7 +223,7 @@ export const functionDeclarations = [
   {
     name: 'call_rpc',
     description: 'Calls a Postgres RPC function exposed by Supabase.',
-    parametersJsonSchema: {
+    input_schema: {
       type: 'object',
       properties: {
         name: { type: 'string', description: 'Name of the RPC function.' },

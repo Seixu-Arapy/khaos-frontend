@@ -188,12 +188,12 @@ export type Database = {
         Row: {
           authored_by: string
           created_at: string
-          event_id: string | null
           id: string
           moment_note: string | null
           moment_type: Database["public"]["Enums"]["moment_types"]
           previous_value: string | null
           project_id: string | null
+          routine_id: string | null
           section_id: string | null
           task_id: string | null
           value: string | null
@@ -201,12 +201,12 @@ export type Database = {
         Insert: {
           authored_by?: string
           created_at?: string
-          event_id?: string | null
           id?: string
           moment_note?: string | null
           moment_type?: Database["public"]["Enums"]["moment_types"]
           previous_value?: string | null
           project_id?: string | null
+          routine_id?: string | null
           section_id?: string | null
           task_id?: string | null
           value?: string | null
@@ -214,22 +214,22 @@ export type Database = {
         Update: {
           authored_by?: string
           created_at?: string
-          event_id?: string | null
           id?: string
           moment_note?: string | null
           moment_type?: Database["public"]["Enums"]["moment_types"]
           previous_value?: string | null
           project_id?: string | null
+          routine_id?: string | null
           section_id?: string | null
           task_id?: string | null
           value?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "moments_event_id_fkey"
-            columns: ["event_id"]
+            foreignKeyName: "moments_routine_id_fkey"
+            columns: ["routine_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "routines"
             referencedColumns: ["id"]
           },
           {
