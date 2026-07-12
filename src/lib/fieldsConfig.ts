@@ -19,6 +19,7 @@ import {
   type LucideIcon,
   Brush,
 } from 'lucide-react';
+import StagingAcademyIcon from '../components/icons/StagingAcademyIcon';
 
 export interface FieldMeta {
   icon: LucideIcon;
@@ -120,6 +121,16 @@ export const FIELDS_CONFIG: Record<string, FieldMeta> = {
       bg: 'bg-indigo-500/10',
       text: 'text-indigo-400',
       muted: 'text-indigo-400/60',
+    },
+  },
+  'Staging Academy': {
+    icon: StagingAcademyIcon,
+    color: '#3772ff',
+    classes: {
+      border: 'border-[#3772ff]/20',
+      bg: 'bg-[#3772ff]/10',
+      text: 'text-[#3772ff]',
+      muted: 'text-[#3772ff]/60',
     },
   },
 };
