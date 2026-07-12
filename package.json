@@ -10,7 +10,10 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,json}\"",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:migration:new": "supabase migration new",
+    "db:push": "supabase db push --linked",
+    "db:dump": "supabase db dump --linked --schema public -f schema.sql"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",

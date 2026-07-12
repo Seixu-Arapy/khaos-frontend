@@ -37,6 +37,7 @@ yarn-error.log*
 .vercel
 
 # Supabase — ignore local CLI state, but track function source under
-# supabase/functions/ (e.g. the anthropic-proxy Edge Function) and config.toml
+# supabase/functions/ (e.g. the anthropic-proxy Edge Function), config.toml,
+# and migrations/
 supabase/.branches/
 supabase/.temp/
