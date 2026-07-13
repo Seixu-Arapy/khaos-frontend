@@ -21,6 +21,17 @@ const COLOR_GROUPS: Record<string, string[]> = {
 
 const FONT_TOKENS = ['display', 'body', 'serif', 'mono'] as const;
 
+// One sample per font, all ~50-58 chars so weight/width differences are
+// comparable at a glance — each phrased like the content that font
+// actually renders in the app, with real digits and symbols mixed in
+// rather than a plain pangram.
+const FONT_SAMPLES: Record<(typeof FONT_TOKENS)[number], string> = {
+  display: 'Sprint #12 wraps in 3 days — 87% done, 2 blockers left.',
+  body: 'The lazy dog watched 14 quick foxes race past gate #7.',
+  serif: 'Twelve lazy dogs slept while 9 foxes crossed at dawn — #3.',
+  mono: '14:32:07 -> 3.5h logged @ $42/hr (+18%) #task-092',
+};
+
 const RADIUS_TOKENS = ['sm', '', 'lg'];
 const SHADOW_TOKENS = ['card', 'panel'];
 
@@ -36,7 +47,7 @@ function firstFamily(stack: string): string {
 }
 
 interface FontRow {
-  token: string;
+  token: (typeof FONT_TOKENS)[number];
   stack: string;
   family: string;
   loaded: boolean;
@@ -102,7 +113,7 @@ export default function FoundationsSection() {
                 className="text-ink-100 text-xl"
                 style={{ fontFamily: stack }}
               >
-                The quick brown fox jumps over the lazy dog — 0123456789
+                {FONT_SAMPLES[token]}
               </p>
               <p className="text-ink-600 mt-0.5 font-mono text-[10px]">
                 {stack}
