@@ -190,25 +190,52 @@ export default function FoundationsSection() {
           when we design the real scale.
         </p>
         <div className="flex flex-col gap-3">
-          <p className="font-display text-ink-100 text-xl">
-            font-display text-xl — page/modal titles
-          </p>
-          <p className="text-ink-100 text-sm font-medium">
-            text-sm font-medium — task names, primary rows
-          </p>
-          <p className="text-ink-300 text-sm">
-            text-sm ink-300 — body copy, descriptions
-          </p>
-          <p className="text-ink-500 text-xs">
-            text-xs ink-500 — captions, hints, metadata
-          </p>
-          <p className="text-ink-400 font-mono text-xs tracking-tight">
-            font-mono text-xs — dates, durations, counters
-          </p>
-          <p className="text-ink-500 font-mono text-[10px] uppercase">
-            font-mono 10px uppercase — micro-labels (like the ones on this
-            page)
-          </p>
+          <div>
+            <p className="font-display text-ink-100 text-xl">
+              Q3 Staging Academy relaunch
+            </p>
+            <span className="text-ink-600 font-mono text-[10px]">
+              font-display text-xl — page/modal titles
+            </span>
+          </div>
+          <div>
+            <p className="text-ink-100 text-sm font-medium">
+              Rework onboarding checklist copy
+            </p>
+            <span className="text-ink-600 font-mono text-[10px]">
+              text-sm font-medium — task names, primary rows
+            </span>
+          </div>
+          <div>
+            <p className="text-ink-300 text-sm">
+              Waiting on design review before this can move to done.
+            </p>
+            <span className="text-ink-600 font-mono text-[10px]">
+              text-sm ink-300 — body copy, descriptions
+            </span>
+          </div>
+          <div>
+            <p className="text-ink-500 text-xs">Last synced 2 minutes ago</p>
+            <span className="text-ink-600 font-mono text-[10px]">
+              text-xs ink-500 — captions, hints, metadata
+            </span>
+          </div>
+          <div>
+            <p className="text-ink-400 font-mono text-xs tracking-tight">
+              1h 45m logged
+            </p>
+            <span className="text-ink-600 font-mono text-[10px]">
+              font-mono text-xs — dates, durations, counters
+            </span>
+          </div>
+          <div>
+            <p className="text-ink-500 font-mono text-[10px] uppercase">
+              in progress
+            </p>
+            <span className="text-ink-600 font-mono text-[10px]">
+              font-mono 10px uppercase — micro-labels
+            </span>
+          </div>
         </div>
       </section>
     </>
