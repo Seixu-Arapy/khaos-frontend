@@ -3,9 +3,9 @@ import Anthropic from '@anthropic-ai/sdk';
 export const MODEL_NAME = import.meta.env.VITE_LLM_MODEL || 'claude-sonnet-5';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl || !supabasePublishableKey) {
   console.error(
     'Missing Supabase env vars no arquivo .env — needed both for Supabase ' +
       'itself and for reaching the Claude proxy function below.'
@@ -22,7 +22,7 @@ export const client = new Anthropic({
   baseURL: `${supabaseUrl}/functions/v1/anthropic-proxy`,
   dangerouslyAllowBrowser: true,
   defaultHeaders: {
-    Authorization: `Bearer ${supabaseAnonKey}`,
+    Authorization: `Bearer ${supabasePublishableKey}`,
   },
 });
 
