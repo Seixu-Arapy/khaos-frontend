@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MuseumFrame } from './vaultUI';
 import KhaoticText from '../../components/common/KhaoticText';
+import KhaosIcon from '../../components/common/KhaosIcon';
 
 // Entrance to the Khaos Vault — full-bleed, no sidebar, no chat, no nav
 // menu. Wayfinding is a single corner placard and one exit mark; moving
@@ -64,7 +65,14 @@ export default function VaultIndexPage() {
   return (
     <MuseumFrame eyebrow="khaos vortex">
       <div className="mx-auto max-w-2xl px-6 pt-40 pb-32">
-        <div className="mb-24 text-center">
+        <div className="relative mb-24 text-center">
+          <KhaosIcon
+            size="h-28 w-28"
+            fontSize="text-8xl"
+            color="text-black"
+            spin
+            className="pointer-events-none absolute top-1/2 left-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 opacity-40"
+          />
           <h1 className="text-ink-100 flex justify-center">
             <KhaoticText text="Khaos Vortex" className="text-4xl" />
           </h1>
