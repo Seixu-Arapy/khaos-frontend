@@ -6,16 +6,24 @@ Superseded the old inline-numbered-topic scheme (`1a`, `2`, `NEW`, etc. spoken i
 chat) — chat-only tracking doesn't survive context compaction. Instead:
 
 For every big feature or round of work, maintain a backlog file in the repo
-at `docs/backlog/<feature-slug>.md` (not an Artifact — Artifacts were tried
-and dropped for this; there's no way to delete a previously-published one
-from this side, so treat any old backlog Artifact link as stale/unused going
-forward, not authoritative). The file is the canonical record.
+at `docs/backlog/<feature-slug>.md`. The file is the canonical record. Also
+publish that same file as an Artifact (the raw .md, not a custom HTML
+rebuild) whenever it changes, so the user can view it in the Artifacts area
+without opening the repo — republish to the same URL on every update rather
+than minting a new one, and record the current URL right below the feature's
+heading in the file itself, e.g. `Artifact: <url>`.
 
-Format: a quick-scan markdown table first (code · marker · title · date),
-immediately followed by the full write-up for every item — each one's
-**title in bold** (code + marker + short title on one line), then a full
-description paragraph underneath, not a caption. Group into `## Open` and
-`## Resolved`, table-then-details within each group.
+Note: an earlier iteration of this workflow tried a custom-HTML-only
+Artifact with no backing repo file, then reverted — there's no way to delete
+a previously-published Artifact from this side, so if an old one is ever
+found dangling with no URL recorded in a live backlog file, it's stale, not
+authoritative.
+
+Format: a big list, not a table. Each item is a list entry whose **title is
+in bold** (code + marker + short title on one line), followed by its full
+description as the rest of that same list entry (indented continuation
+paragraphs, broken into short 2-4 sentence chunks — see below). Group into
+`## Open` and `## Resolved`.
 
 Each open item in the backlog:
 
