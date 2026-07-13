@@ -8,7 +8,12 @@ import CalendarPage from './pages/CalendarPage';
 import TagsPage from './pages/TagsPage';
 import AssistantPage from './pages/AssistantPage';
 import RoutinesPage from './pages/RoutinesPage';
-import ComponentsGalleryPage from './pages/dev/ComponentsGalleryPage';
+import VaultIndexPage from './pages/dev/VaultIndexPage';
+import PantheonPage from './pages/dev/PantheonPage';
+import WellspringPage from './pages/dev/WellspringPage';
+import SigilsPage from './pages/dev/SigilsPage';
+import ForgePage from './pages/dev/ForgePage';
+import ThresholdPage from './pages/dev/ThresholdPage';
 
 export default function App() {
   return (
@@ -23,7 +28,14 @@ export default function App() {
         <Route path="/routines" element={<RoutinesPage />} />
         <Route path="/assistant" element={<AssistantPage />} />
         {import.meta.env.DEV && (
-          <Route path="/dev/components" element={<ComponentsGalleryPage />} />
+          <>
+            <Route path="/dev/vault" element={<VaultIndexPage />} />
+            <Route path="/dev/vault/pantheon" element={<PantheonPage />} />
+            <Route path="/dev/vault/wellspring" element={<WellspringPage />} />
+            <Route path="/dev/vault/sigils" element={<SigilsPage />} />
+            <Route path="/dev/vault/forge" element={<ForgePage />} />
+            <Route path="/dev/vault/threshold" element={<ThresholdPage />} />
+          </>
         )}
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

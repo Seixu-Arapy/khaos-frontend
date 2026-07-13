@@ -15,7 +15,7 @@
   --color-ink-800: #1f2530;
   --color-ink-700: #2b3340;
   --color-ink-600: #3d4759;
-  --color-ink-500: #5b6577;
+  --color-ink-500: #7a8599;
   --color-ink-400: #828da0;
   --color-ink-300: #aeb6c4;
   --color-ink-200: #d2d7e0;
@@ -43,10 +43,10 @@
   --color-sage-500: #5b8c5a;
   --color-sage-600: #477047;
 
-  --color-rust: #b5483d;
-  --color-rust-50: #fbeae8;
-  --color-rust-500: #b5483d;
-  --color-rust-600: #963830;
+  --color-rust: #b43c5a;
+  --color-rust-50: #fbeff2;
+  --color-rust-500: #b43c5a;
+  --color-rust-600: #97304a;
 
   --color-violet: #7a5fa0;
   --color-violet-50: #efeaf7;
