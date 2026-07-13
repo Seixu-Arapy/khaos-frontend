@@ -17,42 +17,42 @@ interface ChamberEntry {
 
 const CHAMBERS: ChamberEntry[] = [
   {
-    to: '/dev/vault/pantheon',
+    to: '/dev/vortex/pantheon',
     index: 'I',
     name: 'The Pantheon',
     tagline: 'Every color, named for what it descends from',
     contains: 'Nyx · Aether · Eros · Pontus · Gaia · Tartarus · Hypnos',
   },
   {
-    to: '/dev/vault/chorus',
+    to: '/dev/vortex/chorus',
     index: 'II',
     name: 'The Chorus',
     tagline: 'The type scale, sung as harmonic intervals',
     contains: 'Label · Caption · Body · Display · Display-lg',
   },
   {
-    to: '/dev/vault/wellspring',
+    to: '/dev/vortex/wellspring',
     index: 'III',
     name: 'The Wellspring',
     tagline: 'Where every token is born',
     contains: 'Fonts · Colors · Radii · Shadows',
   },
   {
-    to: '/dev/vault/sigils',
+    to: '/dev/vortex/sigils',
     index: 'IV',
     name: 'The Sigils',
     tagline: 'Marks that carry meaning',
     contains: 'Status · Priority · Fields · Dates · Tags',
   },
   {
-    to: '/dev/vault/forge',
+    to: '/dev/vortex/forge',
     index: 'V',
     name: 'The Forge',
     tagline: 'Tools built for the hand',
     contains: 'Buttons · Inputs · Selects',
   },
   {
-    to: '/dev/vault/threshold',
+    to: '/dev/vortex/threshold',
     index: 'VI',
     name: 'The Threshold',
     tagline: 'Where the app pauses to ask',

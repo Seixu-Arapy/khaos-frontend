@@ -221,7 +221,7 @@ export default function PantheonPage() {
             />
             <div className="min-w-0 flex-1">
               <div className="mb-2 flex items-baseline gap-2">
-                <h3 className="font-serif text-ink-100 text-xl italic">
+                <h3 className="font-serif text-ink-100 text-xl">
                   {d.name}
                 </h3>
                 <span className="text-ink-600 font-mono text-[10px]">

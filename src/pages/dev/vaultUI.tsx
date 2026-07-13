@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import KhaoticText from '../../components/common/KhaoticText';
 
-// Shared chrome for the Khaos Vault (/dev/vault/*) — deliberately outside
+// Shared chrome for the Khaos Vault (/dev/vortex/*) — deliberately outside
 // AppShell (no sidebar, no chat, no nav bar). The only wayfinding is a
 // corner placard, museum-label style, and one subtle exit mark. Moving
 // between chambers happens through the index page's cards, not a menu.
@@ -77,7 +77,7 @@ interface ChamberProps {
 
 export function Chamber({ index, name, tagline, children }: ChamberProps) {
   return (
-    <MuseumFrame eyebrow={`khaos vortex · ${index}`} exitTo="/dev/vault">
+    <MuseumFrame eyebrow={`khaos vortex · ${index}`} exitTo="/dev/vortex">
       <div className="mx-auto max-w-3xl px-6 pt-20 pb-24">
         <div className="mb-10">
           <h1 className="text-ink-100">

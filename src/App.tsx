@@ -31,13 +31,13 @@ export default function App() {
       </Route>
       {import.meta.env.DEV && (
         <>
-          <Route path="/dev/vault" element={<VaultIndexPage />} />
-          <Route path="/dev/vault/pantheon" element={<PantheonPage />} />
-          <Route path="/dev/vault/chorus" element={<ChorusPage />} />
-          <Route path="/dev/vault/wellspring" element={<WellspringPage />} />
-          <Route path="/dev/vault/sigils" element={<SigilsPage />} />
-          <Route path="/dev/vault/forge" element={<ForgePage />} />
-          <Route path="/dev/vault/threshold" element={<ThresholdPage />} />
+          <Route path="/dev/vortex" element={<VaultIndexPage />} />
+          <Route path="/dev/vortex/pantheon" element={<PantheonPage />} />
+          <Route path="/dev/vortex/chorus" element={<ChorusPage />} />
+          <Route path="/dev/vortex/wellspring" element={<WellspringPage />} />
+          <Route path="/dev/vortex/sigils" element={<SigilsPage />} />
+          <Route path="/dev/vortex/forge" element={<ForgePage />} />
+          <Route path="/dev/vortex/threshold" element={<ThresholdPage />} />
         </>
       )}
       <Route path="*" element={<Navigate to="/" replace />} />

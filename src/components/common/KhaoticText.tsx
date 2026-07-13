@@ -26,7 +26,10 @@ const STRETCHES = [
   'extra-expanded',
   'ultra-expanded',
 ];
-const STYLES = ['italic', 'not-italic'];
+// Weighted so italic is the occasional accent, not half of every title —
+// a 50/50 split read as constant flicker across pages with several
+// KhaoticText titles on screen at once.
+const STYLES = ['italic', 'not-italic', 'not-italic', 'not-italic'];
 
 function pick(arr: string[]): string {
   return arr[Math.floor(Math.random() * arr.length)];
