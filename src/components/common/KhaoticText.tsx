@@ -35,38 +35,48 @@ function pick(arr: string[]): string {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function generateStyles(length: number, style?: string): string[] {
+// 'serif' (Roboto Slab Variable) has no width axis, so font-stretch-* is a
+// no-op on it — weight still animates, and font-style: italic still shows
+// as a browser-synthesized ("faux") slant since Slab has no italic face
+// either. Chaotic, just a narrower range than 'display'.
+function generateStyles(
+  length: number,
+  family: 'display' | 'serif',
+  style?: string
+): string[] {
   return Array.from(
     { length },
     () =>
-      `font-display font-${pick(WEIGHTS)} font-stretch-${pick(STRETCHES)} ${style ?? pick(STYLES)}`
+      `font-${family} font-${pick(WEIGHTS)} font-stretch-${pick(STRETCHES)} ${style ?? pick(STYLES)}`
   );
 }
 
 interface KhaoticTextProps {
   text?: string;
   className?: string;
+  family?: 'display' | 'serif';
   style?: string;
 }
 
 export default function KhaoticText({
   text,
   className = '',
+  family = 'display',
   style = '',
 }: KhaoticTextProps) {
   const [styles, setStyles] = useState(() =>
-    generateStyles(text?.length ?? 0, style)
+    generateStyles(text?.length ?? 0, family, style)
   );
 
   useEffect(() => {
     if (!text) return;
 
     const interval = setInterval(() => {
-      setStyles(generateStyles(text.length, style));
+      setStyles(generateStyles(text.length, family, style));
     }, 1500);
 
     return () => clearInterval(interval);
-  }, [text, style]);
+  }, [text, family, style]);
 
   if (!text) return null;
 

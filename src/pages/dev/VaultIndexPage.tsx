@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
 import { MuseumFrame } from './vaultUI';
-import KhaoticText from '../../components/common/KhaoticText';
 import KhaosIcon from '../../components/common/KhaosIcon';
 
 // Entrance to the Khaos Vault — full-bleed, no sidebar, no chat, no nav
 // menu. Wayfinding is a single corner placard and one exit mark; moving
 // between chambers happens by reading the list below, the way a museum
 // floor plan works, not a persistent menu bar.
+//
+// Deliberately static, not KhaoticText, on this page — the chaos effect is
+// reserved for the moment you're actually inside a chamber (its own <h1>,
+// via Chamber), not the index listing them.
 
 interface ChamberEntry {
   to: string;
@@ -71,11 +74,9 @@ export default function VaultIndexPage() {
             fontSize="text-8xl"
             color="text-black"
             spin
-            className="pointer-events-none absolute top-1/2 left-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 opacity-40"
+            className="pointer-events-none absolute top-1/2 left-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 opacity-20"
           />
-          <h1 className="text-ink-100 flex justify-center">
-            <KhaoticText text="Khaos Vortex" className="text-4xl" />
-          </h1>
+          <h1 className="font-serif text-ink-100 text-4xl">Khaos Vortex</h1>
           <p className="text-ink-600 mx-auto mt-4 max-w-sm font-mono text-[11px] tracking-widest uppercase">
             every token, every component, exactly as it renders
           </p>
@@ -86,14 +87,14 @@ export default function VaultIndexPage() {
             <Link
               key={c.to}
               to={c.to}
-              className="group border-ink-800 hover:border-ink-600 flex items-baseline gap-6 border-t py-8 transition-colors duration-300 last:border-b"
+              className="group border-ink-800 hover:border-ink-600 flex items-center gap-6 border-t py-8 transition-colors duration-300 last:border-b"
             >
-              <span className="text-ink-700 group-hover:text-copper-400 w-8 shrink-0 font-mono text-xs transition-colors duration-300">
+              <span className="text-copper-500/30 group-hover:text-copper-400/60 w-20 shrink-0 font-serif text-6xl leading-none transition-colors duration-300">
                 {c.index}
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="text-ink-200 group-hover:text-ink-100 transition-colors duration-300">
-                  <KhaoticText text={c.name} className="text-2xl" />
+                <h2 className="font-serif text-ink-200 group-hover:text-ink-100 text-2xl transition-colors duration-300">
+                  {c.name}
                 </h2>
                 <p className="text-ink-600 mt-1 text-sm">{c.tagline}</p>
                 <p className="text-ink-700 mt-2 font-mono text-[10px] tracking-wide">

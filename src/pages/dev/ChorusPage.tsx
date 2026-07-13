@@ -1,3 +1,5 @@
+import { Moon, Sparkles, Heart, Waves, CloudMoon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Chamber } from './vaultUI';
 
 // The Chorus — the type scale, framed as a musical/harmonic progression.
@@ -15,8 +17,14 @@ interface Step {
   weight: string;
   sample: string;
   family: 'display' | 'body' | 'mono';
+  deity: string;
+  icon: LucideIcon;
+  color: string;
 }
 
+// Deity assignment follows each step's actual role, reusing the exact
+// icons/colors from The Pantheon rather than inventing a new set (per
+// request — these two chambers should read as one system).
 const STEPS: Step[] = [
   {
     token: 'text-label',
@@ -26,6 +34,9 @@ const STEPS: Step[] = [
     weight: 'font-semibold uppercase tracking-wide',
     sample: 'in progress',
     family: 'mono',
+    deity: 'Hypnos',
+    icon: CloudMoon,
+    color: '#7a5fa0',
   },
   {
     token: 'text-caption',
@@ -35,6 +46,9 @@ const STEPS: Step[] = [
     weight: 'font-normal',
     sample: 'Last synced 2 minutes ago',
     family: 'body',
+    deity: 'Aether',
+    icon: Sparkles,
+    color: '#e7e9e6',
   },
   {
     token: 'text-body',
@@ -44,6 +58,9 @@ const STEPS: Step[] = [
     weight: 'font-medium',
     sample: 'Rework onboarding checklist copy',
     family: 'body',
+    deity: 'Nyx',
+    icon: Moon,
+    color: '#7a8599',
   },
   {
     token: 'text-display',
@@ -53,6 +70,9 @@ const STEPS: Step[] = [
     weight: 'font-semibold',
     sample: 'Sprint review',
     family: 'display',
+    deity: 'Pontus',
+    icon: Waves,
+    color: '#3a7d7a',
   },
   {
     token: 'text-display-lg',
@@ -62,8 +82,17 @@ const STEPS: Step[] = [
     weight: 'font-bold',
     sample: 'Khaos Vortex',
     family: 'display',
+    deity: 'Eros',
+    icon: Heart,
+    color: '#c0793d',
   },
 ];
+
+// Requested: circle diameter = ~4 lines of the row's own specimen text,
+// so the badges visibly grow across the scale the same way the type does.
+function coinSize(px: number) {
+  return Math.round(px * 1.3 * 4);
+}
 
 const MAX_PX = STEPS[STEPS.length - 1].px;
 
@@ -121,23 +150,45 @@ export default function ChorusPage() {
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
-        {STEPS.map((s) => (
-          <div
-            key={s.token}
-            className="border-ink-700 bg-ink-800/40 flex items-center justify-between gap-4 rounded-lg border p-4"
-          >
-            <p
-              className={`font-${s.family} ${s.weight} text-ink-100 min-w-0 truncate`}
-              style={{ fontSize: s.px }}
+      <div className="mt-6 flex flex-col gap-4">
+        {STEPS.map((s) => {
+          const size = coinSize(s.px);
+          return (
+            <div
+              key={s.token}
+              className="border-ink-700 bg-ink-800/40 flex items-center gap-5 rounded-lg border p-4"
             >
-              {s.sample}
-            </p>
-            <span className="text-ink-500 shrink-0 font-mono text-[10px]">
-              {s.role}
-            </span>
-          </div>
-        ))}
+              <div
+                className="flex shrink-0 items-center justify-center rounded-full"
+                style={{
+                  width: size,
+                  height: size,
+                  backgroundColor: `${s.color}22`,
+                  border: `1px solid ${s.color}55`,
+                }}
+                title={s.deity}
+              >
+                <s.icon
+                  size={Math.round(size * 0.4)}
+                  strokeWidth={1.25}
+                  style={{ color: s.color }}
+                />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p
+                  className={`font-${s.family} ${s.weight} text-ink-100 truncate`}
+                  style={{ fontSize: s.px }}
+                >
+                  {s.sample}
+                </p>
+                <span className="text-ink-500 mt-1 block font-mono text-[10px]">
+                  {s.role} · {s.deity}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </Chamber>
   );

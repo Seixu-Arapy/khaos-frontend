@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import KhaoticText from '../../components/common/KhaoticText';
+import KhaosIcon from '../../components/common/KhaosIcon';
 
 // Shared chrome for the Khaos Vault (/dev/vortex/*) — deliberately outside
 // AppShell (no sidebar, no chat, no nav bar). The only wayfinding is a
@@ -27,9 +28,13 @@ export function MuseumFrame({
         <X size={18} strokeWidth={1.5} />
       </Link>
 
-      <div className="text-ink-700 fixed top-6 left-6 z-10 font-mono text-[10px] tracking-[0.35em] uppercase">
+      <Link
+        to="/dev/vortex"
+        className="text-ink-700 hover:text-ink-300 fixed top-6 left-6 z-10 flex items-center gap-2 font-mono text-[10px] tracking-[0.35em] uppercase transition-colors duration-300"
+      >
+        <KhaosIcon size="h-4 w-4" fontSize="text-sm" color="text-black" />
         {eyebrow}
-      </div>
+      </Link>
 
       {children}
     </div>
@@ -81,7 +86,7 @@ export function Chamber({ index, name, tagline, children }: ChamberProps) {
       <div className="mx-auto max-w-3xl px-6 pt-20 pb-24">
         <div className="mb-10">
           <h1 className="text-ink-100">
-            <KhaoticText text={name} className="text-3xl" />
+            <KhaoticText text={name} family="serif" className="text-3xl" />
           </h1>
           <p className="text-ink-600 mt-2 font-mono text-[11px] tracking-widest uppercase">
             {tagline}
