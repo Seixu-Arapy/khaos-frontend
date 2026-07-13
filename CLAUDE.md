@@ -5,25 +5,25 @@
 Superseded the old inline-numbered-topic scheme (`1a`, `2`, `NEW`, etc. spoken in
 chat) — chat-only tracking doesn't survive context compaction. Instead:
 
-For every big feature or round of work, maintain a backlog file in the repo
-at `docs/backlog/<feature-slug>.md`. The file is the canonical record. Also
-publish that same file as an Artifact (the raw .md, not a custom HTML
-rebuild) whenever it changes, so the user can view it in the Artifacts area
-without opening the repo — republish to the same URL on every update rather
-than minting a new one, and record the current URL right below the feature's
-heading in the file itself, e.g. `Artifact: <url>`.
+The canonical record is a custom-HTML dark-themed Artifact (not a repo file,
+not a plain-rendered .md — a hand-built table). Republish to the same URL on
+every update rather than minting a new one. This has flipped a few times
+already (repo file vs. Artifact, table vs. list) — **this is the settled
+answer, don't revisit the format again without being asked.**
 
-Note: an earlier iteration of this workflow tried a custom-HTML-only
-Artifact with no backing repo file, then reverted — there's no way to delete
-a previously-published Artifact from this side, so if an old one is ever
-found dangling with no URL recorded in a live backlog file, it's stale, not
-authoritative.
+Format: a table, one row per item, columns for marker/code/title/description
+/dates. Inside the description cell, write in very short fragments — a
+handful of words per line, `<br>` after nearly every one, blank `<br><br>`
+between thoughts. Do not write flowing paragraphs or multi-sentence lines
+inside a cell; dense text in a narrow cell is what this format exists to
+avoid. Group into an "Open" table and a "Resolved" table, each with its own
+`<h2>`.
 
-Format: a big list, not a table. Each item is a list entry whose **title is
-in bold** (code + marker + short title on one line), followed by its full
-description as the rest of that same list entry (indented continuation
-paragraphs, broken into short 2-4 sentence chunks — see below). Group into
-`## Open` and `## Resolved`.
+There is no backing repo file for this — the source of truth lives only in
+the published Artifact. (An earlier iteration tried `docs/backlog/*.md`
+files, both with and without a parallel Artifact; abandoned. If old files
+under `docs/backlog/` are ever found, they're stale — safe to delete, not
+authoritative.)
 
 Each open item in the backlog:
 
