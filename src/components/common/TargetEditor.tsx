@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Target, X } from 'lucide-react';
+import clsx from 'clsx';
 import { TextInput, TimeToggle } from './ui';
 import { parseRange, formatRange } from '../../lib/range';
 
@@ -8,6 +9,11 @@ interface TargetEditorProps {
   due?: string | null;
   onChange: (next: string | null) => void;
   disabled?: boolean;
+  // Suppresses the pill's own clear (X) button — used when the host
+  // renders a clear action next to the field's label instead (Task Detail
+  // Modal). Other callers (Section/Project) keep the pill's own button
+  // since they don't have a label row to put it in.
+  hideClear?: boolean;
 }
 
 function validate(start: Date | null, end: Date | null, due?: string | null) {
@@ -61,6 +67,7 @@ export default function TargetEditor({
   due,
   onChange,
   disabled,
+  hideClear,
 }: TargetEditorProps) {
   const { start, end } = parseRange(value ?? null);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +81,7 @@ export default function TargetEditor({
 
   useEffect(() => {
     setForceShowEnd(false);
+    setError(null);
   }, [value]);
 
   const showEndInput = Boolean(end) || forceShowEnd;
@@ -135,148 +143,168 @@ export default function TargetEditor({
     <div className="space-y-1.5">
       {/* one bordered pill, matching TargetBadge exactly — icon on the
           left, dates auto-sized (not stretched full width), no "Start
-          Date"/"End Date" labels */}
-      <div className="border-ink-600 text-ink-400 flex w-fit flex-wrap items-center gap-1.5 rounded-full border py-1 pr-2 pl-3 font-mono text-xs">
-        <Target size={13} className="shrink-0" />
+          Date"/"End Date" labels. Below 350px it switches to a 2-column
+          grid: the icon spans both stacked lines, the arrow sits centered
+          and rotated between them (see max-[350px]: variants below). */}
+      <div
+        className={clsx(
+          'border-ink-600 text-ink-400 flex w-fit flex-wrap items-center gap-1.5 rounded-full border py-1 pr-2 pl-3 font-mono text-xs',
+          'max-[350px]:grid max-[350px]:grid-cols-[auto_1fr] max-[350px]:items-center max-[350px]:gap-x-2 max-[350px]:gap-y-1 max-[350px]:rounded-2xl max-[350px]:px-3.5 max-[350px]:py-2.5'
+        )}
+      >
+        <Target
+          size={13}
+          className="shrink-0 max-[350px]:col-start-1 max-[350px]:row-span-3 max-[350px]:self-center"
+        />
 
-        <TimeToggle
-          active={showStartTime}
-          disabled={disabled}
-          onClick={() => {
-            const nextState = !showStartTime;
-            setShowStartTime(nextState);
-            commitRange(
-              startValues.date,
-              nextState ? startValues.time || '09:00' : '00:00',
-              nextState,
-              endValues.date,
-              endValues.time,
-              showEndTime
-            );
-          }}
-        />
-        <TextInput
-          type="date"
-          value={startValues.date}
-          disabled={disabled}
-          onChange={(e) => {
-            commitRange(
-              e.target.value,
-              startValues.time,
-              showStartTime,
-              endValues.date,
-              endValues.time,
-              showEndTime
-            );
-          }}
-          className="text-ink-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
-        />
-        {showStartTime && startValues.date && (
-          <TextInput
-            type="time"
-            value={startValues.time || '09:00'}
+        <span className="inline-flex shrink-0 items-center gap-1 max-[350px]:col-start-2 max-[350px]:row-start-1">
+          <TimeToggle
+            active={showStartTime}
             disabled={disabled}
-            onChange={(e) => {
+            onClick={() => {
+              const nextState = !showStartTime;
+              setShowStartTime(nextState);
               commitRange(
                 startValues.date,
-                e.target.value,
-                true,
+                nextState ? startValues.time || '09:00' : '00:00',
+                nextState,
                 endValues.date,
                 endValues.time,
                 showEndTime
               );
             }}
-            className="text-ink-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
           />
-        )}
-
-        <span className="text-ink-600 shrink-0">→</span>
-
-        {/* checkbox always renders once a start date exists, so the user
-            can toggle back to open-ended even after setting an end date —
-            it just shows the ∞ glyph instead of the date fields when
-            unchecked */}
-        {startValues.date && (
-          <label
-            className="flex shrink-0 items-center gap-1 select-none"
-            title={
-              showEndInput
-                ? 'Check to make open-ended'
-                : 'Uncheck to set an end date'
-            }
-          >
-            <input
-              type="checkbox"
-              checked={!showEndInput}
-              disabled={disabled}
-              onChange={handleNoEndToggle}
-              className="accent-violet-400 h-3.5 w-3.5 shrink-0"
-            />
-            {!showEndInput && <span className="text-lg">∞</span>}
-          </label>
-        )}
-        {showEndInput && (
-          <>
+          <TextInput
+            type="date"
+            value={startValues.date}
+            disabled={disabled}
+            onChange={(e) => {
+              commitRange(
+                e.target.value,
+                startValues.time,
+                showStartTime,
+                endValues.date,
+                endValues.time,
+                showEndTime
+              );
+            }}
+            className="text-ink-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
+          />
+          {showStartTime && startValues.date && (
             <TextInput
-              type="date"
-              value={endValues.date}
+              type="time"
+              value={startValues.time || '09:00'}
               disabled={disabled}
               onChange={(e) => {
                 commitRange(
                   startValues.date,
-                  startValues.time,
-                  showStartTime,
                   e.target.value,
+                  true,
+                  endValues.date,
                   endValues.time,
                   showEndTime
                 );
               }}
-              className="text-ink-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
+              className="text-ink-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
             />
-            {showEndTime && endValues.date && (
+          )}
+        </span>
+
+        <span className="text-ink-600 shrink-0 max-[350px]:col-start-2 max-[350px]:row-start-2 max-[350px]:justify-self-center max-[350px]:rotate-90">
+          →
+        </span>
+
+        <span className="inline-flex shrink-0 items-center gap-1 max-[350px]:col-start-2 max-[350px]:row-start-3">
+          {/* checkbox always renders once a start date exists, so the user
+              can toggle back to open-ended even after setting an end date —
+              it just shows the ∞ glyph instead of the date fields when
+              unchecked */}
+          {startValues.date && (
+            <label
+              className="flex shrink-0 items-center gap-1 select-none"
+              title={
+                showEndInput
+                  ? 'Check to make open-ended'
+                  : 'Uncheck to set an end date'
+              }
+            >
+              <input
+                type="checkbox"
+                checked={!showEndInput}
+                disabled={disabled}
+                onChange={handleNoEndToggle}
+                className="accent-violet-400 h-3.5 w-3.5 shrink-0"
+              />
+              {!showEndInput && <span className="text-lg">∞</span>}
+            </label>
+          )}
+          {showEndInput && (
+            <>
+              {/* toggle bookends the pill on the single-line (desktop)
+                  layout — order-2 pushes it after the date — but goes back
+                  to the left of its date once stacked to two lines */}
+              <TimeToggle
+                active={showEndTime}
+                disabled={disabled}
+                className="order-2 max-[350px]:order-none"
+                onClick={() => {
+                  const nextState = !showEndTime;
+                  setShowEndTime(nextState);
+                  commitRange(
+                    startValues.date,
+                    startValues.time,
+                    showStartTime,
+                    endValues.date,
+                    nextState ? endValues.time || '18:00' : '00:00',
+                    nextState
+                  );
+                }}
+              />
               <TextInput
-                type="time"
-                value={endValues.time || '18:00'}
+                type="date"
+                value={endValues.date}
                 disabled={disabled}
                 onChange={(e) => {
                   commitRange(
                     startValues.date,
                     startValues.time,
                     showStartTime,
-                    endValues.date,
                     e.target.value,
-                    true
+                    endValues.time,
+                    showEndTime
                   );
                 }}
-                className="text-ink-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
+                className="text-ink-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
               />
-            )}
-            <TimeToggle
-              active={showEndTime}
-              disabled={disabled}
-              onClick={() => {
-                const nextState = !showEndTime;
-                setShowEndTime(nextState);
-                commitRange(
-                  startValues.date,
-                  startValues.time,
-                  showStartTime,
-                  endValues.date,
-                  nextState ? endValues.time || '18:00' : '00:00',
-                  nextState
-                );
-              }}
-            />
-          </>
-        )}
+              {showEndTime && endValues.date && (
+                <TextInput
+                  type="time"
+                  value={endValues.time || '18:00'}
+                  disabled={disabled}
+                  onChange={(e) => {
+                    commitRange(
+                      startValues.date,
+                      startValues.time,
+                      showStartTime,
+                      endValues.date,
+                      e.target.value,
+                      true
+                    );
+                  }}
+                  className="text-ink-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
+                />
+              )}
+            </>
+          )}
+        </span>
 
-        {(start || end) && (
+        {!hideClear && (start || end) && (
           <button
             type="button"
             disabled={disabled}
             onClick={handleClear}
             title="Clear target"
-            className="text-ink-500 hover:text-rust-500 ml-1 flex shrink-0 items-center"
+            className="text-ink-500 hover:text-rust-500 ml-1 flex shrink-0 items-center max-[350px]:col-start-2 max-[350px]:row-start-3 max-[350px]:ml-auto"
           >
             <X size={12} />
           </button>

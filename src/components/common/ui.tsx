@@ -240,15 +240,19 @@ export function PriorityPicker({ value, onChange }: PriorityPickerProps) {
 
 interface IconAddButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
+  icon?: ReactNode;
 }
 
 // Small square plus-sign button, filled violet with a dark icon — same
 // color language as the checked time-toggle switches. The one "add this
 // thing" affordance shared by Sequence's Previous/Next columns and Tags,
-// so every add trigger next to a section label reads the same way.
+// so every add trigger next to a section label reads the same way. Also
+// reused for "clear this field" (pass icon={<X .../>}) so both actions
+// share one visual language next to a field label.
 export function IconAddButton({
   className,
   label,
+  icon,
   ...props
 }: IconAddButtonProps) {
   return (
@@ -262,7 +266,7 @@ export function IconAddButton({
       )}
       {...props}
     >
-      <Plus size={10} />
+      {icon ?? <Plus size={10} />}
     </button>
   );
 }
@@ -315,11 +319,17 @@ interface TimeToggleProps {
   active: boolean;
   disabled?: boolean;
   onClick: () => void;
+  className?: string;
 }
 
 // Small "add/remove time" button, shared by every field that lets a date
 // grow an optional time-of-day (Due, Target's start/end).
-export function TimeToggle({ active, disabled, onClick }: TimeToggleProps) {
+export function TimeToggle({
+  active,
+  disabled,
+  onClick,
+  className,
+}: TimeToggleProps) {
   return (
     <button
       type="button"
@@ -330,7 +340,8 @@ export function TimeToggle({ active, disabled, onClick }: TimeToggleProps) {
         'flex shrink-0 items-center gap-0.5 rounded border px-1 text-[10px] transition-colors',
         active
           ? 'border-copper-500 text-copper-400 bg-copper-500/10'
-          : 'border-ink-700 text-ink-500 hover:text-ink-300'
+          : 'border-ink-700 text-ink-500 hover:text-ink-300',
+        className
       )}
     >
       <Clock size={10} />

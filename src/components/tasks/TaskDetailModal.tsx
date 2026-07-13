@@ -684,8 +684,11 @@ export default function TaskDetailModal({
           </div>
         </div>
 
-        {/* Status | Priority — even split, each with its own eyebrow label */}
-        <div className="grid grid-cols-2 items-start gap-5">
+        {/* Status | Priority — even split, each with its own eyebrow label.
+            Stacks to one column below sm; stacked fields get a divider since
+            they no longer share a row to separate them visually. */}
+        <div className="[&>*+*]:border-ink-700 grid grid-cols-1 gap-2.5 [&>*+*]:mt-1 [&>*+*]:border-t [&>*+*]:pt-3.5 sm:grid-cols-2 sm:items-start sm:gap-5 sm:[&>*+*]:mt-0 sm:[&>*+*]:border-t-0 sm:[&>*+*]:pt-0">
+
           <div className="min-w-0">
             <label className="text-ink-500 mb-1 block text-xs font-semibold tracking-wide uppercase">
               Status
@@ -706,8 +709,9 @@ export default function TaskDetailModal({
           </div>
         </div>
 
-        {/* Due | Estimate — 1/2 each */}
-        <div className="grid grid-cols-2 gap-5">
+        {/* Due | Estimate — 1/2 each, same stack+divider treatment as
+            Status/Priority below sm */}
+        <div className="[&>*+*]:border-ink-700 grid grid-cols-1 gap-2.5 [&>*+*]:mt-1 [&>*+*]:border-t [&>*+*]:pt-3.5 sm:grid-cols-2 sm:gap-5 sm:[&>*+*]:mt-0 sm:[&>*+*]:border-t-0 sm:[&>*+*]:pt-0">
           <div className="min-w-0">
             <div className="mb-1 flex min-h-5 items-center justify-between gap-2">
               <label className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
@@ -780,13 +784,23 @@ export default function TaskDetailModal({
         </div>
 
         <div>
-          <label className="text-ink-500 mb-1 block text-xs font-semibold tracking-wide uppercase">
-            Target
-          </label>
+          <div className="mb-1 flex items-center gap-2">
+            <label className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+              Target
+            </label>
+            {Boolean(task.target) && (
+              <IconAddButton
+                label="Clear target"
+                icon={<X size={10} />}
+                onClick={() => patch({ target: null })}
+              />
+            )}
+          </div>
           <TargetEditor
             value={task.target as string | null}
             due={task.due}
             onChange={(v) => patch({ target: v })}
+            hideClear
           />
         </div>
 
