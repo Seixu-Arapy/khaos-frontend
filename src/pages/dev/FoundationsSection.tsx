@@ -84,7 +84,7 @@ export default function FoundationsSection() {
           {fontRows.map(({ token, stack, family, loaded }) => (
             <div key={token}>
               <div className="mb-1 flex items-center gap-2">
-                <span className="text-ink-500 font-mono text-[10px] uppercase">
+                <span className="text-ink-500 font-mono text-[10px]">
                   --font-{token}
                 </span>
                 {loaded ? (
@@ -117,7 +117,7 @@ export default function FoundationsSection() {
         <div className="flex flex-col gap-4">
           {Object.entries(COLOR_GROUPS).map(([group, steps]) => (
             <div key={group}>
-              <span className="text-ink-500 mb-1.5 block font-mono text-[10px] uppercase">
+              <span className="text-ink-500 mb-1.5 block font-mono text-[10px]">
                 {group}
               </span>
               <div className="flex flex-wrap gap-2">
