@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Hammer, Bug } from 'lucide-react';
+import { Bug } from 'lucide-react';
 import { Chamber, Section, Swatch } from './vaultUI';
 import { Button, IconButton, Select, TextInput } from '../../components/common/ui';
 
@@ -8,7 +8,7 @@ export default function ForgePage() {
 
   return (
     <Chamber
-      glyph={<Hammer size={22} />}
+      index="V"
       name="The Forge"
       tagline="Buttons, inputs, selects — tools built for the hand"
     >

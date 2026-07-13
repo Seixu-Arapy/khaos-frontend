@@ -207,7 +207,7 @@ function ContrastPair({
 export default function PantheonPage() {
   return (
     <Chamber
-      glyph={<Moon size={22} />}
+      index="I"
       name="The Pantheon"
       tagline="Every color, named for what it descends from"
     >

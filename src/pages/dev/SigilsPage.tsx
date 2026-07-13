@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Sparkles } from 'lucide-react';
 import { Chamber, Section, Swatch } from './vaultUI';
 import {
   StatusBadge,
@@ -33,7 +32,7 @@ export default function SigilsPage() {
 
   return (
     <Chamber
-      glyph={<Sparkles size={22} />}
+      index="IV"
       name="The Sigils"
       tagline="Status, priority, fields, dates, tags — marks that carry meaning"
     >

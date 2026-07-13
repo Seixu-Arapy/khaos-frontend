@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DoorOpen, Bug } from 'lucide-react';
+import { Bug } from 'lucide-react';
 import { Chamber, Section, Swatch } from './vaultUI';
 import { Button, Modal, EmptyState } from '../../components/common/ui';
 
@@ -8,7 +8,7 @@ export default function ThresholdPage() {
 
   return (
     <Chamber
-      glyph={<DoorOpen size={22} />}
+      index="VI"
       name="The Threshold"
       tagline="Modals, empty states — where the app pauses to ask"
     >

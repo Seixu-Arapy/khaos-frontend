@@ -1,101 +1,100 @@
 import { Link } from 'react-router-dom';
-import { Droplets, Sparkles, Hammer, DoorOpen, Moon, Music } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { MuseumFrame } from './vaultUI';
 
-// Entrance to the Khaos Vault — the live reference for every design token
-// and shared component in the app. No persistent sidebar: this landing
-// page is the only nav surface, each card below is a self-contained
-// chamber route. Dev-only, reached at /dev/vault.
+// Entrance to the Khaos Vault — full-bleed, no sidebar, no chat, no nav
+// menu. Wayfinding is a single corner placard and one exit mark; moving
+// between chambers happens by reading the list below, the way a museum
+// floor plan works, not a persistent menu bar.
 
-interface ChamberCard {
+interface ChamberEntry {
   to: string;
-  icon: LucideIcon;
+  index: string;
   name: string;
   tagline: string;
   contains: string;
 }
 
-const CHAMBERS: ChamberCard[] = [
+const CHAMBERS: ChamberEntry[] = [
   {
     to: '/dev/vault/pantheon',
-    icon: Moon,
+    index: 'I',
     name: 'The Pantheon',
     tagline: 'Every color, named for what it descends from',
-    contains: 'Nyx, Aether, Eros, Pontus, Gaia, Tartarus, Hypnos',
+    contains: 'Nyx · Aether · Eros · Pontus · Gaia · Tartarus · Hypnos',
   },
   {
     to: '/dev/vault/chorus',
-    icon: Music,
+    index: 'II',
     name: 'The Chorus',
     tagline: 'The type scale, sung as harmonic intervals',
-    contains: 'Label, caption, body, display, display-lg',
+    contains: 'Label · Caption · Body · Display · Display-lg',
   },
   {
     to: '/dev/vault/wellspring',
-    icon: Droplets,
+    index: 'III',
     name: 'The Wellspring',
     tagline: 'Where every token is born',
-    contains: 'Fonts, colors, radii, shadows',
+    contains: 'Fonts · Colors · Radii · Shadows',
   },
   {
     to: '/dev/vault/sigils',
-    icon: Sparkles,
+    index: 'IV',
     name: 'The Sigils',
     tagline: 'Marks that carry meaning',
-    contains: 'Status, priority, fields, dates, tags',
+    contains: 'Status · Priority · Fields · Dates · Tags',
   },
   {
     to: '/dev/vault/forge',
-    icon: Hammer,
+    index: 'V',
     name: 'The Forge',
     tagline: 'Tools built for the hand',
-    contains: 'Buttons, inputs, selects',
+    contains: 'Buttons · Inputs · Selects',
   },
   {
     to: '/dev/vault/threshold',
-    icon: DoorOpen,
+    index: 'VI',
     name: 'The Threshold',
     tagline: 'Where the app pauses to ask',
-    contains: 'Modals, empty states',
+    contains: 'Modals · Empty states',
   },
 ];
 
 export default function VaultIndexPage() {
   return (
-    <div className="mx-auto max-w-3xl p-6">
-      <div className="mb-10 text-center">
-        <span className="text-copper-400 font-mono text-[10px] tracking-[0.2em] uppercase">
-          dev only · round 1
-        </span>
-        <h1 className="font-serif text-ink-100 mt-2 text-3xl italic">
-          The Khaos Vault
-        </h1>
-        <p className="text-ink-500 mx-auto mt-2 max-w-md text-sm">
-          Every design token and shared component the app is built from,
-          rendered live so nothing here can drift from the real code.
-        </p>
-      </div>
+    <MuseumFrame eyebrow="khaos vault">
+      <div className="mx-auto max-w-2xl px-6 pt-40 pb-32">
+        <div className="mb-24 text-center">
+          <h1 className="font-serif text-ink-100 text-4xl italic">
+            The Khaos Vault
+          </h1>
+          <p className="text-ink-600 mx-auto mt-4 max-w-sm font-mono text-[11px] tracking-widest uppercase">
+            every token, every component, exactly as it renders
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {CHAMBERS.map(({ to, icon: Icon, name, tagline, contains }) => (
-          <Link
-            key={to}
-            to={to}
-            className="group border-ink-700 bg-ink-800/60 hover:border-copper-500/50 hover:bg-ink-800 relative flex flex-col gap-3 overflow-hidden rounded-xl border p-5 transition-colors"
-          >
-            <div className="border-copper-500/30 bg-copper-500/10 text-copper-400 flex h-11 w-11 items-center justify-center rounded-full border transition-colors group-hover:bg-copper-500/20">
-              <Icon size={20} />
-            </div>
-            <div>
-              <h2 className="font-serif text-ink-100 text-lg italic">
-                {name}
-              </h2>
-              <p className="text-ink-500 text-xs">{tagline}</p>
-            </div>
-            <p className="text-ink-600 font-mono text-[10px]">{contains}</p>
-          </Link>
-        ))}
+        <div className="flex flex-col">
+          {CHAMBERS.map((c) => (
+            <Link
+              key={c.to}
+              to={c.to}
+              className="group border-ink-800 hover:border-ink-600 flex items-baseline gap-6 border-t py-8 transition-colors duration-300 last:border-b"
+            >
+              <span className="text-ink-700 group-hover:text-copper-400 w-8 shrink-0 font-mono text-xs transition-colors duration-300">
+                {c.index}
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-serif text-ink-200 group-hover:text-ink-100 text-2xl italic transition-colors duration-300">
+                  {c.name}
+                </h2>
+                <p className="text-ink-600 mt-1 text-sm">{c.tagline}</p>
+                <p className="text-ink-700 mt-2 font-mono text-[10px] tracking-wide">
+                  {c.contains}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
-    </div>
+    </MuseumFrame>
   );
 }

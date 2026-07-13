@@ -1,4 +1,3 @@
-import { Music } from 'lucide-react';
 import { Chamber } from './vaultUI';
 
 // The Chorus — the type scale, framed as a musical/harmonic progression.
@@ -71,7 +70,7 @@ const MAX_PX = STEPS[STEPS.length - 1].px;
 export default function ChorusPage() {
   return (
     <Chamber
-      glyph={<Music size={22} />}
+      index="II"
       name="The Chorus"
       tagline="The type scale, sung as a set of harmonic intervals"
     >

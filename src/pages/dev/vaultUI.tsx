@@ -1,11 +1,39 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-// Shared chrome for every chamber of the Khaos Vault (/dev/vault/*) — the
-// live, real-component reference for the app's design system. Kept
-// deliberately small: a chamber is just a themed heading plus Section/
-// Swatch, no framework of its own.
+// Shared chrome for the Khaos Vault (/dev/vault/*) — deliberately outside
+// AppShell (no sidebar, no chat, no nav bar). The only wayfinding is a
+// corner placard, museum-label style, and one subtle exit mark. Moving
+// between chambers happens through the index page's cards, not a menu.
+
+export function MuseumFrame({
+  eyebrow,
+  exitTo = '/',
+  children,
+}: {
+  eyebrow: string;
+  exitTo?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="bg-ink-900 relative min-h-screen">
+      <Link
+        to={exitTo}
+        aria-label="Exit"
+        className="text-ink-700 hover:text-ink-300 fixed top-6 right-6 z-10 transition-colors duration-300"
+      >
+        <X size={18} strokeWidth={1.5} />
+      </Link>
+
+      <div className="text-ink-700 fixed top-6 left-6 z-10 font-mono text-[10px] tracking-[0.35em] uppercase">
+        {eyebrow}
+      </div>
+
+      {children}
+    </div>
+  );
+}
 
 export function Section({
   title,
@@ -15,11 +43,11 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="border-ink-700 bg-ink-800/40 mb-8 rounded-lg border p-5">
-      <h2 className="text-ink-200 font-display mb-4 text-sm tracking-wide uppercase">
+    <section className="border-ink-800 mb-10 border-t pt-6">
+      <h2 className="text-ink-600 mb-5 font-mono text-[10px] tracking-[0.25em] uppercase">
         {title}
       </h2>
-      <div className="flex flex-wrap items-center gap-4">{children}</div>
+      <div className="flex flex-wrap items-center gap-5">{children}</div>
     </section>
   );
 }
@@ -32,40 +60,32 @@ export function Swatch({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-start gap-1.5">
-      <span className="text-ink-500 font-mono text-[10px]">{label}</span>
+    <div className="flex flex-col items-start gap-2">
+      <span className="text-ink-600 font-mono text-[10px]">{label}</span>
       {children}
     </div>
   );
 }
 
 interface ChamberProps {
-  glyph: ReactNode;
+  index: string;
   name: string;
   tagline: string;
   children: ReactNode;
 }
 
-export function Chamber({ glyph, name, tagline, children }: ChamberProps) {
+export function Chamber({ index, name, tagline, children }: ChamberProps) {
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <Link
-        to="/dev/vault"
-        className="text-ink-500 hover:text-ink-200 mb-6 inline-flex items-center gap-1.5 text-xs transition-colors"
-      >
-        <ArrowLeft size={13} />
-        Back to the Vault
-      </Link>
-      <div className="mb-8 flex items-center gap-4">
-        <div className="border-copper-500/40 bg-copper-500/10 text-copper-400 flex h-14 w-14 shrink-0 items-center justify-center rounded-full border">
-          {glyph}
+    <MuseumFrame eyebrow={`khaos vault · ${index}`} exitTo="/dev/vault">
+      <div className="mx-auto max-w-3xl px-6 pt-32 pb-32">
+        <div className="mb-16">
+          <h1 className="font-serif text-ink-100 text-3xl italic">{name}</h1>
+          <p className="text-ink-600 mt-2 font-mono text-[11px] tracking-widest uppercase">
+            {tagline}
+          </p>
         </div>
-        <div>
-          <h1 className="font-serif text-ink-100 text-2xl italic">{name}</h1>
-          <p className="text-ink-500 text-xs">{tagline}</p>
-        </div>
+        {children}
       </div>
-      {children}
-    </div>
+    </MuseumFrame>
   );
 }
