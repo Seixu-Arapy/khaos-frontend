@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useSyncActiveEntity } from '../../lib/activeEntityContext';
+import clsx from 'clsx';
 import {
   Plus,
   Trash2,
@@ -9,27 +10,33 @@ import {
   X,
   CornerUpLeft,
   CornerDownRight,
-  Clock,
   Flag,
   Target,
   DraftingCompass,
   Bot,
+  Layers,
 } from 'lucide-react';
 import {
   Modal,
-  Select,
   TextInput,
   Button,
   FieldBadge,
+  ProjectChip,
   Tag,
+  TagSuggestion,
+  IconAddButton,
   TaskProgressBar,
   StatusPicker,
   PriorityPicker,
+  StatusBadge,
+  PriorityBadge,
+  TimeToggle,
 } from '../common/ui';
 import TargetEditor from '../common/TargetEditor';
 import {
   minutesToHuman,
   formatDue,
+  formatDueCompact,
   parseMomentTime,
   isOverdue,
 } from '../../lib/dateUtils';
@@ -85,20 +92,12 @@ function describeMoment(moment: Moment): string {
   return label;
 }
 
-// One glyph per time-related moment type, matching the same icon a live
-// field uses elsewhere (Flag for Due, bullseye for Target, drafting compass
-// for Estimate, Play/Square for the task log). Scheduled gets a plain dot
-// rather than a 7th shape — created/status/priority/note stay iconless.
+// Icon for the moment types that don't get the chip treatment below (due,
+// target, estimate, status, priority all render via MomentChangeChip
+// instead, with their own icon inline). Scheduled gets a plain dot rather
+// than a shape — created/note stay iconless.
 function MomentIcon({ moment }: { moment: Moment }) {
   switch (moment.moment_type) {
-    case 'due':
-      return <Flag size={13} className="text-copper-400 mt-0.5 shrink-0" />;
-    case 'target':
-      return <Target size={13} className="text-ink-400 mt-0.5 shrink-0" />;
-    case 'estimate':
-      return (
-        <DraftingCompass size={13} className="text-ink-400 mt-0.5 shrink-0" />
-      );
     case 'started':
       return (
         <Play
@@ -117,23 +116,185 @@ function MomentIcon({ moment }: { moment: Moment }) {
       );
     case 'scheduled':
       return (
-        <span className="bg-violet-400 mt-1.5 h-2 w-2 shrink-0 rounded-full" />
+        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-violet-400" />
       );
     default:
       return null;
   }
 }
 
+// Moment types with a real before/after value get the chip treatment
+// below instead of plain text — everything else (created, started,
+// stopped, scheduled, note) keeps the older icon + label rendering.
+const CHIP_MOMENT_TYPES = new Set<MomentType>([
+  'due',
+  'target',
+  'estimate',
+  'status',
+  'priority',
+]);
+
+function formatDueMomentValue(raw: string | null): ReactNode {
+  if (!raw) return 'ø';
+  const parts = formatDueCompact(raw);
+  if (!parts) return raw;
+  return (
+    <>
+      <b className="font-bold">{parts.day}</b>
+      {parts.month}
+    </>
+  );
+}
+
+function formatTargetMomentValue(raw: string | null): ReactNode {
+  if (!raw) return 'ø';
+  const { start, end } = parseRange(raw);
+  if (!start) return 'ø';
+  const startParts = formatDueCompact(start);
+  if (!startParts) return raw;
+  const endParts = end ? formatDueCompact(end) : null;
+  return (
+    <>
+      <b className="font-bold">{startParts.day}</b>
+      {startParts.month}
+      {endParts && (
+        <>
+          {' '}
+          <span className="text-ink-600">→</span>{' '}
+          <b className="font-bold">{endParts.day}</b>
+          {endParts.month}
+        </>
+      )}
+    </>
+  );
+}
+
+interface MomentChipHalfProps {
+  icon?: ReactNode;
+  muted?: boolean;
+  children: ReactNode;
+}
+
+// "from" is the exact same element as "to" — same icon, same color —
+// just faded and crossed out, not recolored to a generic grey.
+function MomentChipHalf({ icon, muted, children }: MomentChipHalfProps) {
+  return (
+    <span
+      className={clsx('inline-flex items-center gap-1', muted && 'opacity-50')}
+    >
+      {icon}
+      <span
+        className={clsx(
+          'font-mono',
+          muted ? 'text-ink-600 line-through' : 'font-semibold'
+        )}
+      >
+        {children}
+      </span>
+    </span>
+  );
+}
+
+// Replicates the assistant chat's ChangeChip pattern for the moments log:
+// icon + value on both sides of the arrow, "from" faded and struck through,
+// "ø" for a null value instead of literal empty text.
+function MomentChangeChip({ moment }: { moment: Moment }) {
+  const { moment_type: type, previous_value: prev, value } = moment;
+
+  if (type === 'due' || type === 'target') {
+    const Icon = type === 'due' ? Flag : Target;
+    const accent = type === 'due' ? 'text-copper-400' : 'text-ink-400';
+    const format =
+      type === 'due' ? formatDueMomentValue : formatTargetMomentValue;
+    return (
+      <span className="inline-flex flex-wrap items-center gap-1.5 text-xs">
+        <MomentChipHalf
+          icon={<Icon size={11} className={clsx('shrink-0', accent)} />}
+          muted
+        >
+          <span className={accent}>{format(prev)}</span>
+        </MomentChipHalf>
+        <span className="text-ink-600">→</span>
+        <MomentChipHalf
+          icon={<Icon size={11} className={clsx('shrink-0', accent)} />}
+        >
+          <span className={accent}>{format(value)}</span>
+        </MomentChipHalf>
+      </span>
+    );
+  }
+
+  if (type === 'estimate') {
+    const format = (raw: string | null) =>
+      raw ? minutesToHuman(Number(raw)) : 'ø';
+    return (
+      <span className="inline-flex flex-wrap items-center gap-1.5 text-xs">
+        <MomentChipHalf
+          icon={<DraftingCompass size={11} className="text-ink-400 shrink-0" />}
+          muted
+        >
+          {format(prev)}
+        </MomentChipHalf>
+        <span className="text-ink-600">→</span>
+        <MomentChipHalf
+          icon={<DraftingCompass size={11} className="text-ink-400 shrink-0" />}
+        >
+          {format(value)}
+        </MomentChipHalf>
+      </span>
+    );
+  }
+
+  // status / priority — nests the real badges rather than reformatting
+  // the enum text by hand.
+  return (
+    <span className="inline-flex flex-wrap items-center gap-1.5">
+      {prev ? (
+        <span className="opacity-50">
+          {type === 'status' ? (
+            <StatusBadge status={prev as Status} />
+          ) : (
+            <PriorityBadge priority={prev as Priority} />
+          )}
+        </span>
+      ) : (
+        <span className="text-ink-600 text-xs">ø</span>
+      )}
+      <span className="text-ink-600 text-xs">→</span>
+      {type === 'status' ? (
+        <StatusBadge status={value as Status} />
+      ) : (
+        <PriorityBadge priority={value as Priority} />
+      )}
+    </span>
+  );
+}
+
 interface SectionProps {
   title: ReactNode;
   children: ReactNode;
   action?: ReactNode;
+  // 'end' (default): action pinned to the opposite edge from the title.
+  // 'inline': action sits right next to the title, like Due's label+toggle
+  // pairing — used where the action is tightly coupled to the title itself
+  // (Tags' add button) rather than a separate far-corner control.
+  actionPlacement?: 'end' | 'inline';
 }
 
-function Section({ title, children, action }: SectionProps) {
+function Section({
+  title,
+  children,
+  action,
+  actionPlacement = 'end',
+}: SectionProps) {
   return (
     <div className="border-ink-700 border-t pt-3.5 first:border-0 first:pt-0">
-      <div className="mb-2 flex items-center justify-between">
+      <div
+        className={clsx(
+          'mb-2 flex items-center',
+          actionPlacement === 'inline' ? 'gap-2' : 'justify-between'
+        )}
+      >
         <h3 className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
           {title}
         </h3>
@@ -146,54 +307,79 @@ function Section({ title, children, action }: SectionProps) {
 
 interface SequenceChipProps {
   task: Task;
+  direction: 'before' | 'after';
+  projectName?: string | null;
+  projectField?: string | null;
   onOpen?: (task: Task) => void;
   onRemove: () => void;
 }
 
-function SequenceChip({ task, onOpen, onRemove }: SequenceChipProps) {
+// A short, full-width row (no pill background) — direction icon + name on
+// the left, the linked task's project mention and remove button grouped
+// on the right.
+function SequenceChip({
+  task,
+  direction,
+  projectName,
+  projectField,
+  onOpen,
+  onRemove,
+}: SequenceChipProps) {
+  const DirIcon = direction === 'before' ? CornerUpLeft : CornerDownRight;
   return (
-    <span className="bg-ink-700 text-ink-200 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs">
+    <div className="flex w-full items-center justify-between gap-2 py-0.5">
       <button
         type="button"
         onClick={() => onOpen?.(task)}
         disabled={!onOpen}
-        className={onOpen ? 'hover:text-copper-400' : 'cursor-default'}
+        className={clsx(
+          'text-ink-200 flex min-w-0 items-center gap-1 text-left text-xs',
+          onOpen ? 'hover:text-copper-400' : 'cursor-default'
+        )}
       >
-        {task.name}
+        <DirIcon size={11} className="text-ink-500 shrink-0" />
+        <span className="truncate">{task.name}</span>
       </button>
-      <button
-        type="button"
-        onClick={onRemove}
-        className="hover:text-rust-500"
-        aria-label="Remover da sequência"
-      >
-        <X size={11} />
-      </button>
-    </span>
+      <div className="flex shrink-0 items-center gap-2">
+        <ProjectChip name={projectName} fieldName={projectField} />
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-ink-500 hover:text-rust-500 shrink-0"
+          aria-label="Remover da sequência"
+        >
+          <X size={11} />
+        </button>
+      </div>
+    </div>
   );
 }
 
-interface AddButtonProps {
-  active?: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}
-
-// Standard "add" CTA — same bordered-pill pattern as the Due/Target "Add
-// time" toggles, so every add trigger in the modal reads the same way.
-function AddButton({ active, onClick, children }: AddButtonProps) {
+// Filled/outlined dots instead of a "(1/3)" parenthetical in the section
+// title — a different shape language than Estimate's glyph bar so the two
+// widgets don't read as duplicates.
+function ItemProgressDots({ done, total }: { done: number; total: number }) {
+  if (!total) return null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-[10px] transition-colors ${
-        active
-          ? 'border-copper-500 text-copper-400 bg-copper-500/10'
-          : 'border-ink-700 text-ink-500 hover:text-ink-300'
-      }`}
+    <span
+      className="inline-flex items-center gap-1"
+      title={`${done} of ${total} done`}
     >
-      <Plus size={10} /> {children}
-    </button>
+      <span className="inline-flex items-center gap-0.5">
+        {Array.from({ length: total }, (_, i) => (
+          <span
+            key={i}
+            className={clsx(
+              'h-1.5 w-1.5 rounded-full',
+              i < done ? 'bg-sage-500' : 'border-ink-600 border'
+            )}
+          />
+        ))}
+      </span>
+      <span className="text-ink-600 font-mono text-[10px]">
+        {done}/{total}
+      </span>
+    </span>
   );
 }
 
@@ -285,8 +471,6 @@ export default function TaskDetailModal({
   const [seqError, setSeqError] = useState<string | null>(null);
 
   const [newItem, setNewItem] = useState('');
-  const [newNote, setNewNote] = useState('');
-  const [tagPickerOpen, setTagPickerOpen] = useState(false);
 
   const [showDueTime, setShowDueTime] = useState(() => {
     if (!task.due) return false;
@@ -305,6 +489,18 @@ export default function TaskDetailModal({
     : null;
   const isActive = activeLog?.task_id === task.id;
   const otherTimerRunning = activeLog && activeLog.task_id !== task.id;
+
+  // Resolves a linked task's project — used so Sequence chips can mention
+  // which project each previous/next task belongs to.
+  function projectInfoFor(t: Task) {
+    const sec = sections.find((s) => s.id === t.section_id);
+    const proj = projects.find((p) => p.id === sec?.project_id);
+    if (!proj) return { name: null, field: null };
+    const field = proj.field_id
+      ? (fieldsById.get(proj.field_id)?.name ?? null)
+      : null;
+    return { name: proj.name, field };
+  }
 
   const [nameDraft, setNameDraft, flushName] = useDebouncedField(
     task.name,
@@ -428,13 +624,6 @@ export default function TaskDetailModal({
     setNewItem('');
   }
 
-  function addNote(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newNote.trim()) return;
-    noteMutations.addNote.mutate(newNote.trim());
-    setNewNote('');
-  }
-
   return (
     <Modal
       open
@@ -450,189 +639,212 @@ export default function TaskDetailModal({
       width="max-w-2xl"
     >
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-ink-500 hover:text-ink-300 inline-flex min-w-0 items-center gap-1 text-xs">
-            <FieldBadge fieldName={currentFieldName} size="xs" />
-            <select
-              value={section?.project_id ?? ''}
-              onChange={(e) => {
-                const projectId = e.target.value;
-                const firstSection = sections.find(
-                  (s) => s.project_id === projectId
-                );
-                if (firstSection) patch({ section_id: firstSection.id });
-              }}
-              className="focus-visible:ring-copper-400 max-w-32 cursor-pointer truncate border-0 bg-transparent p-0 text-xs focus:outline-none focus-visible:ring-1"
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </span>
-          <span className="text-ink-600 text-xs">›</span>
-          <Select
-            value={task.section_id ?? ''}
-            className="py-0.5! text-xs!"
-            onChange={(e) => patch({ section_id: e.target.value })}
-          >
-            {sections
-              .filter((s) => s.project_id === section?.project_id)
-              .map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-          </Select>
+        <div className="flex flex-col gap-1">
+          {currentFieldName && (
+            <span className="text-[10px] font-bold tracking-wide text-teal-400 uppercase">
+              {currentFieldName}
+            </span>
+          )}
+          {/* generous gap so the project chevron and the › separator don't
+              read as a cluttered row of arrows */}
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="text-ink-300 hover:text-ink-100 inline-flex min-w-0 items-center gap-1 text-sm font-bold">
+              <FieldBadge fieldName={currentFieldName} size="xs" />
+              <select
+                value={section?.project_id ?? ''}
+                onChange={(e) => {
+                  const projectId = e.target.value;
+                  const firstSection = sections.find(
+                    (s) => s.project_id === projectId
+                  );
+                  if (firstSection) patch({ section_id: firstSection.id });
+                }}
+                className="focus-visible:ring-copper-400 max-w-32 cursor-pointer truncate border-0 bg-transparent p-0 text-sm font-bold focus:outline-none focus-visible:ring-1"
+              >
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </span>
+            <span className="text-ink-600 text-xs">›</span>
+            <span className="text-ink-500 hover:text-ink-300 inline-flex min-w-0 items-center gap-1 text-xs">
+              <Layers size={10} className="shrink-0" />
+              <select
+                value={task.section_id ?? ''}
+                onChange={(e) => patch({ section_id: e.target.value })}
+                className="focus-visible:ring-copper-400 max-w-32 cursor-pointer truncate border-0 bg-transparent p-0 text-xs focus:outline-none focus-visible:ring-1"
+              >
+                {sections
+                  .filter((s) => s.project_id === section?.project_id)
+                  .map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+              </select>
+            </span>
+          </div>
         </div>
 
-        {/* Form Grid reorganizada em pares de duas colunas */}
-        <div className="space-y-3">
-          {/* Linha 1: Status | Priority */}
-          <div className="grid grid-cols-2 gap-3">
+        {/* Status | Priority — even split, each with its own eyebrow label.
+            Stacks to one column below sm; stacked fields get a divider since
+            they no longer share a row to separate them visually. */}
+        <div className="[&>*+*]:border-ink-700 grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:items-start sm:gap-5 [&>*+*]:mt-1 [&>*+*]:border-t [&>*+*]:pt-3.5 sm:[&>*+*]:mt-0 sm:[&>*+*]:border-t-0 sm:[&>*+*]:pt-0">
+          <div className="min-w-0">
+            <label className="text-ink-500 mb-1 block text-xs font-semibold tracking-wide uppercase">
+              Status
+            </label>
             <StatusPicker
               value={task.status}
               onChange={(status) => patch({ status })}
             />
+          </div>
+          <div className="min-w-0">
+            <label className="text-ink-500 mb-1 block text-xs font-semibold tracking-wide uppercase">
+              Priority
+            </label>
             <PriorityPicker
               value={task.priority}
               onChange={(priority) => patch({ priority })}
             />
           </div>
+        </div>
 
-          {/* Linha 2: Estimate | Due Date (+ Hora opcional) */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-ink-500 mb-1 block text-xs font-medium">
-                Estimate
+        {/* Due | Estimate — 1/2 each, same stack+divider treatment as
+            Status/Priority below sm */}
+        <div className="[&>*+*]:border-ink-700 grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-5 [&>*+*]:mt-1 [&>*+*]:border-t [&>*+*]:pt-3.5 sm:[&>*+*]:mt-0 sm:[&>*+*]:border-t-0 sm:[&>*+*]:pt-0">
+          <div className="min-w-0">
+            <div className="mb-1 flex min-h-5 items-center justify-between gap-2">
+              <label className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+                Due
               </label>
-              <div className="border-ink-600 bg-ink-800 focus-within:border-copper-400 flex items-center gap-2 rounded border px-3 py-2">
-                <DraftingCompass size={15} className="text-ink-500 shrink-0" />
-                <input
-                  type="number"
-                  min="0"
-                  value={estimateDraft}
-                  onChange={(e) => setEstimateDraft(e.target.value)}
-                  onBlur={flushEstimate}
-                  className="text-ink-100 font-mono! w-full min-w-0 bg-transparent text-sm focus:outline-none"
-                />
-                <span className="text-ink-500 shrink-0 text-xs">min</span>
-              </div>
-              {progress && (
-                <TaskProgressBar
-                  progress={progress}
-                  size="full"
-                  className="mt-1.5"
+              {dueValues.date && (
+                <TimeToggle
+                  active={showDueTime}
+                  onClick={() => {
+                    const nextState = !showDueTime;
+                    setShowDueTime(nextState);
+                    if (!nextState) {
+                      handleDueChange(dueValues.date, '00:00', false);
+                    }
+                  }}
                 />
               )}
             </div>
-
-            <div>
-              <div className="mb-1 flex items-center justify-between">
-                <label className="text-ink-500 flex items-center gap-1 text-xs font-medium">
-                  <Flag
-                    size={11}
-                    className={
-                      isOverdue(task.due, task.status)
-                        ? 'text-rust-500'
-                        : 'text-copper-400'
-                    }
-                  />
-                  Due
-                </label>
-                {dueValues.date && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const nextState = !showDueTime;
-                      setShowDueTime(nextState);
-                      if (!nextState) {
-                        handleDueChange(dueValues.date, '00:00', false);
-                      }
-                    }}
-                    className={`flex items-center gap-0.5 rounded border px-1 text-[10px] transition-colors ${
-                      showDueTime
-                        ? 'border-copper-500 text-copper-400 bg-copper-500/10'
-                        : 'border-ink-700 text-ink-500 hover:text-ink-300'
-                    }`}
-                  >
-                    <Clock size={10} />{' '}
-                    {showDueTime ? 'Remove time' : 'Add time'}
-                  </button>
-                )}
-              </div>
-              <div className="flex gap-1">
-                <TextInput
-                  type="date"
-                  value={dueValues.date}
-                  onChange={(e) => {
-                    handleDueChange(e.target.value, dueValues.time);
-                  }}
-                  className="w-full"
-                />
-                {showDueTime && dueValues.date && (
+            <div
+              className={clsx(
+                'inline-flex h-8.5 w-fit items-center gap-1.5 rounded-md border px-2.5 font-mono text-xs',
+                isOverdue(task.due, task.status)
+                  ? 'border-rust-500 bg-rust-500/10 text-rust-400'
+                  : 'border-copper-500 bg-copper-500/10 text-copper-400'
+              )}
+            >
+              <Flag size={14} className="shrink-0" />
+              <TextInput
+                type="date"
+                value={dueValues.date}
+                onChange={(e) => {
+                  handleDueChange(e.target.value, dueValues.time);
+                }}
+                className="w-[10ch]! shrink-0 border-0! bg-transparent! p-0! text-center text-xs! text-inherit!"
+              />
+              {showDueTime && dueValues.date && (
+                <>
+                  <span className="opacity-50">·</span>
                   <TextInput
                     type="time"
                     value={dueValues.time || '12:00'}
                     onChange={(e) => {
                       handleDueChange(dueValues.date, e.target.value, true);
                     }}
-                    className="w-20 shrink-0 text-center"
+                    className="w-14! shrink-0 border-0! bg-transparent! p-0! text-center text-xs! text-inherit!"
                   />
-                )}
-              </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="min-w-0">
+            <label className="text-ink-500 mb-1 block text-xs font-semibold tracking-wide uppercase">
+              Estimate
+            </label>
+            {progress && <TaskProgressBar progress={progress} size="full" />}
+            <div className="text-ink-400 mt-1 flex items-center gap-1 font-mono text-xs">
+              {minutesToHuman(totalMinutes)} logged /
+              <input
+                type="number"
+                min="0"
+                value={estimateDraft}
+                onChange={(e) => setEstimateDraft(e.target.value)}
+                onBlur={flushEstimate}
+                className="text-ink-100 border-ink-600 focus:border-copper-400 w-8 border-b bg-transparent text-center outline-none"
+              />
+              m
             </div>
           </div>
         </div>
 
         <div>
-          <label className="text-ink-500 mb-1 block text-xs font-medium">
-            Target{' '}
-            <span className="text-ink-600 font-normal normal-case">
-              (planned window — optional, primarily dates, exported as
-              tstzrange)
-            </span>
-          </label>
+          <div className="mb-1 flex items-center gap-2">
+            <label className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+              Target
+            </label>
+            {Boolean(task.target) && (
+              <IconAddButton
+                label="Clear target"
+                icon={<X size={10} />}
+                onClick={() => patch({ target: null })}
+              />
+            )}
+          </div>
           <TargetEditor
             value={task.target as string | null}
             due={task.due}
             onChange={(v) => patch({ target: v })}
+            hideClear
           />
         </div>
 
-        <Section title="Sequence">
+        {/* no top-level "Sequence" title — "Previous"/"Next" carry the
+            same eyebrow style as every other field label instead */}
+        <div className="border-ink-700 border-t pt-3.5">
           <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-ink-400 flex items-center gap-1 text-xs font-medium">
-                    <CornerUpLeft size={12} /> Previous tasks
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+                    Previous tasks
                   </span>
-                  <AddButton
-                    active={seqPicker?.kind === 'before'}
+                  <IconAddButton
+                    label="Add previous task"
                     onClick={() => {
                       setSeqError(null);
                       setSeqPicker({ kind: 'before', search: '' });
                     }}
-                  >
-                    Add
-                  </AddButton>
+                  />
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {before.map((t) => (
-                    <SequenceChip
-                      key={t.id}
-                      task={t}
-                      onOpen={onOpenTask}
-                      onRemove={() =>
-                        sequenceMutations.remove.mutate({
-                          previousId: t.id,
-                          nextId: task.id,
-                        })
-                      }
-                    />
-                  ))}
+                <div className="flex flex-col">
+                  {before.map((t) => {
+                    const proj = projectInfoFor(t);
+                    return (
+                      <SequenceChip
+                        key={t.id}
+                        task={t}
+                        direction="before"
+                        projectName={proj.name}
+                        projectField={proj.field}
+                        onOpen={onOpenTask}
+                        onRemove={() =>
+                          sequenceMutations.remove.mutate({
+                            previousId: t.id,
+                            nextId: task.id,
+                          })
+                        }
+                      />
+                    );
+                  })}
                   {!before.length && (
                     <p className="text-ink-600 text-xs">None</p>
                   )}
@@ -640,35 +852,41 @@ export default function TaskDetailModal({
               </div>
 
               <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-ink-400 flex items-center gap-1 text-xs font-medium">
-                    <CornerDownRight size={12} /> Next tasks
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+                    Next tasks
                   </span>
-                  <AddButton
-                    active={seqPicker?.kind === 'after'}
+                  <IconAddButton
+                    label="Add next task"
                     onClick={() => {
                       setSeqError(null);
                       setSeqPicker({ kind: 'after', search: '' });
                     }}
-                  >
-                    Add
-                  </AddButton>
+                  />
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {after.map((t) => (
-                    <SequenceChip
-                      key={t.id}
-                      task={t}
-                      onOpen={onOpenTask}
-                      onRemove={() =>
-                        sequenceMutations.remove.mutate({
-                          previousId: task.id,
-                          nextId: t.id,
-                        })
-                      }
-                    />
-                  ))}
-                  {!after.length && <p className="text-ink-600 text-xs">None</p>}
+                <div className="flex flex-col">
+                  {after.map((t) => {
+                    const proj = projectInfoFor(t);
+                    return (
+                      <SequenceChip
+                        key={t.id}
+                        task={t}
+                        direction="after"
+                        projectName={proj.name}
+                        projectField={proj.field}
+                        onOpen={onOpenTask}
+                        onRemove={() =>
+                          sequenceMutations.remove.mutate({
+                            previousId: task.id,
+                            nextId: t.id,
+                          })
+                        }
+                      />
+                    );
+                  })}
+                  {!after.length && (
+                    <p className="text-ink-600 text-xs">None</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -715,19 +933,9 @@ export default function TaskDetailModal({
               </div>
             )}
           </div>
-        </Section>
+        </div>
 
-        <Section
-          title="Tags"
-          action={
-            <AddButton
-              active={tagPickerOpen}
-              onClick={() => setTagPickerOpen((o) => !o)}
-            >
-              Add tag
-            </AddButton>
-          }
-        >
+        <Section title="Tags">
           <div className="flex flex-wrap gap-1.5">
             {taskTags.map((tag) => (
               <Tag
@@ -746,40 +954,45 @@ export default function TaskDetailModal({
               <p className="text-ink-600 text-xs">No tags yet</p>
             )}
           </div>
-          {tagPickerOpen && (
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {availableTags.map((tag) => (
-                <button
-                  key={tag.id}
-                  onClick={() => {
-                    tagMutations.attach.mutate({
-                      tagId: tag.id,
-                      entityRef: { task_id: task.id },
-                    });
-                    setTagPickerOpen(false);
-                  }}
-                  className="border-ink-600 text-ink-300 rounded-full border px-2 py-0.5 text-xs hover:border-teal-500 hover:text-teal-400"
-                >
-                  {tag.name}
-                </button>
-              ))}
-              {!availableTags.length && (
-                <p className="text-ink-600 text-xs">
-                  No more tags — create one on the Tags page
-                </p>
-              )}
-            </div>
-          )}
+          {/* suggestions stay visible at all times — one click to add,
+              no picker toggle to open first */}
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {availableTags.map((tag) => (
+              <TagSuggestion
+                key={tag.id}
+                onClick={() =>
+                  tagMutations.attach.mutate({
+                    tagId: tag.id,
+                    entityRef: { task_id: task.id },
+                  })
+                }
+              >
+                {tag.name}
+              </TagSuggestion>
+            ))}
+            {!availableTags.length && (
+              <p className="text-ink-600 text-xs">
+                No more tags — create one on the Tags page
+              </p>
+            )}
+          </div>
         </Section>
 
         <Section
-          title={`Checklist (${items.filter((i) => i.done).length}/${items.length})`}
+          title="Task items"
+          actionPlacement="inline"
+          action={
+            <ItemProgressDots
+              done={items.filter((i) => i.done).length}
+              total={items.length}
+            />
+          }
         >
-          <div className="space-y-1">
+          <div>
             {items.map((item) => (
               <div
                 key={item.id}
-                className="group hover:bg-ink-900 flex items-center gap-2 rounded px-1.5 py-1"
+                className="group hover:bg-ink-900 flex items-center gap-2 rounded py-0.5 pr-1.5"
               >
                 <input
                   type="checkbox"
@@ -790,7 +1003,7 @@ export default function TaskDetailModal({
                       patch: { done: e.target.checked },
                     })
                   }
-                  className="border-ink-600 bg-ink-800 accent-copper-500 h-4 w-4 rounded"
+                  className="border-ink-600 checked:border-sage-500 checked:bg-sage-500 h-3.5 w-3.5 shrink-0 appearance-none rounded-full border-[1.5px]"
                 />
                 <span className={clsxDone(item.done)}>{item.description}</span>
                 <button
@@ -807,79 +1020,93 @@ export default function TaskDetailModal({
             <input
               value={newItem}
               onChange={(e) => setNewItem(e.target.value)}
-              placeholder="Add a checklist item…"
+              placeholder="Add a task item…"
               className="text-ink-200 placeholder:text-ink-600 flex-1 bg-transparent py-1 text-sm focus:outline-none"
             />
           </form>
         </Section>
 
-        <Section
-          title={`Time logged — ${minutesToHuman(totalMinutes)}`}
-          action={
-            isActive ? (
-              <Button
-                size="sm"
-                variant="danger"
-                onClick={() => timer.stop.mutate()}
-              >
-                <Square size={12} fill="currentColor" /> Stop
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={Boolean(otherTimerRunning)}
-                title={
-                  otherTimerRunning
-                    ? 'Stop the other running timer first'
-                    : undefined
-                }
-                onClick={() => timer.start.mutate(task.id)}
-              >
-                <Play size={12} fill="currentColor" /> Start
-              </Button>
-            )
-          }
-        >
-          <div className="space-y-1">
-            {logs.slice(0, 8).map((log) => {
-              const { start, end } = parseRange(log.duration);
-              return (
-                <div
-                  key={log.id}
-                  className="text-ink-400 flex items-center justify-between text-xs"
+        {/* Time logged and Moments side by side — one shared divider
+            instead of each section carrying its own */}
+        <div className="border-ink-700 grid grid-cols-1 gap-4 border-t pt-3.5 sm:grid-cols-2">
+          <div className="min-w-0">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h3 className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+                Time logged{' '}
+                <span className="text-ink-400 font-mono font-medium normal-case">
+                  {minutesToHuman(totalMinutes)}
+                </span>
+              </h3>
+              {isActive ? (
+                <Button
+                  size="sm"
+                  variant="danger"
+                  onClick={() => timer.stop.mutate()}
                 >
-                  <span>
-                    {start ? formatDue(start) : '—'}{' '}
-                    {end ? `→ ${formatDue(end)}` : '(running)'}
-                  </span>
-                  <span className="tabular font-mono">
-                    {minutesToHuman(rangeDurationMinutes(log.duration))}
-                  </span>
-                </div>
-              );
-            })}
-            {!logs.length && (
-              <p className="text-ink-600 text-xs">No time logged yet</p>
-            )}
+                  <Square size={12} fill="currentColor" /> Stop
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={Boolean(otherTimerRunning)}
+                  title={
+                    otherTimerRunning
+                      ? 'Stop the other running timer first'
+                      : undefined
+                  }
+                  onClick={() => timer.start.mutate(task.id)}
+                >
+                  <Play size={12} fill="currentColor" /> Start
+                </Button>
+              )}
+            </div>
+            <div className="space-y-1">
+              {logs.slice(0, 8).map((log) => {
+                const { start, end } = parseRange(log.duration);
+                return (
+                  <div
+                    key={log.id}
+                    className="text-ink-400 flex items-center justify-between text-xs"
+                  >
+                    <span>
+                      {start ? formatDue(start) : '—'}{' '}
+                      {end ? `→ ${formatDue(end)}` : '(running)'}
+                    </span>
+                    <span className="tabular font-mono text-[10px]">
+                      {minutesToHuman(rangeDurationMinutes(log.duration))}
+                    </span>
+                  </div>
+                );
+              })}
+              {!logs.length && (
+                <p className="text-ink-600 text-xs">No time logged yet</p>
+              )}
+            </div>
           </div>
-        </Section>
 
-        <Section title="Moments">
-          <div className="space-y-2">
-            {moments.map((moment) => (
-              <div
-                key={moment.id}
-                className="group bg-ink-900 text-ink-300 rounded px-2.5 py-2 text-sm"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex min-w-0 flex-1 items-start gap-1.5">
-                    <MomentIcon moment={moment} />
+          <div className="min-w-0">
+            <h3 className="text-ink-500 mb-2 text-xs font-semibold tracking-wide uppercase">
+              Moments
+            </h3>
+            <div className="space-y-2">
+              {moments.map((moment) => {
+                const isChip = CHIP_MOMENT_TYPES.has(moment.moment_type);
+                return (
+                  <div
+                    key={moment.id}
+                    className="group flex items-start gap-1.5"
+                  >
+                    {!isChip && <MomentIcon moment={moment} />}
                     <div className="min-w-0 flex-1">
-                      {moment.moment_type !== 'note' && (
-                        <p className="text-ink-400 text-xs font-medium">
-                          {describeMoment(moment)}
-                        </p>
+                      {isChip ? (
+                        <MomentChangeChip moment={moment} />
+                      ) : (
+                        moment.moment_type !== 'note' && (
+                          <p className="text-ink-400 text-xs font-medium">
+                            {describeMoment(moment)}
+                          </p>
+                        )
                       )}
                       {moment.moment_note && (
                         <p className="flex items-start gap-1 whitespace-pre-wrap">
@@ -893,36 +1120,28 @@ export default function TaskDetailModal({
                           <span>{moment.moment_note}</span>
                         </p>
                       )}
+                      <p className="text-ink-600 mt-0.5 font-mono text-[10px]">
+                        {formatDue(parseMomentTime(moment.created_at))}
+                      </p>
                     </div>
+                    <button
+                      onClick={() => noteMutations.remove.mutate(moment.id)}
+                      className="opacity-0 group-hover:opacity-100"
+                    >
+                      <X
+                        size={12}
+                        className="text-ink-500 hover:text-rust-500"
+                      />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => noteMutations.remove.mutate(moment.id)}
-                    className="opacity-0 group-hover:opacity-100"
-                  >
-                    <X size={12} className="text-ink-500 hover:text-rust-500" />
-                  </button>
-                </div>
-                <p className="text-ink-600 mt-1 text-[11px]">
-                  {formatDue(parseMomentTime(moment.created_at))}
-                </p>
-              </div>
-            ))}
-            {!moments.length && (
-              <p className="text-ink-600 text-xs">No moments yet</p>
-            )}
+                );
+              })}
+              {!moments.length && (
+                <p className="text-ink-600 text-xs">No moments yet</p>
+              )}
+            </div>
           </div>
-          <form onSubmit={addNote} className="mt-2 flex items-center gap-1.5">
-            <TextInput
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Add a note…"
-              className="flex-1"
-            />
-            <Button type="submit" size="sm" variant="secondary">
-              Add
-            </Button>
-          </form>
-        </Section>
+        </div>
 
         <div className="border-ink-700 flex justify-end border-t pt-3.5">
           <button
@@ -939,6 +1158,6 @@ export default function TaskDetailModal({
 
 function clsxDone(done: boolean): string {
   return done
-    ? 'flex-1 text-sm text-ink-600 line-through'
-    : 'flex-1 text-sm text-ink-200';
+    ? 'flex-1 text-xs text-ink-600 line-through'
+    : 'flex-1 text-xs text-ink-200';
 }

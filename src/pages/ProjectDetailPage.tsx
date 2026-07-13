@@ -48,6 +48,10 @@ interface SectionBlockProps {
   tasks: Task[];
   onOpenTask: (task: Task) => void;
   dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }
 
 function SectionBlock({
@@ -56,6 +60,10 @@ function SectionBlock({
   tasks,
   onOpenTask,
   dragHandleProps,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
 }: SectionBlockProps) {
   const orderedTasks = useMemo(() => {
     return tasks
@@ -69,6 +77,10 @@ function SectionBlock({
       orderedTasks={orderedTasks}
       onOpenTask={onOpenTask}
       dragHandleProps={dragHandleProps}
+      onMoveUp={onMoveUp}
+      onMoveDown={onMoveDown}
+      canMoveUp={canMoveUp}
+      canMoveDown={canMoveDown}
     />
   );
 }
@@ -126,6 +138,16 @@ export default function ProjectDetailPage() {
     const newIndex = orderedSectionIds.indexOf(over.id as Id);
     reorderSections.mutate({
       orderedIds: arrayMove(orderedSectionIds, oldIndex, newIndex),
+    });
+  }
+
+  // Drag-and-drop is fiddly on touch — plain up/down moves cover the same
+  // sections_sequence linked-list reorder without needing a precise drag.
+  function moveSectionBy(index: number, delta: number) {
+    const newIndex = index + delta;
+    if (newIndex < 0 || newIndex >= orderedSectionIds.length) return;
+    reorderSections.mutate({
+      orderedIds: arrayMove(orderedSectionIds, index, newIndex),
     });
   }
 
@@ -252,7 +274,7 @@ export default function ProjectDetailPage() {
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-3">
-            {orderedSectionIds.map((sectionId) => {
+            {orderedSectionIds.map((sectionId, index) => {
               const section = sectionsById.get(sectionId);
               if (!section) return null;
               return (
@@ -264,6 +286,10 @@ export default function ProjectDetailPage() {
                       tasks={tasks}
                       onOpenTask={openTask_}
                       dragHandleProps={dragHandleProps}
+                      onMoveUp={() => moveSectionBy(index, -1)}
+                      onMoveDown={() => moveSectionBy(index, 1)}
+                      canMoveUp={index > 0}
+                      canMoveDown={index < orderedSectionIds.length - 1}
                     />
                   )}
                 </SortableSectionWrapper>
