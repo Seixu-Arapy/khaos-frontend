@@ -211,42 +211,39 @@ export default function PantheonPage() {
       name="The Pantheon"
       tagline="Every color, named for what it descends from"
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {DEITIES.map((d) => (
-          <div
-            key={d.name}
-            className="border-ink-700 bg-ink-800/40 rounded-lg border p-5"
-          >
-            <div className="mb-3 flex items-center gap-3">
-              <div className="border-ink-700 bg-ink-800 text-ink-300 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border">
-                <d.icon size={17} />
+          <div key={d.name} className="border-ink-800 flex gap-5 border-t pt-6">
+            <d.icon
+              size={40}
+              strokeWidth={1.1}
+              className="text-ink-400 mt-1 shrink-0"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="mb-2 flex items-baseline gap-2">
+                <h3 className="font-serif text-ink-100 text-xl italic">
+                  {d.name}
+                </h3>
+                <span className="text-ink-600 font-mono text-[10px]">
+                  was {d.oldName}
+                </span>
               </div>
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="font-serif text-ink-100 text-xl italic">
-                    {d.name}
-                  </h3>
-                  <span className="text-ink-600 font-mono text-[10px]">
-                    was {d.oldName}
-                  </span>
-                </div>
-                <p className="text-ink-500 text-xs">{d.role}</p>
+              <p className="text-ink-500 mb-3 text-xs">{d.role}</p>
+
+              <p className="text-ink-300 mb-4 max-w-prose text-sm leading-relaxed">
+                {d.story}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {d.shades.map((s) => (
+                  <div key={s.label} className="flex flex-col items-center gap-1">
+                    <Coin hex={s.hex} ring />
+                    <span className="text-ink-600 font-mono text-[9px]">
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
               </div>
-            </div>
-
-            <p className="text-ink-300 mb-4 max-w-prose text-sm leading-relaxed">
-              {d.story}
-            </p>
-
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-              {d.shades.map((s) => (
-                <div key={s.label} className="flex flex-col items-center gap-1">
-                  <Coin hex={s.hex} ring />
-                  <span className="text-ink-600 font-mono text-[9px]">
-                    {s.label}
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
         ))}

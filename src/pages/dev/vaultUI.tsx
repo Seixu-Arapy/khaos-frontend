@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
+import KhaoticText from '../../components/common/KhaoticText';
 
 // Shared chrome for the Khaos Vault (/dev/vault/*) — deliberately outside
 // AppShell (no sidebar, no chat, no nav bar). The only wayfinding is a
@@ -76,10 +77,12 @@ interface ChamberProps {
 
 export function Chamber({ index, name, tagline, children }: ChamberProps) {
   return (
-    <MuseumFrame eyebrow={`khaos vault · ${index}`} exitTo="/dev/vault">
-      <div className="mx-auto max-w-3xl px-6 pt-32 pb-32">
-        <div className="mb-16">
-          <h1 className="font-serif text-ink-100 text-3xl italic">{name}</h1>
+    <MuseumFrame eyebrow={`khaos vortex · ${index}`} exitTo="/dev/vault">
+      <div className="mx-auto max-w-3xl px-6 pt-20 pb-24">
+        <div className="mb-10">
+          <h1 className="text-ink-100">
+            <KhaoticText text={name} className="text-3xl" />
+          </h1>
           <p className="text-ink-600 mt-2 font-mono text-[11px] tracking-widest uppercase">
             {tagline}
           </p>

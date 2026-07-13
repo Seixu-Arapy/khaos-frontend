@@ -9,7 +9,7 @@ import ConfirmationCard from './ConfirmationCard';
 import KhaosIcon from '../common/KhaosIcon';
 import MomentPrompt from './MomentPrompt';
 import { useMomentPrompts } from '../../lib/momentPromptsContext';
-import ChaoticText from '../common/ChaoticText';
+import KhaoticText from '../common/KhaoticText';
 
 const MAX_TEXTAREA_LINES = 5;
 
@@ -152,7 +152,7 @@ export default function ChatPanel({
             className="animate-pulse"
           />
           <h2 className="font-display text-ink-100 text-sm font-semibold">
-            <ChaoticText text="KallKhaos" />
+            <KhaoticText text="KallKhaos" />
           </h2>
         </div>
         <div className="flex items-center gap-3">

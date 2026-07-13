@@ -40,17 +40,17 @@ function generateStyles(length: number, style?: string): string[] {
   );
 }
 
-interface ChaoticTextProps {
+interface KhaoticTextProps {
   text?: string;
   className?: string;
   style?: string;
 }
 
-export default function ChaoticText({
+export default function KhaoticText({
   text,
   className = '',
   style = '',
-}: ChaoticTextProps) {
+}: KhaoticTextProps) {
   const [styles, setStyles] = useState(() =>
     generateStyles(text?.length ?? 0, style)
   );

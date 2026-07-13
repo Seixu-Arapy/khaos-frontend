@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MuseumFrame } from './vaultUI';
+import KhaoticText from '../../components/common/KhaoticText';
 
 // Entrance to the Khaos Vault — full-bleed, no sidebar, no chat, no nav
 // menu. Wayfinding is a single corner placard and one exit mark; moving
@@ -61,11 +62,11 @@ const CHAMBERS: ChamberEntry[] = [
 
 export default function VaultIndexPage() {
   return (
-    <MuseumFrame eyebrow="khaos vault">
+    <MuseumFrame eyebrow="khaos vortex">
       <div className="mx-auto max-w-2xl px-6 pt-40 pb-32">
         <div className="mb-24 text-center">
-          <h1 className="font-serif text-ink-100 text-4xl italic">
-            The Khaos Vault
+          <h1 className="text-ink-100 flex justify-center">
+            <KhaoticText text="Khaos Vortex" className="text-4xl" />
           </h1>
           <p className="text-ink-600 mx-auto mt-4 max-w-sm font-mono text-[11px] tracking-widest uppercase">
             every token, every component, exactly as it renders
@@ -83,8 +84,8 @@ export default function VaultIndexPage() {
                 {c.index}
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="font-serif text-ink-200 group-hover:text-ink-100 text-2xl italic transition-colors duration-300">
-                  {c.name}
+                <h2 className="text-ink-200 group-hover:text-ink-100 transition-colors duration-300">
+                  <KhaoticText text={c.name} className="text-2xl" />
                 </h2>
                 <p className="text-ink-600 mt-1 text-sm">{c.tagline}</p>
                 <p className="text-ink-700 mt-2 font-mono text-[10px] tracking-wide">

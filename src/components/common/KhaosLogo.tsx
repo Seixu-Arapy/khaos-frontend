@@ -1,5 +1,5 @@
 import KhaosIcon from '../common/KhaosIcon'; // Ajusta o caminho relativo se necessário
-import ChaoticText from './ChaoticText';
+import KhaoticText from './KhaoticText';
 
 interface KhaosLogoProps {
   spinning?: boolean;
@@ -25,7 +25,7 @@ interface KhaosTitleProps {
 
 export function KhaosTitle({ className }: KhaosTitleProps) {
   return (
-    <ChaoticText
+    <KhaoticText
       text="Khaos"
       className={`${className} text-ink-100 tracking-widest capitalize`}
     />

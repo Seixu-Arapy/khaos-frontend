@@ -60,7 +60,7 @@ const STEPS: Step[] = [
     role: 'page titles',
     ratioFromPrev: '4:3 · 1.33',
     weight: 'font-bold',
-    sample: 'The Khaos Vault',
+    sample: 'Khaos Vortex',
     family: 'display',
   },
 ];
