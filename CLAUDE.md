@@ -1,11 +1,34 @@
 # Working with the user
 
-## Numbered topic tracking
+## Feature backlog tracking
 
-When working through multiple open discussion threads/tasks in one session, track each with a short ID (e.g. `1a`, `1b`, `2`, `3`). Rules:
+Superseded the old inline-numbered-topic scheme (`1a`, `2`, `NEW`, etc. spoken in
+chat) — chat-only tracking doesn't survive context compaction. Instead:
 
-- Keep using an ID for a topic until the user explicitly says "approved" — then release it (stop using that ID; it can be reused for something new later).
-- When the user's message starts with `NEW`, assign a fresh ID to that topic.
-- Split or merge IDs when it makes the conversation clearer (e.g. a topic branches into two sub-questions, or two topics turn out to be the same thing).
-- Periodically restate the full list of open IDs and what each refers to, so the user can track state without scrolling back — don't wait to be asked.
-- If the user reuses an ID for a message whose content doesn't match what that ID previously tracked, treat it as their call (they're driving the numbering), but it's fine to note the mismatch briefly.
+For every big feature or round of work, maintain a backlog file at
+`docs/backlog/<feature-slug>.md` (create `docs/backlog/` if it doesn't exist yet).
+That file is the single source of truth for open items in that feature — restate
+it in chat when useful, but the file is canonical, not the chat.
+
+Each open item in the file:
+
+- Gets a distinct **three-character keyword code**, uppercase, memorable, unique
+  within the file (e.g. `FNT`, `NAV`, `PAN`). The user replies with just that
+  code to call up, discuss, or act on that item — no need to repeat the whole
+  request.
+- Gets a **severity color**, hospital-triage style:
+  - 🔴 **RED** — critical / blocking, needs immediate attention
+  - 🟠 **ORANGE** — urgent, high priority
+  - 🟡 **YELLOW** — standard priority
+  - 🟢 **GREEN** — low priority / nice-to-have
+- Moves to a "Resolved" section (don't delete — keep history) once the user says
+  **"approved"** for that code. The three-character code is then free to be
+  reused for an unrelated future item.
+- A new item is added when the user's message starts with **`NEW`** — assign
+  the next unused code and an initial severity color (ask if unclear).
+- If the user replies with a code, treat that as their call on what it refers
+  to even if it doesn't exactly match the file — note the mismatch briefly
+  rather than blocking on it.
+
+Keep the backlog file itself terse: a table or list of `code · color · title ·
+one-line status`, not a transcript of the conversation.
