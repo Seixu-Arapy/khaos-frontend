@@ -1,4 +1,5 @@
-import { Moon, Sparkles, Heart, Waves, CloudMoon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Moon, Sparkles, Heart, Waves, CloudMoon, Check, AlertTriangle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Chamber } from './vaultUI';
 
@@ -118,6 +119,59 @@ const STEPS: Step[] = [
   },
 ];
 
+const FONT_TOKENS = ['display', 'body', 'serif', 'mono'] as const;
+
+// One sample per font, all ~50-58 chars so weight/width differences are
+// comparable at a glance — moved here from The Wellspring, since the
+// scale and the fonts that render it belong in the same chamber now.
+const FONT_SAMPLES: Record<(typeof FONT_TOKENS)[number], string> = {
+  display: 'Nyx holds the ink; 7 sigils wait in the Vault — #1 opens.',
+  body: 'Eros lit the forge at dawn; 3 embers drift past gate #9.',
+  serif: 'Pontus carried 12 tales west while Gaia counted the days.',
+  mono: 'tartarus[500] -> hue 345deg +18% @ L47% #b43c5a',
+};
+
+function readVar(name: string): string {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+}
+
+// First family in a font stack, unquoted — the one the stack *wants*.
+function firstFamily(stack: string): string {
+  return (stack.split(',')[0] ?? '').replace(/['"]/g, '').trim();
+}
+
+interface FontRow {
+  token: (typeof FONT_TOKENS)[number];
+  stack: string;
+  family: string;
+  loaded: boolean;
+}
+
+function useFontRows(): FontRow[] {
+  const [rows, setRows] = useState<FontRow[]>([]);
+  useEffect(() => {
+    const probe = () =>
+      setRows(
+        FONT_TOKENS.map((token) => {
+          const stack = readVar(`--font-${token}`);
+          const family = firstFamily(stack);
+          return {
+            token,
+            stack,
+            family,
+            loaded: family ? document.fonts.check(`16px "${family}"`) : false,
+          };
+        })
+      );
+    probe();
+    // Fonts stream in after first paint; re-probe once they settle.
+    document.fonts.ready.then(probe);
+  }, []);
+  return rows;
+}
+
 // Badge side length = ~4 lines of the row's own specimen text, so the
 // marks visibly grow across the scale the same way the type does.
 function badgeSize(px: number) {
@@ -132,12 +186,47 @@ function glyphSize(px: number) {
 }
 
 export default function ChorusPage() {
+  const fontRows = useFontRows();
+
   return (
     <Chamber
       index="II"
       name="The Chorus"
       tagline="The type scale, sung as a set of harmonic intervals"
     >
+      <div className="mb-10">
+        <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
+          Fonts
+        </h2>
+        <div className="flex flex-col gap-5">
+          {fontRows.map(({ token, stack, family, loaded }) => (
+            <div key={token}>
+              <div className="mb-1 flex items-center gap-2">
+                <span className="text-ink-500 font-mono text-[10px]">
+                  --font-{token}
+                </span>
+                {loaded ? (
+                  <span className="text-sage-500 inline-flex items-center gap-1 font-mono text-[10px]">
+                    <Check size={11} /> {family} loaded
+                  </span>
+                ) : (
+                  <span className="text-rust-500 inline-flex items-center gap-1 font-mono text-[10px]">
+                    <AlertTriangle size={11} /> {family || '(empty)'} NOT
+                    loaded — falling back
+                  </span>
+                )}
+              </div>
+              <p className="text-ink-100 text-xl" style={{ fontFamily: stack }}>
+                {FONT_SAMPLES[token]}
+              </p>
+              <p className="text-ink-600 mt-0.5 font-mono text-[10px]">
+                {stack}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="mb-10">
         <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
           What the scale is built on

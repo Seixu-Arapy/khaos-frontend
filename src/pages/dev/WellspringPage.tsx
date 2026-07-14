@@ -6,7 +6,7 @@ export default function WellspringPage() {
     <Chamber
       index="III"
       name="The Wellspring"
-      tagline="Fonts, colors, radii, shadows — everything else is born from these"
+      tagline="Radii and shadows — everything else is born from these"
     >
       <FoundationsSection />
     </Chamber>
