@@ -70,6 +70,19 @@ Deno.serve(async (req: Request) => {
     ''
   );
   if (!expectedAnonKey || presentedToken !== expectedAnonKey) {
+    // TEMPORARY — round 2 of the auth-mismatch investigation. Never logs
+    // full secrets: just presence/length/prefix, enough to tell whether
+    // SUPABASE_ANON_KEY is missing, or the two values just don't match (and
+    // if so, whether it's a formatting issue or genuinely different keys).
+    // Remove once resolved.
+    console.error('anthropic-proxy auth mismatch', {
+      hasExpected: Boolean(expectedAnonKey),
+      expectedLength: expectedAnonKey?.length ?? 0,
+      expectedPrefix: expectedAnonKey?.slice(0, 8) ?? null,
+      presentedLength: presentedToken.length,
+      presentedPrefix: presentedToken.slice(0, 8),
+      hadAuthHeader: req.headers.has('authorization'),
+    });
     return new Response(
       JSON.stringify({
         error: {
