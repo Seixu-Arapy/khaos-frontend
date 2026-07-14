@@ -10,8 +10,8 @@ import { Chamber } from './vaultUI';
 
 interface Deity {
   name: string;
-  oldName: string;
   icon: LucideIcon;
+  color: string;
   role: string;
   shades: { label: string; hex: string }[];
   story: ReactNode;
@@ -20,8 +20,8 @@ interface Deity {
 const DEITIES: Deity[] = [
   {
     name: 'Nyx',
-    oldName: 'ink',
     icon: Moon,
+    color: '#7a8599',
     role: 'Night — the ground everything else stands on',
     shades: [
       { label: '900', hex: '#161b22' },
@@ -40,8 +40,8 @@ const DEITIES: Deity[] = [
   },
   {
     name: 'Aether',
-    oldName: 'fog',
     icon: Sparkles,
+    color: '#e7e9e6',
     role: 'The bright upper air, Nyx&rsquo;s opposite',
     shades: [
       { label: '50', hex: '#fafaf8' },
@@ -58,8 +58,8 @@ const DEITIES: Deity[] = [
   },
   {
     name: 'Eros',
-    oldName: 'copper',
     icon: Heart,
+    color: '#c0793d',
     role: 'Primordial desire — the one color that pulls',
     shades: [
       { label: '50', hex: '#fbf1e7' },
@@ -77,8 +77,8 @@ const DEITIES: Deity[] = [
   },
   {
     name: 'Pontus',
-    oldName: 'teal',
     icon: Waves,
+    color: '#3a7d7a',
     role: 'The sea — a cool current, distinct from Eros',
     shades: [
       { label: '50', hex: '#eaf3f2' },
@@ -95,8 +95,8 @@ const DEITIES: Deity[] = [
   },
   {
     name: 'Gaia',
-    oldName: 'sage',
     icon: Sprout,
+    color: '#5b8c5a',
     role: 'The earth — growth, and things finished',
     shades: [
       { label: '50', hex: '#eef4ed' },
@@ -112,8 +112,8 @@ const DEITIES: Deity[] = [
   },
   {
     name: 'Tartarus',
-    oldName: 'rust',
     icon: Flame,
+    color: '#b43c5a',
     role: 'The abyss — reserved for things going wrong',
     shades: [
       { label: '50', hex: '#fbeff2' },
@@ -130,8 +130,8 @@ const DEITIES: Deity[] = [
   },
   {
     name: 'Hypnos',
-    oldName: 'violet',
     icon: CloudMoon,
+    color: '#7a5fa0',
     role: 'Sleep, child of Nyx — the quietest signal',
     shades: [
       { label: '50', hex: '#efeaf7' },
@@ -213,21 +213,23 @@ export default function PantheonPage() {
     >
       <div className="flex flex-col gap-4">
         {DEITIES.map((d) => (
-          <div key={d.name} className="border-ink-800 flex gap-5 border-t pt-6">
-            <d.icon
-              size={40}
-              strokeWidth={1.1}
-              className="text-ink-400 mt-1 shrink-0"
-            />
+          <div key={d.name} className="border-ink-800 flex gap-6 border-t pt-6">
+            <div
+              className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full"
+              style={{
+                backgroundColor: `${d.color}26`,
+                border: `1px solid ${d.color}66`,
+              }}
+            >
+              <d.icon size={36} strokeWidth={1.1} style={{ color: d.color }} />
+            </div>
             <div className="min-w-0 flex-1">
-              <div className="mb-2 flex items-baseline gap-2">
-                <h3 className="font-serif text-ink-100 text-xl">
-                  {d.name}
-                </h3>
-                <span className="text-ink-600 font-mono text-[10px]">
-                  was {d.oldName}
-                </span>
-              </div>
+              <h3
+                className="font-serif mb-2 text-3xl"
+                style={{ color: d.color }}
+              >
+                {d.name}
+              </h3>
               <p className="text-ink-500 mb-3 text-xs">{d.role}</p>
 
               <p className="text-ink-300 mb-4 max-w-prose text-sm leading-relaxed">
