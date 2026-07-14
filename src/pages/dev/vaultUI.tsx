@@ -54,10 +54,10 @@ export function MuseumFrame({
 
         <nav className="flex items-center gap-3">
           {CHAMBER_NAV.map((c) => (
-            <div key={c.index} className="group relative">
+            <div key={c.index} className="group flex items-center">
               <Link
                 to={c.to}
-                className={`font-mono text-xs transition-colors duration-300 ${
+                className={`font-serif text-sm transition-colors duration-300 ${
                   c.index === currentIndex
                     ? 'text-ink-300'
                     : 'text-ink-700 hover:text-ink-400'
@@ -65,7 +65,7 @@ export function MuseumFrame({
               >
                 {c.index}
               </Link>
-              <span className="text-ink-300 bg-ink-800 border-ink-700 pointer-events-none absolute top-full left-1/2 mt-2 -translate-x-1/2 rounded border px-2 py-1 text-xs whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              <span className="font-serif text-ink-400 max-w-0 overflow-hidden text-sm whitespace-nowrap opacity-0 transition-all duration-300 group-hover:ml-2 group-hover:max-w-xs group-hover:opacity-100">
                 {c.name}
               </span>
             </div>
