@@ -210,18 +210,13 @@ export default function PantheonPage() {
       index="I"
       name="The Pantheon"
       tagline="Every color, named for what it descends from"
+      chaotic
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-10">
         {DEITIES.map((d) => (
-          <div key={d.name} className="border-ink-700 flex gap-6 border-t pt-6">
-            <div
-              className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full"
-              style={{
-                backgroundColor: `${d.color}26`,
-                border: `1px solid ${d.color}66`,
-              }}
-            >
-              <d.icon size={36} strokeWidth={1.1} style={{ color: d.color }} />
+          <div key={d.name} className="border-ink-700 flex gap-10 border-t pt-10">
+            <div className="flex w-36 shrink-0 items-start justify-center">
+              <d.icon size={72} strokeWidth={1} style={{ color: d.color }} />
             </div>
             <div className="min-w-0 flex-1">
               <h3
@@ -236,7 +231,7 @@ export default function PantheonPage() {
                 {d.story}
               </p>
 
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-6">
                 {d.shades.map((s) => (
                   <div key={s.label} className="flex flex-col items-center gap-1">
                     <Coin hex={s.hex} ring />

@@ -99,8 +99,8 @@ export function Chamber({
 }: ChamberProps) {
   return (
     <MuseumFrame eyebrow={`khaos vortex · ${index}`} exitTo="/dev/vortex">
-      <div className="mx-auto max-w-5xl px-6 pt-20 pb-24">
-        <div className="mb-10">
+      <div className="mx-auto max-w-5xl px-6 pt-28 pb-32">
+        <div className="mb-14">
           <h1 className="font-serif text-ink-100 text-3xl">
             {chaotic ? (
               <KhaoticText text={name} family="serif" className="text-3xl" />
