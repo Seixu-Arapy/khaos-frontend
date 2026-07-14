@@ -137,7 +137,6 @@ export default function ChorusPage() {
       index="II"
       name="The Chorus"
       tagline="The type scale, sung as a set of harmonic intervals"
-      chaotic
     >
       <div className="mb-10">
         <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">

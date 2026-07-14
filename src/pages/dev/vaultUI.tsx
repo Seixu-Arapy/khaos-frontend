@@ -115,9 +115,9 @@ interface ChamberProps {
   name: string;
   tagline: string;
   children: ReactNode;
-  // Opt-in only -- most chambers use a plain static title. Chorus and
-  // Pantheon are the exceptions right now (per request), so this stays a
-  // per-chamber switch rather than a blanket default.
+  // Every chamber title runs KhaoticText by default now -- kept as a
+  // prop (rather than removed) only in case a future chamber needs to
+  // opt out.
   chaotic?: boolean;
 }
 
@@ -126,7 +126,7 @@ export function Chamber({
   name,
   tagline,
   children,
-  chaotic = false,
+  chaotic = true,
 }: ChamberProps) {
   return (
     <MuseumFrame currentIndex={index} exitTo="/dev/vortex">

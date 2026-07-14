@@ -210,7 +210,6 @@ export default function PantheonPage() {
       index="I"
       name="The Pantheon"
       tagline="Every color, named for what it descends from"
-      chaotic
     >
       <div className="flex flex-col gap-10">
         {DEITIES.map((d) => (
