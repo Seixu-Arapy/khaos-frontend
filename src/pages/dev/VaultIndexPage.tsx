@@ -75,7 +75,7 @@ export default function VaultIndexPage() {
             fontSize="text-8xl"
             color="text-ink-700"
             spin
-            className="mx-auto mb-2"
+            className="animate-pulse mx-auto mb-2"
           />
           <h1 className="text-ink-300">
             <KhaoticText text="Khaos Vortex" family="serif" className="text-4xl" />
