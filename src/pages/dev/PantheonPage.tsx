@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Moon, Sparkles, Heart, Waves, Sprout, Flame, CloudMoon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Chamber } from './vaultUI';
+import KhaoticText from '../../components/common/KhaoticText';
 
 // The Pantheon — every color family renamed after a primordial descendant
 // of Khaos, told as a short story rather than a grid. Deliberately
@@ -219,11 +220,8 @@ export default function PantheonPage() {
               <d.icon size={72} strokeWidth={1} style={{ color: d.color }} />
             </div>
             <div className="min-w-0 flex-1">
-              <h3
-                className="font-serif mb-2 text-3xl"
-                style={{ color: d.color }}
-              >
-                {d.name}
+              <h3 className="mb-2" style={{ color: d.color }}>
+                <KhaoticText text={d.name} family="serif" className="text-3xl" />
               </h3>
               <p className="text-ink-500 mb-3 text-xs">{d.role}</p>
 
