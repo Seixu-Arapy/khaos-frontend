@@ -111,8 +111,9 @@ export default function ChorusPage() {
       index="II"
       name="The Chorus"
       tagline="The type scale, sung as a set of harmonic intervals"
+      chaotic
     >
-      <div className="border-ink-700 bg-ink-800/40 mb-6 border p-5">
+      <div className="border-ink-700 mb-6 rounded-lg border p-5">
         <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
           What the scale is built on
         </h2>
@@ -127,7 +128,7 @@ export default function ChorusPage() {
         </p>
       </div>
 
-      <div className="border-ink-700 bg-ink-800/40 border p-6">
+      <div className="border-ink-700 rounded-lg border p-6">
         <h2 className="text-ink-200 font-display mb-8 text-sm tracking-wide uppercase">
           The strings
         </h2>
@@ -138,7 +139,7 @@ export default function ChorusPage() {
                 className={`font-${s.family} leading-none`}
                 style={{ fontSize: glyphSize(s.px), color: s.color }}
               >
-                Aa
+                A
               </span>
               <div className="text-center">
                 <p className="text-ink-100 font-mono text-xs">{s.token}</p>
@@ -151,13 +152,13 @@ export default function ChorusPage() {
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-4">
+      <div className="border-ink-700 mt-6 flex flex-col border">
         {STEPS.map((s) => {
           const size = badgeSize(s.px);
           return (
             <div
               key={s.token}
-              className="border-ink-700 bg-ink-800/40 flex items-center gap-5 border p-4"
+              className="border-ink-700 flex items-center gap-5 border-t p-4 first:border-t-0"
             >
               <div
                 className="flex shrink-0 items-center justify-center"

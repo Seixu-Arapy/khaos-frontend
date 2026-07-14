@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import KhaosIcon from '../../components/common/KhaosIcon';
+import KhaoticText from '../../components/common/KhaoticText';
 
 // Shared chrome for the Khaos Vault (/dev/vortex/*) — deliberately outside
 // AppShell (no sidebar, no chat, no nav bar). The only wayfinding is a
@@ -83,14 +84,30 @@ interface ChamberProps {
   name: string;
   tagline: string;
   children: ReactNode;
+  // Opt-in only -- most chambers use a plain static title. Chorus is the
+  // one exception right now (per request), so this stays a per-chamber
+  // switch rather than a blanket default.
+  chaotic?: boolean;
 }
 
-export function Chamber({ index, name, tagline, children }: ChamberProps) {
+export function Chamber({
+  index,
+  name,
+  tagline,
+  children,
+  chaotic = false,
+}: ChamberProps) {
   return (
     <MuseumFrame eyebrow={`khaos vortex · ${index}`} exitTo="/dev/vortex">
       <div className="mx-auto max-w-3xl px-6 pt-20 pb-24">
         <div className="mb-10">
-          <h1 className="font-serif text-ink-100 text-3xl">{name}</h1>
+          <h1 className="font-serif text-ink-100 text-3xl">
+            {chaotic ? (
+              <KhaoticText text={name} family="serif" className="text-3xl" />
+            ) : (
+              name
+            )}
+          </h1>
           <p className="text-ink-400 mt-2 font-mono text-[11px] tracking-widest uppercase">
             {tagline}
           </p>
