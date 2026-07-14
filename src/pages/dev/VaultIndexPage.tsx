@@ -68,17 +68,15 @@ export default function VaultIndexPage() {
   return (
     <MuseumFrame eyebrow="khaos vortex">
       <div className="mx-auto max-w-2xl px-6 pt-40 pb-32">
-        <div className="relative mb-24 text-center">
+        <div className="mb-24 text-center">
           <KhaosIcon
-            size="h-44 w-44"
-            fontSize="text-[10rem]"
-            color="text-black"
+            size="h-24 w-24"
+            fontSize="text-8xl"
+            color="text-ink-700"
             spin
-            className="pointer-events-none absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2"
+            className="mx-auto mb-2"
           />
-          <h1 className="font-serif text-ink-100 relative text-4xl">
-            Khaos Vortex
-          </h1>
+          <h1 className="font-serif text-ink-100 text-4xl">Khaos Vortex</h1>
           <p className="text-ink-600 mx-auto mt-4 max-w-sm font-mono text-[11px] tracking-widest uppercase">
             every token, every component, exactly as it renders
           </p>
@@ -91,7 +89,7 @@ export default function VaultIndexPage() {
               to={c.to}
               className="group border-ink-800 hover:border-ink-600 flex items-start gap-6 border-t py-8 transition-colors duration-300 last:border-b"
             >
-              <span className="text-black w-20 shrink-0 font-serif text-6xl leading-none transition-colors duration-300">
+              <span className="text-ink-700 group-hover:text-ink-400 w-20 shrink-0 font-serif text-6xl leading-none transition-colors duration-300">
                 {c.index}
               </span>
               <div className="min-w-0 flex-1">
