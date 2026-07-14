@@ -136,7 +136,7 @@ export default function ChorusPage() {
       tagline="The type scale, sung as a set of harmonic intervals"
       chaotic
     >
-      <div className="border-ink-700 mb-6 rounded-lg border p-5">
+      <div className="mb-6 p-5">
         <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
           What the scale is built on
         </h2>
@@ -186,7 +186,7 @@ export default function ChorusPage() {
         </div>
       </div>
 
-      <div className="border-ink-700 rounded-lg border p-6">
+      <div className="p-6">
         <h2 className="text-ink-200 font-display mb-8 text-sm tracking-wide uppercase">
           The strings
         </h2>
