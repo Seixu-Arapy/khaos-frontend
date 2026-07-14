@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
 import { MuseumFrame } from './vaultUI';
 import KhaosIcon from '../../components/common/KhaosIcon';
+import KhaoticText from '../../components/common/KhaoticText';
 
 // Entrance to the Khaos Vault — full-bleed, no sidebar, no chat, no nav
 // menu. Wayfinding is a single corner placard and one exit mark; moving
 // between chambers happens by reading the list below, the way a museum
 // floor plan works, not a persistent menu bar.
 //
-// Deliberately static, not KhaoticText, on this page — the chaos effect is
-// reserved for the moment you're actually inside a chamber (its own <h1>,
-// via Chamber), not the index listing them.
+// The hero title runs KhaoticText (family="serif") -- the chamber-row
+// titles below it stay static so the chaos reads as a single flourish on
+// the page, not scattered across every heading.
 
 interface ChamberEntry {
   to: string;
@@ -76,7 +77,9 @@ export default function VaultIndexPage() {
             spin
             className="mx-auto mb-2"
           />
-          <h1 className="font-serif text-ink-100 text-4xl">Khaos Vortex</h1>
+          <h1 className="text-ink-300">
+            <KhaoticText text="Khaos Vortex" family="serif" className="text-4xl" />
+          </h1>
           <p className="text-ink-600 mx-auto mt-4 max-w-sm font-mono text-[11px] tracking-widest uppercase">
             every token, every component, exactly as it renders
           </p>
