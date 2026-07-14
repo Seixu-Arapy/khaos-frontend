@@ -40,7 +40,7 @@ const CHAMBERS: ChamberEntry[] = [
     index: 'III',
     name: 'The Wellspring',
     tagline: 'Where every token is born',
-    contains: 'Fonts · Colors · Radii · Shadows',
+    contains: 'Radii · Shadows',
   },
   {
     to: '/dev/vortex/sigils',
@@ -68,7 +68,7 @@ const CHAMBERS: ChamberEntry[] = [
 export default function VaultIndexPage() {
   return (
     <MuseumFrame>
-      <div className="mx-auto max-w-2xl px-6 pt-40 pb-32">
+      <div className="mx-auto max-w-xl px-6 pt-40 pb-32">
         <div className="relative mb-24 text-center">
           <div
             className="vortex-gradient pointer-events-none absolute inset-[-6rem] -z-10 opacity-70 blur-3xl"

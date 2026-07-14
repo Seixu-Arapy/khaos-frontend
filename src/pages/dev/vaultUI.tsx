@@ -52,7 +52,7 @@ export function MuseumFrame({
           khaos vortex
         </Link>
 
-        <nav className="flex items-center gap-3">
+        <nav className="flex items-center gap-5">
           {CHAMBER_NAV.map((c) => (
             <div key={c.index} className="group flex items-center">
               <Link
