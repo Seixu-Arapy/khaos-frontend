@@ -68,6 +68,20 @@ several short paragraphs (2-4 sentences, blank line between) rather than one
 dense block — a single wall of text is hard to scan even when the content is
 good.
 
+The backlog is meant to be a substitute for scrolling back through chat, not
+a supplement to it. Anything substantive said in the chat — a decision, a
+recommendation with a take, a list of next steps, an explanation the user
+asked for — belongs recorded in the relevant item's description, not left to
+live only as chat history. Update the item (or open one) the same turn it
+comes up, don't wait to be asked to log it separately.
+
+A sub-part of an item can be marked done while the item as a whole stays
+open (e.g. one pass of a two-pass item). Wrap that finished slice in
+`<span class="done">…</span>` (styled via the `.done` class already defined
+in the artifact's `<style>` block — strikethrough, dimmed) rather than
+deleting it or waiting for the whole item to resolve before showing any
+progress.
+
 ## Self-verify pushes with a pull
 
 After pushing a commit, `git pull` (or `git fetch` + compare) in this working
