@@ -118,21 +118,17 @@ const looseFiltersSchema = {
   },
 };
 
-export const READ_TOOLS = new Set(['search_schema', 'query_rows']);
-export const WRITE_TOOLS = new Set([
-  'insert_row',
-  'update_rows',
-  'delete_rows',
-  'call_rpc',
-]);
-
+// Grouped by category rather than one flat list — read/query and
+// write/mutation today, joined by an oversight category from Phase 4 on.
+// A flat list that made sense at six tools stops making sense at twenty.
+//
 // Anthropic's native tool shape: {name, description, input_schema}. Passed
 // straight through as the `tools` param on client.messages.create — no
 // wrapping needed the way OpenAI's {type:'function', function:{...}} did.
 // Explicit `Anthropic.Tool[]` annotation matters here, not just style: without
 // it TS widens each input_schema.type to `string`, which no longer satisfies
 // Tool's `"object"` literal requirement.
-export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
+export const READ_TOOL_DEFINITIONS: Anthropic.Tool[] = [
   {
     name: 'search_schema',
     description:
@@ -172,6 +168,12 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
       additionalProperties: false,
     },
   },
+];
+
+// New tools default here: require an explicit, reviewed decision to mark a
+// tool as auto-executing instead. As agent autonomy grows, the cost of a
+// wrong default goes up — keep the safe path the path of least resistance.
+export const WRITE_TOOL_DEFINITIONS: Anthropic.Tool[] = [
   {
     name: 'insert_row',
     description: `Inserts a single new row into a table. Allowed tables: ${ALLOWED_TABLES.join(', ')}.`,
@@ -238,6 +240,16 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
     },
   },
 ];
+
+export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
+  ...READ_TOOL_DEFINITIONS,
+  ...WRITE_TOOL_DEFINITIONS,
+];
+
+// Derived from the grouped arrays above rather than listed separately, so
+// the two can't drift out of sync as tools are added.
+export const READ_TOOLS = new Set(READ_TOOL_DEFINITIONS.map((t) => t.name));
+export const WRITE_TOOLS = new Set(WRITE_TOOL_DEFINITIONS.map((t) => t.name));
 
 function assertAllowedTable(table: string): asserts table is AllowedTable {
   if (!(ALLOWED_TABLES as readonly string[]).includes(table)) {
