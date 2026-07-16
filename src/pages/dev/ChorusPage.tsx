@@ -202,27 +202,29 @@ export default function ChorusPage() {
         <div className="flex flex-col gap-8">
           {fontRows.map(({ token, stack, family, loaded }) => (
             <div key={token}>
+              <span className="text-ink-500 block font-mono text-[10px]">
+                --font-{token}
+              </span>
+              <div className="mt-1 flex items-center gap-3">
+                <span className="text-ink-300 font-mono text-xs">
+                  {family || '(empty)'}
+                </span>
+                {loaded ? (
+                  <span className="text-sage-500 inline-flex items-center gap-1 font-mono text-[10px]">
+                    <Check size={11} /> loaded
+                  </span>
+                ) : (
+                  <span className="text-rust-500 inline-flex items-center gap-1 font-mono text-[10px]">
+                    <AlertTriangle size={11} /> NOT loaded — falling back
+                  </span>
+                )}
+              </div>
               <p
-                className="text-ink-100 text-3xl leading-snug"
+                className="text-ink-100 mt-2 text-3xl leading-snug"
                 style={{ fontFamily: stack }}
               >
                 {FONT_SAMPLES[token]}
               </p>
-              <div className="mt-2 flex items-center gap-3">
-                <span className="text-ink-500 font-mono text-[10px]">
-                  --font-{token} · {stack}
-                </span>
-                {loaded ? (
-                  <span className="text-sage-500 inline-flex items-center gap-1 font-mono text-[10px]">
-                    <Check size={11} /> {family} loaded
-                  </span>
-                ) : (
-                  <span className="text-rust-500 inline-flex items-center gap-1 font-mono text-[10px]">
-                    <AlertTriangle size={11} /> {family || '(empty)'} NOT
-                    loaded — falling back
-                  </span>
-                )}
-              </div>
             </div>
           ))}
         </div>
