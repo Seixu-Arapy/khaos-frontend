@@ -20,5 +20,11 @@ export default defineConfig(({ mode }) => {
       https: useHttps,
       port: Number(env.VITE_KHAOS_FRONTEND_PORT) || 5173,
     },
+    // TEMPORARY — diagnosing a production-only blank-screen crash. Sourcemaps
+    // let the browser console resolve the minified stack trace back to real
+    // file/line. Remove once the crash is identified and fixed.
+    build: {
+      sourcemap: true,
+    },
   };
 });
