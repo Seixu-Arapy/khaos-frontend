@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   GripVertical,
@@ -23,8 +23,11 @@ import TargetEditor from '../common/TargetEditor';
 import {
   useTaskMutations,
   useSectionMutations,
+  useTasksSequence,
 } from '../../hooks/useHierarchy';
+import { buildSequenceRail } from '../../lib/sequenceGraph';
 import TaskRow from '../tasks/TaskRow';
+import SequenceRailCell from './SequenceRail';
 import type { Id, Section, Task } from '../../lib/types';
 
 interface SectionColumnProps {
@@ -51,6 +54,15 @@ export default function SectionColumn({
   const { create: createTask } = useTaskMutations();
   const { update: updateSection, remove: removeSection } =
     useSectionMutations();
+  const { data: seqEdges = [] } = useTasksSequence();
+  const rail = useMemo(
+    () =>
+      buildSequenceRail(
+        orderedTasks.map((t) => t.id),
+        seqEdges
+      ),
+    [orderedTasks, seqEdges]
+  );
   const [newTaskName, setNewTaskName] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [targetOpen, setTargetOpen] = useState(false);
@@ -208,8 +220,18 @@ export default function SectionColumn({
       {!collapsed && (
         <div className="p-2">
           <div className="space-y-0.5">
-            {orderedTasks.map((task) => (
-              <TaskRow key={task.id} task={task} onOpen={onOpenTask} />
+            {orderedTasks.map((task, index) => (
+              <div key={task.id} className="flex items-stretch">
+                {rail.laneCount > 0 && (
+                  <SequenceRailCell
+                    segments={rail.rows[index]}
+                    laneCount={rail.laneCount}
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <TaskRow task={task} onOpen={onOpenTask} />
+                </div>
+              </div>
             ))}
           </div>
 

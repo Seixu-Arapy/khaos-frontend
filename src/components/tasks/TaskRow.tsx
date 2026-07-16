@@ -53,42 +53,46 @@ export default function TaskRow({
       <div className="min-w-0 flex-1">
         <button
           onClick={() => onOpen(task)}
-          className="flex w-full items-center gap-1 text-left"
+          className="flex w-full flex-col gap-0.5 text-left md:flex-row md:items-center md:gap-1"
         >
-          <StatusBadge status={task.status} />
-          <span
-            className={`text-ink-100 min-w-0 flex-1 truncate text-sm ${
-              task.status === 'cancelled' ? 'line-through' : ''
-            }`}
-          >
-            {task.name}
+          <span className="flex min-w-0 items-center gap-1 md:flex-1">
+            <StatusBadge status={task.status} />
+            <span
+              className={`text-ink-100 min-w-0 flex-1 truncate text-sm ${
+                task.status === 'cancelled' ? 'line-through' : ''
+              }`}
+            >
+              {task.name}
+            </span>
           </span>
-          <PriorityBadge priority={task.priority} />
-          {task.estimate ? (
-            <span className="text-ink-600 hidden shrink-0 font-mono text-xs md:block">
-              {minutesToHuman(task.estimate)}
-            </span>
-          ) : null}
-          {Boolean(seqCounts?.before) && (
-            <span
-              title={`${seqCounts!.before} tarefa(s) antes desta`}
-              className="text-ink-500 flex shrink-0 items-center gap-0.5 text-[11px]"
-            >
-              <CornerUpLeft size={11} />
-              {seqCounts!.before}
-            </span>
-          )}
-          {Boolean(seqCounts?.after) && (
-            <span
-              title={`${seqCounts!.after} tarefa(s) depois desta`}
-              className="text-ink-500 flex shrink-0 items-center gap-0.5 text-[11px]"
-            >
-              <CornerDownRight size={11} />
-              {seqCounts!.after}
-            </span>
-          )}
-          <TargetBadge target={task.target as string | null} />
-          <DueBadge due={task.due} status={task.status} />
+          <span className="flex shrink-0 flex-wrap items-center gap-1">
+            <PriorityBadge priority={task.priority} />
+            {task.estimate ? (
+              <span className="text-ink-600 shrink-0 font-mono text-xs">
+                {minutesToHuman(task.estimate)}
+              </span>
+            ) : null}
+            {Boolean(seqCounts?.before) && (
+              <span
+                title={`${seqCounts!.before} tarefa(s) antes desta`}
+                className="text-ink-500 flex shrink-0 items-center gap-0.5 text-[11px]"
+              >
+                <CornerUpLeft size={11} />
+                {seqCounts!.before}
+              </span>
+            )}
+            {Boolean(seqCounts?.after) && (
+              <span
+                title={`${seqCounts!.after} tarefa(s) depois desta`}
+                className="text-ink-500 flex shrink-0 items-center gap-0.5 text-[11px]"
+              >
+                <CornerDownRight size={11} />
+                {seqCounts!.after}
+              </span>
+            )}
+            <TargetBadge target={task.target as string | null} />
+            <DueBadge due={task.due} status={task.status} />
+          </span>
         </button>
 
         {projectName && (
