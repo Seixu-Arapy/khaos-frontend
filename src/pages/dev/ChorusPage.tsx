@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sparkles, Heart, Waves, CloudMoon, Check, AlertTriangle } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Check, AlertTriangle } from 'lucide-react';
 import { Chamber } from './vaultUI';
 
 // The Chorus — the type scale, framed as a musical/harmonic progression.
@@ -20,18 +19,14 @@ interface Step {
   role: string;
   ratioFromPrev: string;
   weight: string;
-  samples: string[];
   family: 'display' | 'body' | 'mono';
   deity: string;
-  icon: LucideIcon;
   color: string;
 }
 
 // Deity assignment follows each step's actual role, reusing the exact
-// icons/colors from The Pantheon rather than inventing a new set (per
-// request — these two chambers should read as one system). Two sample
-// sentences per step, not one -- proves the size/weight combination
-// holds up across more than a single lucky sentence.
+// colors from The Pantheon rather than inventing a new set (per
+// request — these two chambers should read as one system).
 const STEPS: Step[] = [
   {
     token: 'text-label',
@@ -39,10 +34,8 @@ const STEPS: Step[] = [
     role: 'micro-labels',
     ratioFromPrev: 'root',
     weight: 'font-semibold uppercase tracking-wide',
-    samples: ['sleeping in Hypnos', 'quietest signal, 10px'],
     family: 'mono',
     deity: 'Hypnos',
-    icon: CloudMoon,
     color: '#9478b8',
   },
   {
@@ -51,10 +44,8 @@ const STEPS: Step[] = [
     role: 'hints, metadata',
     ratioFromPrev: '6:5 · 1.20',
     weight: 'font-normal',
-    samples: ['last seen in Aether, 2m ago', "synced with Aether's light"],
     family: 'body',
     deity: 'Aether',
-    icon: Sparkles,
     color: '#f1f2f0',
   },
   {
@@ -63,13 +54,8 @@ const STEPS: Step[] = [
     role: 'task names, primary rows',
     ratioFromPrev: '7:6 · 1.17',
     weight: 'font-medium',
-    samples: [
-      "Chart Nyx's darkest shade before dawn",
-      "Every task begins in Nyx's dark",
-    ],
     family: 'body',
     deity: 'Nyx',
-    icon: Moon,
     color: '#aeb6c4',
   },
   {
@@ -78,10 +64,8 @@ const STEPS: Step[] = [
     role: 'modal / section titles',
     ratioFromPrev: '9:7 · 1.29',
     weight: 'font-semibold',
-    samples: ["Pontus's tide report", 'Cast off with Pontus'],
     family: 'display',
     deity: 'Pontus',
-    icon: Waves,
     color: '#4d928e',
   },
   {
@@ -90,10 +74,8 @@ const STEPS: Step[] = [
     role: 'page titles',
     ratioFromPrev: '4:3 · 1.33',
     weight: 'font-bold',
-    samples: ['Khaos Vortex', 'Court Eros'],
     family: 'display',
     deity: 'Eros',
-    icon: Heart,
     color: '#d08f4e',
   },
 ];
@@ -183,17 +165,33 @@ function useFontRows(): FontRow[] {
   return rows;
 }
 
-// Badge side length = ~4 lines of the row's own specimen text, so the
-// marks visibly grow across the scale the same way the type does.
-function badgeSize(px: number) {
-  return Math.round(px * 1.3 * 4);
+// Wraps one line of the "scale in motion" mock with its token name
+// floating in the right gutter, dimmed -- the mock stays readable as a
+// real screen fragment, and the annotation reads as a marginal note,
+// not part of the UI. Colored per the token's Pantheon deity so the
+// annotations tie back to the strings above.
+function Annotated({
+  token,
+  className = '',
+  children,
+}: {
+  token: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const step = stepByToken(token);
+  return (
+    <div className={`flex items-center justify-between gap-6 ${className}`}>
+      <div className="min-w-0 flex-1">{children}</div>
+      <code
+        className="shrink-0 font-mono text-[10px] opacity-60"
+        style={{ color: step.color }}
+      >
+        {token}
+      </code>
+    </div>
+  );
 }
-
-// Badges grow with each step, but the sample text after them still needs
-// to land in a straight column -- right-align every badge inside a fixed
-// column as wide as the largest one, instead of letting text drift right
-// as the badge grows.
-const maxBadgeSize = Math.max(...STEPS.map((s) => badgeSize(s.px)));
 
 // The glyph on "the strings" is shown at a magnified but still
 // proportional size (x5) so a 10px vs 24px difference is legible at a
@@ -330,60 +328,91 @@ export default function ChorusPage() {
         </div>
       </div>
 
-      <div className="flex max-w-4xl flex-col gap-8">
-        {STEPS.map((s) => {
-          const size = badgeSize(s.px);
-          return (
-            <div key={s.token} className="flex items-center gap-5">
-              <div
-                className="flex shrink-0 items-center justify-end"
-                style={{ width: maxBadgeSize }}
-              >
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: size,
-                    height: size,
-                    backgroundColor: `${s.color}1a`,
-                    border: `1px solid ${s.color}55`,
-                  }}
-                  title={s.deity}
-                >
-                  <s.icon
-                    size={Math.round(size * 0.4)}
-                    strokeWidth={1.25}
-                    style={{ color: s.color }}
-                  />
-                </div>
-              </div>
+      <div className="max-w-4xl">
+        <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
+          The scale in motion
+        </h2>
+        <p className="text-ink-300 mb-8 max-w-prose text-sm leading-relaxed">
+          Why five steps and not one? Because hierarchy is what makes a
+          screen readable without reading it. Below, every step of the
+          scale works one real screen fragment together — cover the
+          annotations and the structure still tells you what each line
+          is.
+        </p>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-baseline gap-x-3">
-                  {s.samples.map((sample, i) => (
-                    <div key={sample} className="flex items-baseline gap-3">
-                      {i > 0 && (
-                        <span className="text-ink-600 text-xs">·</span>
-                      )}
-                      <p
-                        className={`font-${s.family} ${s.weight} truncate`}
-                        style={{
-                          fontSize: s.px,
-                          color: s.color,
-                          opacity: i === 0 ? 1 : 0.55,
-                        }}
-                      >
-                        {sample}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <span className="text-ink-300 mt-1.5 block font-mono text-[10px]">
-                  {s.role} · {s.deity}
-                </span>
+        <div className="flex items-start gap-8">
+          {/* A believable Khaos screen fragment, using real app chrome
+              (card surface, borders, dots) so the scale is judged in
+              its natural habitat rather than on empty ink. */}
+          <div className="border-ink-700 bg-ink-800/40 min-w-0 flex-1 rounded-lg border p-6">
+            <Annotated token="text-label">
+              <p className="text-ink-500 font-mono text-[10px] font-semibold tracking-wide uppercase">
+                court of eros · tonight
+              </p>
+            </Annotated>
+
+            <Annotated token="text-display-lg" className="mt-1">
+              <h3 className="font-display text-ink-100 text-2xl font-bold">
+                Pontus&rsquo;s tide report
+              </h3>
+            </Annotated>
+
+            <Annotated token="text-caption" className="mt-1">
+              <p className="text-ink-500 text-xs">
+                last seen in Aether, 2m ago · 3 embers drifting
+              </p>
+            </Annotated>
+
+            <div className="border-ink-700 mt-5 border-t pt-5">
+              <Annotated token="text-display">
+                <h4 className="font-display text-ink-200 text-lg font-semibold">
+                  Tasks for tonight
+                </h4>
+              </Annotated>
+
+              <div className="mt-3 flex flex-col gap-2.5">
+                <Annotated token="text-body">
+                  <div className="flex items-center gap-2.5">
+                    <span className="border-ink-600 h-3.5 w-3.5 shrink-0 rounded-full border" />
+                    <p className="text-ink-100 text-sm font-medium">
+                      Chart Nyx&rsquo;s darkest shade before dawn
+                    </p>
+                  </div>
+                </Annotated>
+
+                <Annotated token="text-caption">
+                  <p className="text-ink-500 pl-6 text-xs">
+                    due before first light · 1h 45m logged
+                  </p>
+                </Annotated>
+
+                <Annotated token="text-body">
+                  <div className="flex items-center gap-2.5">
+                    <span className="border-ink-600 h-3.5 w-3.5 shrink-0 rounded-full border" />
+                    <p className="text-ink-100 text-sm font-medium">
+                      Count Gaia&rsquo;s finished seasons
+                    </p>
+                  </div>
+                </Annotated>
+
+                <Annotated token="text-label">
+                  <span className="bg-sage-500/10 text-sage-500 ml-6 inline-flex w-fit items-center rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wide uppercase">
+                    marked as done
+                  </span>
+                </Annotated>
               </div>
             </div>
-          );
-        })}
+          </div>
+        </div>
+
+        <p className="text-ink-500 mt-6 max-w-prose text-xs leading-relaxed">
+          One page title, one section title, task rows, their metadata,
+          and a micro-label — five distinct jobs, five distinct sizes,
+          zero ambiguity about what outranks what. That is the whole
+          argument for a scale: the steps are far enough apart to read
+          as different jobs (each jump is a real musical interval, 1.17
+          – 1.33), and few enough that every choice is obvious.
+        </p>
       </div>
     </Chamber>
   );
