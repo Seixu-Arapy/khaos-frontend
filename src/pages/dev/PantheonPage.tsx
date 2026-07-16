@@ -172,6 +172,8 @@ function Coin({
 }
 
 function ContrastPair({
+  role,
+  roleColor,
   bgHex,
   fgHex,
   bgLabel,
@@ -179,6 +181,8 @@ function ContrastPair({
   sample,
   verdict,
 }: {
+  role: string;
+  roleColor: string;
   bgHex: string;
   fgHex: string;
   bgLabel: string;
@@ -188,13 +192,19 @@ function ContrastPair({
 }) {
   return (
     <div className="flex items-center gap-4">
+      <span
+        className="w-20 shrink-0 font-mono text-[10px] tracking-wide uppercase"
+        style={{ color: roleColor }}
+      >
+        {role}
+      </span>
       <div
-        className="flex shrink-0 items-center justify-center px-3 py-1.5 text-sm font-medium"
+        className="flex shrink-0 items-center justify-center px-3 py-1.5 text-sm font-medium whitespace-nowrap"
         style={{ backgroundColor: bgHex, color: fgHex }}
       >
         {sample}
       </div>
-      <div>
+      <div className="min-w-0">
         <p className="text-ink-300 text-xs">
           {fgLabel} on {bgLabel}
         </p>
@@ -252,6 +262,8 @@ export default function PantheonPage() {
           </h3>
           <div className="flex flex-col gap-3">
             <ContrastPair
+              role="Base"
+              roleColor="#7a8599"
               bgHex="#161b22"
               fgHex="#e9ecf1"
               bgLabel="Nyx 900"
@@ -260,6 +272,8 @@ export default function PantheonPage() {
               verdict="14.6:1 — the app's default reading pair"
             />
             <ContrastPair
+              role="Caption"
+              roleColor="#7a8599"
               bgHex="#161b22"
               fgHex="#7a8599"
               bgLabel="Nyx 900"
@@ -268,22 +282,45 @@ export default function PantheonPage() {
               verdict="4.65:1 — captions, after the round 1 fix"
             />
             <ContrastPair
+              role="Action"
+              roleColor="#c0793d"
               bgHex="#c0793d"
               fgHex="#161b22"
               bgLabel="Eros 500"
               fgLabel="Nyx 900 text"
-              sample="Court Eros"
-              verdict="4.98:1 — the one correct way to label an Eros button"
+              sample="Create task"
+              verdict="4.98:1 — Eros is the action color: the only warm, saturated color allowed to compete for attention"
             />
             <ContrastPair
+              role="Success"
+              roleColor="#5b8c5a"
+              bgHex="#5b8c5a"
+              fgHex="#161b22"
+              bgLabel="Gaia 500"
+              fgLabel="Nyx 900 text"
+              sample="Marked as done"
+              verdict="reads as growth/completion — distinct hue from both Eros and Tartarus"
+            />
+            <ContrastPair
+              role="Danger"
+              roleColor="#b43c5a"
               bgHex="#b43c5a"
               fgHex="#161b22"
               bgLabel="Tartarus 500"
               fgLabel="Nyx 900 text"
-              sample="Cast into Tartarus"
+              sample="Delete project"
               verdict="reads as danger, and reads as red — not Eros"
             />
           </div>
+          <p className="text-ink-500 mt-4 max-w-prose text-xs leading-relaxed">
+            <b className="text-ink-300">No dedicated warning color yet</b> —
+            base/action/success/danger each have a clear deity, but a
+            middle &ldquo;caution, not yet dangerous&rdquo; state has no
+            home in the palette. Eros is already claimed by Action;
+            reusing it for warnings would blur the one color meant to
+            mean &ldquo;click me.&rdquo; Open gap, not a decision made
+            yet.
+          </p>
         </div>
       </div>
     </Chamber>
