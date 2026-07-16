@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 
 type Family = 'display' | 'serif' | 'mono';
 
@@ -61,15 +62,24 @@ function generateStyles(
   return Array.from({ length }, () => generateStyle(family, style));
 }
 
+// Matches the background-size in .vortex-text-gradient-char (index.css) --
+// keep in sync, this is the width of the shared gradient image every
+// character's slice is cut from.
+const SHIMMER_WIDTH = 400;
+
 interface KhaoticTextProps {
   text?: string;
   className?: string;
   family?: Family | Family[];
   style?: string;
-  // Adds the moving gradient-fill treatment (see .vortex-text-gradient in
-  // index.css). Applied per-character, not on the wrapping span --
-  // background-image doesn't inherit, so each character's own text box
-  // needs the class for background-clip: text to have anything to clip.
+  // Adds the moving gradient-fill treatment (see .vortex-text-gradient-*
+  // in index.css). Still applied per-character element (background-image
+  // doesn't inherit, so each character's own text box needs its own copy
+  // to have anything to clip), but every character now shares one fixed
+  // -size gradient image and one animated shared offset, each shifted by
+  // its own static per-character offset -- so it reads as a single band
+  // sweeping across the whole word, not each letter cycling its own tiny
+  // gradient independently.
   shimmer?: boolean;
 }
 
@@ -120,15 +130,28 @@ export default function KhaoticText({
 
   if (!text) return null;
 
+  const lastIndex = Math.max(text.length - 1, 1);
+
   return (
-    <span className={`select-none ${className}`}>
+    <span
+      className={`select-none ${className}${shimmer ? ' vortex-text-gradient-wrap' : ''}`}
+    >
       {text.split('').map((char, index) => {
         if (char === ' ') return <span key={index}>&nbsp;</span>;
+
+        const charOffset = (index / lastIndex) * SHIMMER_WIDTH;
 
         return (
           <span
             key={`${char}-${index}`}
-            className={`${styles[index] ?? ''} transition-all duration-500${shimmer ? ' vortex-text-gradient' : ''}`}
+            className={`${styles[index] ?? ''} transition-all duration-500${shimmer ? ' vortex-text-gradient-char' : ''}`}
+            style={
+              shimmer
+                ? ({
+                    '--shimmer-char-offset': `${charOffset}px`,
+                  } as CSSProperties)
+                : undefined
+            }
           >
             {char}
           </span>

@@ -169,32 +169,51 @@
     }
   }
 
-  /* Same two colors (logo ink-700 / background ink-900) as a moving
-     gradient clipped to text, for the home hero heading specifically.
-     Applied per-character by KhaoticText's `shimmer` prop -- background
-     -image isn't inherited, so each character span needs its own copy
-     of this class, not just the wrapping span. */
-  .vortex-text-gradient {
+  /* Same two colors (logo ink-700 / background ink-900) as one moving
+     gradient band sweeping across the *whole* text run, not a separate
+     gradient cycling per character. background-image doesn't inherit,
+     so each character span still needs its own copy of the gradient +
+     background-clip: text -- but they all share one fixed-px
+     background-size and a shared, animated --shimmer-offset (registered
+     below so it interpolates smoothly), each shifted by its own static
+     --shimmer-char-offset. The net effect is one continuous band: at
+     any instant different characters show different points along the
+     same gradient, and that whole pattern slides together. */
+  @property --shimmer-offset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  .vortex-text-gradient-wrap {
+    animation: vortex-text-shimmer-offset 6s ease-in-out infinite;
+  }
+
+  .vortex-text-gradient-char {
     background-image: linear-gradient(
       90deg,
       var(--color-ink-700),
       var(--color-ink-900),
+      var(--color-ink-700),
       var(--color-ink-700)
     );
-    background-size: 200% 100%;
+    background-size: 400px 100%;
+    background-repeat: repeat-x;
+    background-position-x: calc(
+      var(--shimmer-offset) - var(--shimmer-char-offset, 0px)
+    );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: vortex-text-shimmer 6s ease-in-out infinite;
   }
 
-  @keyframes vortex-text-shimmer {
+  @keyframes vortex-text-shimmer-offset {
     0%,
     100% {
-      background-position: 0% 50%;
+      --shimmer-offset: 0px;
     }
     50% {
-      background-position: 100% 50%;
+      --shimmer-offset: -400px;
     }
   }
 }

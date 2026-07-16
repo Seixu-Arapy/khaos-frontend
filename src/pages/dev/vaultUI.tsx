@@ -65,9 +65,12 @@ export function MuseumFrame({
               >
                 {c.index}
               </Link>
-              <span className="font-serif text-ink-400 max-w-0 overflow-hidden text-sm whitespace-nowrap opacity-0 transition-all duration-300 group-hover:ml-2 group-hover:max-w-xs group-hover:opacity-100">
+              <Link
+                to={c.to}
+                className="font-serif text-ink-400 hover:text-ink-200 max-w-0 overflow-hidden text-sm whitespace-nowrap opacity-0 transition-all duration-300 group-hover:ml-2 group-hover:max-w-xs group-hover:opacity-100"
+              >
                 {c.name}
-              </span>
+              </Link>
             </div>
           ))}
         </nav>
