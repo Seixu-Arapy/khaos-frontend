@@ -353,15 +353,23 @@ export default function ChorusPage() {
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className="flex flex-col gap-1">
-                  {s.samples.map((sample) => (
-                    <p
-                      key={sample}
-                      className={`font-${s.family} ${s.weight} truncate`}
-                      style={{ fontSize: s.px, color: s.color }}
-                    >
-                      {sample}
-                    </p>
+                <div className="flex flex-wrap items-baseline gap-x-3">
+                  {s.samples.map((sample, i) => (
+                    <div key={sample} className="flex items-baseline gap-3">
+                      {i > 0 && (
+                        <span className="text-ink-600 text-xs">·</span>
+                      )}
+                      <p
+                        className={`font-${s.family} ${s.weight} truncate`}
+                        style={{
+                          fontSize: s.px,
+                          color: s.color,
+                          opacity: i === 0 ? 1 : 0.55,
+                        }}
+                      >
+                        {sample}
+                      </p>
+                    </div>
                   ))}
                 </div>
                 <span className="text-ink-300 mt-1.5 block font-mono text-[10px]">
