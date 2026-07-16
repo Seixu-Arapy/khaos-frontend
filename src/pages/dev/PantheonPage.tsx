@@ -213,11 +213,16 @@ export default function PantheonPage() {
     >
       <div className="flex flex-col gap-10">
         {DEITIES.map((d) => (
-          <div key={d.name} className="flex">
-            <div className="flex w-32 shrink-0 items-start justify-start">
-              <d.icon size={120} strokeWidth={1} style={{ color: d.color }} />
+          <div key={d.name} className="relative">
+            {/* Icon lives in the gutter to the left of the text column,
+                pulled fully outside the flow via right-full, so the text
+                itself starts flush at x=0 -- the same left edge as the
+                chamber title -- instead of being pushed right by an
+                inline icon column. */}
+            <div className="absolute top-0 right-full flex w-24 items-start justify-end pr-4">
+              <d.icon size={88} strokeWidth={1} style={{ color: d.color }} />
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0">
               <h3 className="mb-2" style={{ color: d.color }}>
                 <KhaoticText text={d.name} family="serif" className="text-3xl" />
               </h3>
@@ -227,7 +232,7 @@ export default function PantheonPage() {
                 {d.story}
               </p>
 
-              <div className="flex flex-wrap items-center gap-6">
+              <div className="flex flex-wrap items-center gap-10">
                 {d.shades.map((s) => (
                   <div key={s.label} className="flex flex-col items-center gap-1">
                     <Coin hex={s.hex} ring />
