@@ -119,8 +119,10 @@ interface ChamberProps {
   // prop (rather than removed) only in case a future chamber needs to
   // opt out.
   chaotic?: boolean;
-  // Opt-in wider content column, for chambers whose content (e.g. large
-  // font specimens) needs more room than the standard max-w-5xl.
+  // Standard chambers (just text / simple content) run max-w-4xl. Chambers
+  // displaying wide content (e.g. large font specimens) opt into max-w-6xl
+  // instead. The title block always stays at max-w-4xl regardless, even
+  // inside a wide chamber.
   wide?: boolean;
 }
 
@@ -135,9 +137,9 @@ export function Chamber({
   return (
     <MuseumFrame currentIndex={index} exitTo="/dev/vortex">
       <div
-        className={`mx-auto px-6 pt-16 pb-12 ${wide ? 'max-w-6xl' : 'max-w-5xl'}`}
+        className={`mx-auto px-6 pt-16 pb-12 ${wide ? 'max-w-6xl' : 'max-w-4xl'}`}
       >
-        <div className="mb-14">
+        <div className="mb-14 max-w-4xl">
           <h1 className="font-serif text-ink-100 text-3xl">
             {chaotic ? (
               <KhaoticText text={name} family="serif" className="text-3xl" />
