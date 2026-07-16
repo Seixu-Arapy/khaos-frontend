@@ -37,7 +37,7 @@ const STEPS: Step[] = [
     role: 'micro-labels',
     ratioFromPrev: 'root',
     weight: 'font-semibold uppercase tracking-wide',
-    sample: 'in progress',
+    sample: 'sleeping in Hypnos',
     family: 'mono',
     deity: 'Hypnos',
     icon: CloudMoon,
@@ -49,7 +49,7 @@ const STEPS: Step[] = [
     role: 'hints, metadata',
     ratioFromPrev: '6:5 · 1.20',
     weight: 'font-normal',
-    sample: 'Last synced 2 minutes ago',
+    sample: 'last seen in Aether, 2m ago',
     family: 'body',
     deity: 'Aether',
     icon: Sparkles,
@@ -61,7 +61,7 @@ const STEPS: Step[] = [
     role: 'task names, primary rows',
     ratioFromPrev: '7:6 · 1.17',
     weight: 'font-medium',
-    sample: 'Rework onboarding checklist copy',
+    sample: "Chart Nyx's darkest shade before dawn",
     family: 'body',
     deity: 'Nyx',
     icon: Moon,
@@ -73,7 +73,7 @@ const STEPS: Step[] = [
     role: 'modal / section titles',
     ratioFromPrev: '9:7 · 1.29',
     weight: 'font-semibold',
-    sample: 'Sprint review',
+    sample: "Pontus's tide report",
     family: 'display',
     deity: 'Pontus',
     icon: Waves,
@@ -320,7 +320,7 @@ export default function ChorusPage() {
         </div>
       </div>
 
-      <div className="border-ink-700 flex flex-col border">
+      <div className="border-ink-700 flex max-w-4xl flex-col border">
         {STEPS.map((s) => {
           const size = badgeSize(s.px);
           return (
