@@ -14,32 +14,6 @@ import { Chamber } from './vaultUI';
 // actual proportionally-sized glyphs, not a horizontal bar -- font-size
 // is a size, not a length, so a bar chart was the wrong shape for it.
 
-interface Interval {
-  name: string;
-  ratio: string;
-  factor: number;
-  color: string;
-}
-
-// Colors borrowed from three Pantheon deities, same logic as STEPS below --
-// one color per interval, not per square, so the pair reads as one idea.
-const INTERVALS: Interval[] = [
-  { name: 'Octave', ratio: '2:1', factor: 2, color: '#d08f4e' },
-  { name: 'Fifth', ratio: '3:2', factor: 1.5, color: '#4d928e' },
-  { name: 'Third', ratio: '5:4', factor: 1.25, color: '#9478b8' },
-];
-
-const UNIT = 48;
-const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-// One random character per interval, picked once at module load (not on
-// every render) so the pair stays stable while you look at it -- the
-// point is the size relationship between the two squares, not the
-// letter itself, so both squares in a pair share the same character.
-const INTERVAL_CHARS = INTERVALS.map(
-  () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]
-);
-
 interface Step {
   token: string;
   px: number;
@@ -118,6 +92,38 @@ const STEPS: Step[] = [
     color: '#d08f4e',
   },
 ];
+
+function stepByToken(token: string): Step {
+  const step = STEPS.find((s) => s.token === token);
+  if (!step) throw new Error(`Unknown step token: ${token}`);
+  return step;
+}
+
+interface IntervalPair {
+  name: string;
+  ratio: string;
+  a: Step;
+  b: Step;
+}
+
+// Real ratios found inside the scale itself, not decorative squares --
+// text-caption (12) : text-display-lg (24) is an exact 2:1 octave,
+// text-caption (12) : text-display (18) is an exact 3:2 fifth, and
+// text-display (18) : text-display-lg (24) is an exact 4:3 fourth. A
+// "third" (5:4) doesn't land on any real pair in this five-step scale,
+// so a fourth takes its place instead of forcing one.
+const INTERVAL_PAIRS: IntervalPair[] = [
+  { name: 'Octave', ratio: '2:1', a: stepByToken('text-caption'), b: stepByToken('text-display-lg') },
+  { name: 'Fifth', ratio: '3:2', a: stepByToken('text-caption'), b: stepByToken('text-display') },
+  { name: 'Fourth', ratio: '4:3', a: stepByToken('text-display'), b: stepByToken('text-display-lg') },
+];
+
+// Magnified but still proportional, same logic as glyphSize below -- a
+// 12px vs 24px pair needs blowing up to read clearly on screen while
+// keeping the real 2:1 relationship intact.
+function intervalBoxSize(px: number) {
+  return Math.round(px * 5);
+}
 
 const FONT_TOKENS = ['display', 'body', 'serif', 'mono'] as const;
 
@@ -232,7 +238,7 @@ export default function ChorusPage() {
 
       <div className="mb-10">
         <h2 className="text-ink-200 font-display mb-8 text-sm tracking-wide uppercase">
-          What the scale is built on
+          The strings of the scale
         </h2>
         <div className="flex items-end justify-between gap-3 overflow-x-auto pb-2">
           {STEPS.map((s) => (
@@ -263,43 +269,42 @@ export default function ChorusPage() {
           given one deliberate shape instead of five separate guesses.
         </p>
 
-        <div className="mt-10 flex flex-wrap gap-x-10 gap-y-6">
-          {INTERVALS.map((interval, i) => {
-            const char = INTERVAL_CHARS[i];
+        <div className="mt-10 flex flex-wrap justify-end gap-x-10 gap-y-6">
+          {INTERVAL_PAIRS.map((pair) => {
+            const sizeA = intervalBoxSize(pair.a.px);
+            const sizeB = intervalBoxSize(pair.b.px);
             return (
-              <div key={interval.name} className="flex flex-col gap-2">
+              <div key={pair.name} className="flex flex-col items-end gap-2">
                 <div className="flex items-end">
                   <div
-                    className="flex items-center justify-end"
+                    className="flex items-center justify-center"
                     style={{
-                      width: UNIT,
-                      height: UNIT,
-                      fontSize: UNIT * 0.55,
-                      color: interval.color,
-                      backgroundColor: `${interval.color}1a`,
-                      border: `1px solid ${interval.color}55`,
-                      paddingRight: 6,
+                      width: sizeA,
+                      height: sizeA,
+                      fontSize: sizeA * 0.55,
+                      color: pair.a.color,
+                      backgroundColor: `${pair.a.color}1a`,
+                      border: `1px solid ${pair.a.color}55`,
                     }}
                   >
-                    {char}
+                    {pair.a.deity[0]}
                   </div>
                   <div
-                    className="flex items-center justify-start border-l-0"
+                    className="flex items-center justify-center"
                     style={{
-                      width: UNIT * interval.factor,
-                      height: UNIT * interval.factor,
-                      fontSize: UNIT * interval.factor * 0.55,
-                      color: interval.color,
-                      backgroundColor: `${interval.color}1a`,
-                      border: `1px solid ${interval.color}55`,
-                      paddingLeft: 6,
+                      width: sizeB,
+                      height: sizeB,
+                      fontSize: sizeB * 0.55,
+                      color: pair.b.color,
+                      backgroundColor: `${pair.b.color}1a`,
+                      border: `1px solid ${pair.b.color}55`,
                     }}
                   >
-                    {char}
+                    {pair.b.deity[0]}
                   </div>
                 </div>
-                <span className="text-ink-400 font-mono text-[10px]">
-                  {interval.name} · {interval.ratio}
+                <span className="text-ink-400 text-right font-mono text-[10px]">
+                  {pair.name} · {pair.ratio} — {pair.a.token} : {pair.b.token}
                 </span>
               </div>
             );
