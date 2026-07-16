@@ -222,13 +222,13 @@ export default function PantheonPage() {
             <div className="absolute top-0 right-full flex w-24 items-start justify-end pr-4">
               <d.icon size={88} strokeWidth={1} style={{ color: d.color }} />
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 max-w-prose">
               <h3 className="mb-2" style={{ color: d.color }}>
                 <KhaoticText text={d.name} family="serif" className="text-3xl" />
               </h3>
               <p className="text-ink-500 mb-3 text-xs">{d.role}</p>
 
-              <p className="text-ink-300 mb-8 max-w-prose text-sm leading-relaxed">
+              <p className="text-ink-300 mb-8 text-sm leading-relaxed">
                 {d.story}
               </p>
 
