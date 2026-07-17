@@ -28,6 +28,12 @@ import {
 import { buildSequenceRail } from '../../lib/sequenceGraph';
 import TaskRow from '../tasks/TaskRow';
 import SequenceRailCell from './SequenceRail';
+import {
+  SequenceLinkControls,
+  TaskDropTarget,
+  type LinkDir,
+  type LinkingState,
+} from './sequenceLinking';
 import type { Id, Section, Task } from '../../lib/types';
 
 interface SectionColumnProps {
@@ -39,6 +45,8 @@ interface SectionColumnProps {
   onMoveDown?: () => void;
   canMoveUp?: boolean;
   canMoveDown?: boolean;
+  linking?: LinkingState | null;
+  onToggleLink?: (taskId: Id, dir: LinkDir) => void;
 }
 
 export default function SectionColumn({
@@ -50,6 +58,8 @@ export default function SectionColumn({
   onMoveDown,
   canMoveUp,
   canMoveDown,
+  linking = null,
+  onToggleLink,
 }: SectionColumnProps) {
   const { create: createTask } = useTaskMutations();
   const { update: updateSection, remove: removeSection } =
@@ -221,17 +231,30 @@ export default function SectionColumn({
         <div className="p-2">
           <div className="space-y-0.5">
             {orderedTasks.map((task, index) => (
-              <div key={task.id} className="flex items-stretch">
-                {rail.laneCount > 0 && (
-                  <SequenceRailCell
-                    segments={rail.rows[index]}
-                    laneCount={rail.laneCount}
-                  />
-                )}
-                <div className="min-w-0 flex-1">
-                  <TaskRow task={task} onOpen={onOpenTask} />
+              <TaskDropTarget
+                key={task.id}
+                taskId={task.id}
+                armedSource={linking?.taskId === task.id}
+              >
+                <div className="group/row flex items-stretch">
+                  {rail.laneCount > 0 && (
+                    <SequenceRailCell
+                      segments={rail.rows[index]}
+                      laneCount={rail.laneCount}
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <TaskRow task={task} onOpen={onOpenTask} />
+                  </div>
+                  {onToggleLink && (
+                    <SequenceLinkControls
+                      taskId={task.id}
+                      linking={linking}
+                      onToggleLink={onToggleLink}
+                    />
+                  )}
                 </div>
-              </div>
+              </TaskDropTarget>
             ))}
           </div>
 
