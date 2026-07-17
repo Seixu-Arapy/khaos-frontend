@@ -19,7 +19,7 @@ const STORAGE_KEY = 'logbook.chatHistory.v1';
 // opener — whichever instance claims this key first is the one that runs.
 const BOOTSTRAPPED_KEY = 'logbook.chatBootstrapped.v1';
 const BOOTSTRAP_INSTRUCTION =
-  '[Session Bootstrap: This is the first turn of a new session — nobody has typed anything yet. Check current state for something worth surfacing, per your own instructions for how to open a session. Do not greet or offer to help.]';
+  '[Session Bootstrap: This is the first turn of a new session — nobody has typed anything yet. Follow your OPENING TURN rules: a brief greeting is fine, but do not offer to help or ask an open-ended question — check current state for something worth surfacing before saying anything else.]';
 
 // UI-facing shape — this is what ChatPanel and the rest of the app render.
 // Kept separate from AgentMessage, whose content is Anthropic's own
@@ -170,33 +170,25 @@ export function useChatAgent() {
   const uiMessages: ChatMessage[] = messages
     .map((m, index) => ({ m, index }))
     .filter(({ m }) => m.role === 'user' || m.role === 'assistant')
-    .map(({ m, index }) => ({
-      id: `${m.role}-${index}`,
-      role: m.role === 'assistant' ? ('model' as const) : ('user' as const),
+    .map(({ m, index }) => {
+      const role = m.role === 'assistant' ? ('model' as const) : ('user' as const);
       // extractText reads only text blocks — a user turn that's actually a
       // tool_result continuation, or an assistant turn that's purely a
-      // tool_use with no accompanying text, both collapse to '' here and
-      // get filtered out below, same as a falsy `content` did before.
-      text: extractText(m.content),
-      isError: m.isError,
-    }))
-    .filter(({ text }) => Boolean(text))
-    .map(({ id, role, text, isError }) => {
-      let textToShow = text;
+      // tool_use with no accompanying text, both collapse to ''. Stripping
+      // has to happen before the emptiness check below, not after — a
+      // hidden turn like the bootstrap instruction is nothing *but* a
+      // context prefix, so checking emptiness first would let it through
+      // as a blank bubble instead of dropping it.
+      let text = extractText(m.content);
       if (role === 'user') {
-        textToShow = textToShow.replace(
-          /^\[Temporal Context:[\s\S]*?\]\s*/g,
-          ''
-        );
-        textToShow = textToShow.replace(/^\[UI Context:[\s\S]*?\]\s*/g, '');
-        textToShow = textToShow.replace(
-          /^\[Session Bootstrap:[\s\S]*?\]\s*/g,
-          ''
-        );
-        textToShow = textToShow.replace(/^\[Context:[\s\S]*?\]\s*/g, '');
+        text = text.replace(/^\[Temporal Context:[\s\S]*?\]\s*/g, '');
+        text = text.replace(/^\[UI Context:[\s\S]*?\]\s*/g, '');
+        text = text.replace(/^\[Session Bootstrap:[\s\S]*?\]\s*/g, '');
+        text = text.replace(/^\[Context:[\s\S]*?\]\s*/g, '');
       }
-      return { id, role, text: textToShow, isError };
-    });
+      return { id: `${m.role}-${index}`, role, text, isError: m.isError };
+    })
+    .filter(({ text }) => Boolean(text));
 
   return {
     messages: uiMessages,
