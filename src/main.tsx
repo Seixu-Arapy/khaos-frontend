@@ -6,6 +6,7 @@ import App from './App';
 import { ProcessingProvider } from './lib/processingContext';
 import { ActiveEntityProvider } from './lib/activeEntityContext';
 import { MomentPromptsProvider } from './lib/momentPromptsContext';
+import { ChatActivityProvider } from './lib/chat/chatActivityContext';
 import { PasswordGate } from './components/layout/PasswordGate';
 import './index.css';
 
@@ -25,11 +26,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <QueryClientProvider client={queryClient}>
         <ProcessingProvider>
           <MomentPromptsProvider>
-            <ActiveEntityProvider>
-              <BrowserRouter>
-                <App />
-              </BrowserRouter>
-            </ActiveEntityProvider>
+            <ChatActivityProvider>
+              <ActiveEntityProvider>
+                <BrowserRouter>
+                  <App />
+                </BrowserRouter>
+              </ActiveEntityProvider>
+            </ChatActivityProvider>
           </MomentPromptsProvider>
         </ProcessingProvider>
       </QueryClientProvider>
