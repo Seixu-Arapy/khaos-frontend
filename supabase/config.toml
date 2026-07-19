@@ -93,6 +93,16 @@ deno_version = 2
 # function instead — see supabase/functions/anthropic-proxy/index.ts.
 verify_jwt = false
 
+[functions.telegram-bot]
+# Telegram's webhook can't present a Supabase JWT, so the gateway gate is off.
+# The function authenticates the caller itself via the secret_token header set
+# with setWebhook, plus a chat-id allowlist — see the file header in
+# supabase/functions/telegram-bot/index.ts.
+verify_jwt = false
+# Maps the bare @anthropic-ai/sdk / @supabase/supabase-js specifiers (used by
+# the function and by the shared src/lib/chat modules it imports) to npm:.
+import_map = "./functions/telegram-bot/import_map.json"
+
 [analytics]
 enabled = false
 port = 54327

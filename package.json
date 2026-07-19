@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "db:migration:new": "supabase migration new",
     "db:push": "supabase db push --linked",
-    "db:dump": "supabase db dump --linked --schema public -f schema.sql"
+    "db:dump": "supabase db dump --linked --schema public -f schema.sql && npm run gen:edge-schema",
+    "gen:edge-schema": "node scripts/gen-edge-schema.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
