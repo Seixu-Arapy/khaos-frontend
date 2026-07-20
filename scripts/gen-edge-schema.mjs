@@ -1,4 +1,4 @@
-// Regenerates supabase/functions/telegram-bot/schema.sql.ts from schema.sql.
+// Regenerates supabase/functions/_shared/schema.sql.ts from schema.sql.
 //
 // The Telegram bot Edge Function runs under Deno and can't use Vite's
 // `schema.sql?raw` import the way the browser app does, so it embeds the
@@ -10,7 +10,7 @@ import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const sql = readFileSync(join(root, 'schema.sql'), 'utf8');
-const target = join(root, 'supabase/functions/telegram-bot/schema.sql.ts');
+const target = join(root, 'supabase/functions/_shared/schema.sql.ts');
 
 const out = `// AUTO-GENERATED — do not edit by hand.
 // Embedded copy of the repo's schema.sql so the Telegram bot Edge Function
