@@ -38,10 +38,24 @@ export interface PendingWrite {
   resolve: (approved: boolean) => void;
 }
 
+// A stored message is only usable if `content` survived the JSON
+// round-trip — a message ever persisted with `content: undefined` (e.g. an
+// API response that came back malformed) loses that key entirely under
+// JSON.stringify, and re-parsing it back would otherwise crash the very
+// first render (extractText assumes a string or an array).
+function isWellFormedMessage(m: unknown): m is AgentMessage {
+  if (!m || typeof m !== 'object') return false;
+  const content = (m as { content?: unknown }).content;
+  return typeof content === 'string' || Array.isArray(content);
+}
+
 function loadHistory(): AgentMessage[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(isWellFormedMessage);
   } catch {
     return [];
   }

@@ -53,6 +53,11 @@ interface RunTurnOptions {
 
 export function extractText(content: ChatMessage['content']): string {
   if (typeof content === 'string') return content;
+  // Defensive: a persisted message (localStorage) can predate a schema
+  // change, or come from a turn where the API response was malformed —
+  // `content` then lands as `undefined` after JSON round-tripping (a
+  // property set to `undefined` is dropped by JSON.stringify).
+  if (!Array.isArray(content)) return '';
   return content
     .filter((block): block is Anthropic.TextBlock => block.type === 'text')
     .map((block) => block.text)
@@ -66,6 +71,7 @@ export function extractText(content: ChatMessage['content']): string {
 function isFreshUserTurn(message: ChatMessage): boolean {
   if (message.role !== 'user') return false;
   if (typeof message.content === 'string') return true;
+  if (!Array.isArray(message.content)) return true;
   return !message.content.some((block) => block.type === 'tool_result');
 }
 
