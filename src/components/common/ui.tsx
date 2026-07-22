@@ -25,6 +25,7 @@ import {
   DraftingCompass,
   Plus,
   Clock,
+  CalendarClock,
   type LucideIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -581,6 +582,21 @@ export function TargetBadge({ target }: TargetBadgeProps) {
           {endParts.month}
         </span>
       )}
+    </span>
+  );
+}
+
+// Indicates the task already has a future 'scheduled' event tied to it —
+// prevents scheduling it twice. Plain icon, no text, same chrome-less
+// convention as DueBadge so it doesn't compete visually with the pill badges.
+export function ScheduledBadge({ scheduled }: { scheduled?: boolean }) {
+  if (!scheduled) return null;
+  return (
+    <span
+      title="Já agendada"
+      className="text-sage-500 inline-flex shrink-0 items-center"
+    >
+      <CalendarClock size={12} />
     </span>
   );
 }

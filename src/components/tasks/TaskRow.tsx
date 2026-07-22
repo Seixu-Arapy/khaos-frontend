@@ -4,10 +4,12 @@ import {
   PriorityBadge,
   DueBadge,
   TargetBadge,
+  ScheduledBadge,
   ProjectChip,
 } from '../common/ui';
 import { minutesToHuman } from '../../lib/dateUtils';
 import { useSequenceCounts } from '../../hooks/useSequence';
+import { useScheduledTaskIds } from '../../hooks/useEvents';
 import type { Task } from '../../lib/types';
 
 const DIMMED: Task['status'][] = ['done', 'cancelled'];
@@ -34,6 +36,7 @@ export default function TaskRow({
   const draggable = Boolean(dragHandleProps);
   const dimmed = DIMMED.includes(task.status);
   const seqCounts = useSequenceCounts().get(task.id);
+  const scheduled = useScheduledTaskIds().has(task.id);
 
   return (
     <div
@@ -92,6 +95,7 @@ export default function TaskRow({
             )}
             <TargetBadge target={task.target as string | null} />
             <DueBadge due={task.due} status={task.status} />
+            <ScheduledBadge scheduled={scheduled} />
           </span>
         </button>
 
