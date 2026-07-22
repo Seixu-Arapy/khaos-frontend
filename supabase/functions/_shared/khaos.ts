@@ -30,7 +30,7 @@ const MAX_TOKENS = 4096;
 // Mirrors src/hooks/useChatAgent.ts — opens a new chat with OPENING TURN
 // behaviour instead of a canned greeting.
 export const BOOTSTRAP_INSTRUCTION =
-  '[Session Bootstrap: This is the first turn of a new session — nobody has typed anything yet. Follow your OPENING TURN rules: a brief greeting is fine, but do not offer to help or ask an open-ended question — check current state for something worth surfacing before saying anything else.]';
+  '[Session Bootstrap: This is the first turn of a new session — nobody has typed anything yet. Follow your OPENING TURN rules: a brief greeting is fine, but do not offer to help or ask an open-ended question — check current state for something worth surfacing before saying anything else, including anything recall_oversight_notes turns up.]';
 
 // Telegram is plain text with no card renderer.
 const CHANNEL_INSTRUCTION = `

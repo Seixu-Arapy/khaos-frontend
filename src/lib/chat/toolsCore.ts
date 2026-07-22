@@ -254,15 +254,48 @@ export const WRITE_TOOL_DEFINITIONS: Anthropic.Tool[] = [
   },
 ];
 
+// Phase 4's oversight category: read-only, like READ_TOOL_DEFINITIONS, but
+// kept separate because it reads from oversight_notes specifically rather
+// than any of ALLOWED_TABLES — a dedicated tool instead of routing it through
+// query_rows, since the model shouldn't need to know that table exists to use
+// the generic CRUD tools.
+export const OVERSIGHT_TOOL_DEFINITIONS: Anthropic.Tool[] = [
+  {
+    name: 'recall_oversight_notes',
+    description:
+      'Reads recent notes from the background oversight agent — patterns or notable batches of database changes it noticed across the whole app, not just what happened in this conversation. Use this to inform a proactive check-in (e.g. the session opener) or when the user asks something these notes might address. An empty result is normal, not an error — most of the time there is nothing to report.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        since: {
+          type: 'string',
+          description:
+            'ISO 8601 timestamp; only notes created after this. Defaults to roughly the last 48 hours.',
+        },
+        limit: {
+          type: ['integer', 'string'],
+          description: 'Max notes to return, default 10, capped at 25. May be sent as a string.',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+];
+
 export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   ...READ_TOOL_DEFINITIONS,
   ...WRITE_TOOL_DEFINITIONS,
+  ...OVERSIGHT_TOOL_DEFINITIONS,
 ];
 
 // Derived from the grouped arrays above rather than listed separately, so
 // the two can't drift out of sync as tools are added.
 export const READ_TOOLS = new Set(READ_TOOL_DEFINITIONS.map((t) => t.name));
 export const WRITE_TOOLS = new Set(WRITE_TOOL_DEFINITIONS.map((t) => t.name));
+export const OVERSIGHT_TOOLS = new Set(
+  OVERSIGHT_TOOL_DEFINITIONS.map((t) => t.name)
+);
 
 function assertAllowedTable(table: string): asserts table is AllowedTable {
   if (!(ALLOWED_TABLES as readonly string[]).includes(table)) {
@@ -428,6 +461,22 @@ export async function executeTool(
       const { data, error } = await db.rpc(a.name as any, a.args || {});
       if (error) throw new Error(error.message);
       return { result: cleanPayload(data) };
+    }
+    case 'recall_oversight_notes': {
+      const a = args as any;
+      const since =
+        typeof a.since === 'string'
+          ? a.since
+          : new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+      const lim = Math.min(coerceInt(a.limit, 10), 25);
+      const { data, error } = await db
+        .from('oversight_notes')
+        .select('summary,entity_refs,severity,window_start,window_end,created_at')
+        .gt('created_at', since)
+        .order('created_at', { ascending: false })
+        .limit(lim);
+      if (error) throw new Error(error.message);
+      return { notes: cleanPayload(data ?? []) };
     }
     default:
       throw new Error(`Unknown tool "${name}"`);

@@ -1184,7 +1184,7 @@ CREATE TABLE IF NOT EXISTS "public"."moments" (
     "previous_value" "text",
     "authored_by" "text" DEFAULT 'user'::"text" NOT NULL,
     CONSTRAINT "chk_single_entity" CHECK (("num_nonnulls"("project_id", "section_id", "task_id", "routine_id") = 1)),
-    CONSTRAINT "chk_moments_authored_by" CHECK (("authored_by" = ANY (ARRAY['user'::"text", 'system'::"text", 'assistant'::"text"])))
+    CONSTRAINT "chk_moments_authored_by" CHECK (("authored_by" = ANY (ARRAY['user'::"text", 'system'::"text", 'assistant'::"text", 'ai_backfill'::"text"])))
 );
 
 
@@ -1235,7 +1235,48 @@ COMMENT ON COLUMN "public"."moments"."previous_value" IS 'The value prior to the
 
 
 
-COMMENT ON COLUMN "public"."moments"."authored_by" IS 'Who supplied moment_note: user (typed by a person), system (app-generated boilerplate, e.g. a skipped note prompt), or assistant (written directly by the LLM).';
+COMMENT ON COLUMN "public"."moments"."authored_by" IS 'Who supplied moment_note: user (typed by a person), system (app-generated boilerplate, e.g. a skipped note prompt), assistant (written directly by the LLM), or ai_backfill (inferred after the fact by the oversight agent from a diff, only when moment_note was still null).';
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."oversight_cursor" (
+    "id" boolean DEFAULT true NOT NULL,
+    "last_processed_at" timestamp with time zone DEFAULT '1970-01-01 00:00:00+00'::timestamp with time zone NOT NULL,
+    CONSTRAINT "chk_oversight_cursor_singleton" CHECK ("id")
+);
+
+
+ALTER TABLE "public"."oversight_cursor" OWNER TO "postgres";
+
+
+COMMENT ON TABLE "public"."oversight_cursor" IS 'Singleton watermark for the scheduled oversight-agent Edge Function: the latest moments.created_at it has already considered. Moments are append-only, so a single global cursor is simpler and cheaper than a per-row processed flag.';
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."oversight_notes" (
+    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
+    "summary" "text" NOT NULL,
+    "entity_refs" "jsonb" DEFAULT '[]'::"jsonb" NOT NULL,
+    "severity" "text" DEFAULT 'low'::"text" NOT NULL,
+    "window_start" timestamp with time zone NOT NULL,
+    "window_end" timestamp with time zone NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "chk_oversight_notes_severity" CHECK (("severity" = ANY (ARRAY['low'::"text", 'medium'::"text", 'high'::"text"])))
+);
+
+
+ALTER TABLE "public"."oversight_notes" OWNER TO "postgres";
+
+
+COMMENT ON TABLE "public"."oversight_notes" IS 'Ephemeral, LLM-inferred commentary on batches of moments, produced by the scheduled oversight-agent Edge Function. Read via the recall_oversight_notes chat tool. An inference, not a source of truth — distinct from moments themselves, which are the ledger it reads from.';
+
+
+
+COMMENT ON COLUMN "public"."oversight_notes"."entity_refs" IS 'Entities the summary is about, e.g. [{"table": "tasks", "id": "<uuid>"}, ...]. A batch can span more than one entity, unlike a single moment.';
+
+
+
+COMMENT ON COLUMN "public"."oversight_notes"."severity" IS 'How much this is worth surfacing: low, medium, or high.';
 
 
 
@@ -1662,6 +1703,16 @@ ALTER TABLE ONLY "public"."moment_tags"
 
 ALTER TABLE ONLY "public"."moments"
     ADD CONSTRAINT "moments_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."oversight_cursor"
+    ADD CONSTRAINT "oversight_cursor_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."oversight_notes"
+    ADD CONSTRAINT "oversight_notes_pkey" PRIMARY KEY ("id");
 
 
 
@@ -2174,6 +2225,12 @@ CREATE POLICY "allow all" ON "public"."moments" USING (true) WITH CHECK (true);
 
 
 
+-- oversight_cursor has no policy: service-role (the oversight-agent Edge
+-- Function) only, same as telegram_chats/telegram_notifications.
+CREATE POLICY "allow all" ON "public"."oversight_notes" USING (true) WITH CHECK (true);
+
+
+
 CREATE POLICY "allow all" ON "public"."projects" USING (true) WITH CHECK (true);
 
 
@@ -2227,6 +2284,14 @@ ALTER TABLE "public"."moment_tags" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."moments" ENABLE ROW LEVEL SECURITY;
+
+
+
+ALTER TABLE "public"."oversight_cursor" ENABLE ROW LEVEL SECURITY;
+
+
+
+ALTER TABLE "public"."oversight_notes" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."projects" ENABLE ROW LEVEL SECURITY;
