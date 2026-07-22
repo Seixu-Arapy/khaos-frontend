@@ -203,7 +203,7 @@ CREATE OR REPLACE FUNCTION "public"."insert_moment"("p_entity_column" "text", "p
     LANGUAGE "plpgsql"
     AS $_$
 begin
-  if p_entity_column not in ('project_id', 'section_id', 'task_id', 'routine_id') then
+  if p_entity_column not in ('project_id', 'section_id', 'task_id', 'event_id') then
     raise exception 'insert_moment: invalid entity column "%"', p_entity_column;
   end if;
 
@@ -220,11 +220,11 @@ ALTER FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" 
 
 COMMENT ON FUNCTION "public"."insert_moment"("p_entity_column" "text", "p_entity_id" "uuid", "p_moment_type" "public"."moment_types", "p_value" "text", "p_note" "text", "p_previous_value" "text") IS 'A core utility function designed to dynamically insert records into the "moments" table. 
 
-It abstracts the exclusive relationship constraint of the schema by accepting the target entity column name ("project_id", "section_id", "task_id", or "routine_id") as a parameter and validating it against an explicit whitelist. Using dynamic SQL execution, it programmatically assigns the UUID to the correct entity column while ensuring all other entity foreign keys default to NULL, guaranteeing data integrity.
+It abstracts the exclusive relationship constraint of the schema by accepting the target entity column name ("project_id", "section_id", "task_id", or "event_id") as a parameter and validating it against an explicit whitelist. Using dynamic SQL execution, it programmatically assigns the UUID to the correct entity column while ensuring all other entity foreign keys default to NULL, guaranteeing data integrity. 
 
 Parameters:
 - p_entity_column: Whitelisted column name representing the linked entity.
-- p_entity_id: The UUID of the specific project, section, task, or routine.
+- p_entity_id: The UUID of the specific project, section, task, or event.
 - p_moment_type: The enum metric or lifestyle aspect being logged.
 - p_value: The new state value (the "to" state).
 - p_note: Optional qualitative contextual notes.
@@ -239,7 +239,6 @@ CREATE OR REPLACE FUNCTION "public"."moment_entity_column"("p_table" "text") RET
     when 'projects' then 'project_id'
     when 'sections' then 'section_id'
     when 'tasks'    then 'task_id'
-    when 'routines' then 'routine_id'
   end;
 $$;
 
@@ -476,19 +475,13 @@ begin
       v_column := 'project_id';
       v_entity_id := new.project_id;
     else
-      -- A standalone event with no linked task or project (a fixed
-      -- meeting/appointment) doesn't get a moment: scheduling a task as an
-      -- event already logs the moment against the task above, and tracking
-      -- fixed events on their own isn't useful. See moments' dropped
-      -- event_id column.
-      v_column := null;
+      v_column := 'event_id';
+      v_entity_id := new.id;
     end if;
 
     v_previous := case when TG_OP = 'UPDATE' then lower(old.duration)::text else null end;
 
-    if v_column is not null then
-      perform insert_moment(v_column, v_entity_id, 'scheduled', lower(new.duration)::text, null, v_previous);
-    end if;
+    perform insert_moment(v_column, v_entity_id, 'scheduled', lower(new.duration)::text, null, v_previous);
   end if;
   return new;
 end;
@@ -498,7 +491,7 @@ $$;
 ALTER FUNCTION "public"."trg_moment_scheduled"() OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."trg_moment_scheduled"() IS 'Advanced trigger function operating on INSERT and UPDATE events if an entity is scheduled. It evaluates duration modifications and automatically resolves the context priority (task_id, then project_id); a standalone event with neither (a fixed meeting/appointment) does not produce a moment. For updates, it captures the lower bound of the prior duration range as previous_value alongside the new lower bound duration as value.';
+COMMENT ON FUNCTION "public"."trg_moment_scheduled"() IS 'Advanced trigger function operating on INSERT and UPDATE events if an entity is scheduled. It evaluates duration modifications, automatically resolves the context priority (task_id, project_id, or event_id), and records time block allocations. For updates, it captures the lower bound of the prior duration range as previous_value alongside the new lower bound duration as value.';
 
 
 
@@ -1176,22 +1169,22 @@ CREATE TABLE IF NOT EXISTS "public"."moments" (
     "project_id" "uuid",
     "section_id" "uuid",
     "task_id" "uuid",
-    "routine_id" "uuid",
     "moment_type" "public"."moment_types" DEFAULT 'note'::"public"."moment_types" NOT NULL,
     "value" "text",
     "moment_note" "text",
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "previous_value" "text",
     "authored_by" "text" DEFAULT 'user'::"text" NOT NULL,
-    CONSTRAINT "chk_single_entity" CHECK (("num_nonnulls"("project_id", "section_id", "task_id", "routine_id") = 1)),
-    CONSTRAINT "chk_moments_authored_by" CHECK (("authored_by" = ANY (ARRAY['user'::"text", 'system'::"text", 'assistant'::"text", 'ai_backfill'::"text"])))
+    "routine_id" "uuid",
+    CONSTRAINT "chk_moments_authored_by" CHECK (("authored_by" = ANY (ARRAY['user'::"text", 'system'::"text", 'assistant'::"text", 'ai_backfill'::"text"]))),
+    CONSTRAINT "chk_single_entity" CHECK (("num_nonnulls"("project_id", "section_id", "task_id", "routine_id") = 1))
 );
 
 
 ALTER TABLE "public"."moments" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."moments" IS 'Historical timeline log tracking state changes, status updates, estimate modifications, notes, and lifecycle events. Note: Exactly ONE entity foreign key (project_id, section_id, task_id, or routine_id) must be populated per record; all others must be NULL. Events do not get moments — scheduling a task as an event already logs against the task, and standalone (fixed) events aren't tracked.';
+COMMENT ON TABLE "public"."moments" IS 'Historical timeline log tracking state changes, status updates, estimate modifications, notes, and lifecycle events. Note: Exactly ONE entity foreign key (project_id, section_id, task_id, or event_id) must be populated per record; all others must be NULL.';
 
 
 
@@ -1199,19 +1192,15 @@ COMMENT ON COLUMN "public"."moments"."id" IS 'Primary key (UUID) of the moment l
 
 
 
-COMMENT ON COLUMN "public"."moments"."project_id" IS 'Linked project ID (UUID) if this log belongs to a project lifecycle. Must be NULL if section_id, task_id, or routine_id is populated.';
+COMMENT ON COLUMN "public"."moments"."project_id" IS 'Linked project ID (UUID) if this log belongs to a project lifecycle. Must be NULL if section_id, task_id, or event_id is populated.';
 
 
 
-COMMENT ON COLUMN "public"."moments"."section_id" IS 'Linked section ID (UUID) if this log belongs to a section. Must be NULL if project_id, task_id, or routine_id is populated.';
+COMMENT ON COLUMN "public"."moments"."section_id" IS 'Linked section ID (UUID) if this log belongs to a section. Must be NULL if project_id, task_id, or event_id is populated.';
 
 
 
-COMMENT ON COLUMN "public"."moments"."task_id" IS 'Linked task ID (UUID) if this log belongs to a task lifecycle. Must be NULL if project_id, section_id, or routine_id is populated.';
-
-
-
-COMMENT ON COLUMN "public"."moments"."routine_id" IS 'Linked routine ID (UUID) if this log belongs to a recurring routine. Must be NULL if project_id, section_id, or task_id is populated.';
+COMMENT ON COLUMN "public"."moments"."task_id" IS 'Linked task ID (UUID) if this log belongs to a task lifecycle. Must be NULL if project_id, section_id, or event_id is populated.';
 
 
 
@@ -1249,7 +1238,7 @@ CREATE TABLE IF NOT EXISTS "public"."oversight_cursor" (
 ALTER TABLE "public"."oversight_cursor" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."oversight_cursor" IS 'Singleton watermark for the scheduled oversight-agent Edge Function: the latest moments.created_at it has already considered. Moments are append-only, so a single global cursor is simpler and cheaper than a per-row processed flag.';
+COMMENT ON TABLE "public"."oversight_cursor" IS 'Singleton watermark for the scheduled oversight-agent Edge Function: the latest moments.created_at it has already considered.';
 
 
 
@@ -1261,14 +1250,14 @@ CREATE TABLE IF NOT EXISTS "public"."oversight_notes" (
     "window_start" timestamp with time zone NOT NULL,
     "window_end" timestamp with time zone NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    CONSTRAINT "chk_oversight_notes_severity" CHECK (("severity" = ANY (ARRAY['low'::"text", 'medium'::"text", 'high'::"text"])))
+    CONSTRAINT "oversight_notes_severity_check" CHECK (("severity" = ANY (ARRAY['low'::"text", 'medium'::"text", 'high'::"text"])))
 );
 
 
 ALTER TABLE "public"."oversight_notes" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."oversight_notes" IS 'Ephemeral, LLM-inferred commentary on batches of moments, produced by the scheduled oversight-agent Edge Function. Read via the recall_oversight_notes chat tool. An inference, not a source of truth — distinct from moments themselves, which are the ledger it reads from.';
+COMMENT ON TABLE "public"."oversight_notes" IS 'Ephemeral, LLM-inferred commentary on batches of moments, produced by the scheduled oversight-agent Edge Function. Read via the recall_oversight_notes chat tool. An inference, not a source of truth.';
 
 
 
@@ -1603,6 +1592,35 @@ COMMENT ON COLUMN "public"."tasks_sequence"."task_next" IS 'The subsequent task 
 
 
 
+CREATE TABLE IF NOT EXISTS "public"."telegram_chats" (
+    "chat_id" bigint NOT NULL,
+    "history" "jsonb" DEFAULT '[]'::"jsonb" NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."telegram_chats" OWNER TO "postgres";
+
+
+COMMENT ON TABLE "public"."telegram_chats" IS 'Per-chat conversation history for the Telegram bot Edge Function. Written only by that function via the service-role key.';
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."telegram_notifications" (
+    "chat_id" bigint NOT NULL,
+    "kind" "text" NOT NULL,
+    "ref" "text" NOT NULL,
+    "sent_at" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."telegram_notifications" OWNER TO "postgres";
+
+
+COMMENT ON TABLE "public"."telegram_notifications" IS 'Idempotency ledger for the Telegram scheduled notifier (digest + reminders). Written only by that function via the service-role key.';
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."work_tag_entities" (
     "work_tag_id" "uuid",
     "project_id" "uuid",
@@ -1655,7 +1673,7 @@ CREATE TABLE IF NOT EXISTS "public"."work_tags" (
 ALTER TABLE "public"."work_tags" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."work_tags" IS 'Taxonomy reflecting the core operational nature of the work, settable by the user directly or assigned by the AI. Used by the AI to detect execution patterns, analyze structural metrics (e.g., how long task types usually take), and auto-suggest sub-tasks or project templates based on previous similar initiatives.';
+COMMENT ON TABLE "public"."work_tags" IS 'AI-generated taxonomy reflecting the core operational nature of the work. Used by the AI to detect execution patterns, analyze structural metrics (e.g., how long task types usually take), and auto-suggest sub-tasks or project templates based on previous similar initiatives.';
 
 
 
@@ -1761,6 +1779,16 @@ ALTER TABLE ONLY "public"."tasks_sequence"
 
 
 
+ALTER TABLE ONLY "public"."telegram_chats"
+    ADD CONSTRAINT "telegram_chats_pkey" PRIMARY KEY ("chat_id");
+
+
+
+ALTER TABLE ONLY "public"."telegram_notifications"
+    ADD CONSTRAINT "telegram_notifications_pkey" PRIMARY KEY ("chat_id", "kind", "ref");
+
+
+
 ALTER TABLE ONLY "public"."work_tag_entities"
     ADD CONSTRAINT "work_tag_entities_pkey" PRIMARY KEY ("id");
 
@@ -1793,10 +1821,6 @@ CREATE INDEX "idx_moment_tag_entities_section" ON "public"."moment_tag_entities"
 
 
 CREATE INDEX "idx_moment_tag_entities_task" ON "public"."moment_tag_entities" USING "btree" ("task_id") WHERE ("task_id" IS NOT NULL);
-
-
-
-CREATE INDEX "idx_moments_routine" ON "public"."moments" USING "btree" ("routine_id") WHERE ("routine_id" IS NOT NULL);
 
 
 
@@ -2106,11 +2130,6 @@ ALTER TABLE ONLY "public"."moment_tag_entities"
 
 
 ALTER TABLE ONLY "public"."moments"
-    ADD CONSTRAINT "moments_routine_id_fkey" FOREIGN KEY ("routine_id") REFERENCES "public"."routines"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "public"."moments"
     ADD CONSTRAINT "moments_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE CASCADE;
 
 
@@ -2225,8 +2244,6 @@ CREATE POLICY "allow all" ON "public"."moments" USING (true) WITH CHECK (true);
 
 
 
--- oversight_cursor has no policy: service-role (the oversight-agent Edge
--- Function) only, same as telegram_chats/telegram_notifications.
 CREATE POLICY "allow all" ON "public"."oversight_notes" USING (true) WITH CHECK (true);
 
 
@@ -2286,9 +2303,7 @@ ALTER TABLE "public"."moment_tags" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."moments" ENABLE ROW LEVEL SECURITY;
 
 
-
 ALTER TABLE "public"."oversight_cursor" ENABLE ROW LEVEL SECURITY;
-
 
 
 ALTER TABLE "public"."oversight_notes" ENABLE ROW LEVEL SECURITY;
@@ -2316,6 +2331,12 @@ ALTER TABLE "public"."tasks" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."tasks_sequence" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."telegram_chats" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."telegram_notifications" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."work_tag_entities" ENABLE ROW LEVEL SECURITY;
@@ -2565,6 +2586,18 @@ GRANT ALL ON TABLE "public"."moments" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."oversight_cursor" TO "anon";
+GRANT ALL ON TABLE "public"."oversight_cursor" TO "authenticated";
+GRANT ALL ON TABLE "public"."oversight_cursor" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."oversight_notes" TO "anon";
+GRANT ALL ON TABLE "public"."oversight_notes" TO "authenticated";
+GRANT ALL ON TABLE "public"."oversight_notes" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."projects" TO "anon";
 GRANT ALL ON TABLE "public"."projects" TO "authenticated";
 GRANT ALL ON TABLE "public"."projects" TO "service_role";
@@ -2609,6 +2642,18 @@ GRANT ALL ON TABLE "public"."tasks" TO "service_role";
 GRANT ALL ON TABLE "public"."tasks_sequence" TO "anon";
 GRANT ALL ON TABLE "public"."tasks_sequence" TO "authenticated";
 GRANT ALL ON TABLE "public"."tasks_sequence" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."telegram_chats" TO "anon";
+GRANT ALL ON TABLE "public"."telegram_chats" TO "authenticated";
+GRANT ALL ON TABLE "public"."telegram_chats" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."telegram_notifications" TO "anon";
+GRANT ALL ON TABLE "public"."telegram_notifications" TO "authenticated";
+GRANT ALL ON TABLE "public"."telegram_notifications" TO "service_role";
 
 
 
