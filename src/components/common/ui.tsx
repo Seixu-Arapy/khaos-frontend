@@ -627,13 +627,6 @@ export function ScheduledBadge({ scheduled }: { scheduled?: boolean }) {
 interface FieldBadgeProps {
   fieldName?: string | null;
   size?: 'xs' | 'sm' | 'md';
-  // Escape hatch for callers that need to override the pill's own
-  // font-size/weight without changing its shape -- use Tailwind's `!`
-  // important suffix (e.g. "text-label! font-light!"), same convention
-  // as TaskDetailModal's inline-pill overrides, since className here is
-  // merged last but same-specificity utility classes aren't guaranteed
-  // to win by source order alone.
-  className?: string;
 }
 
 // The one place field icon/color is resolved into a visual. Three sizes for
@@ -642,7 +635,7 @@ interface FieldBadgeProps {
 // cards), 'md' a full pill with the field name spelled out (project detail
 // header). Field names not in FIELDS_CONFIG fall back silently via
 // getFieldMeta rather than rendering nothing or throwing.
-export function FieldBadge({ fieldName, size = 'sm', className }: FieldBadgeProps) {
+export function FieldBadge({ fieldName, size = 'sm' }: FieldBadgeProps) {
   if (!fieldName) return null;
   const meta = getFieldMeta(fieldName);
   const Icon = meta.icon;
@@ -681,8 +674,7 @@ export function FieldBadge({ fieldName, size = 'sm', className }: FieldBadgeProp
         'inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-caption font-medium tracking-wide uppercase',
         meta.classes.border,
         meta.classes.bg,
-        meta.classes.text,
-        className
+        meta.classes.text
       )}
       style={{ fontVariantCaps: 'small-caps' }}
     >

@@ -139,12 +139,7 @@ export default function SigilsPage() {
             </dd>
             <div className="flex flex-wrap gap-2">
               {fieldNames.map((name) => (
-                <FieldBadge
-                  key={name}
-                  fieldName={name}
-                  size="md"
-                  className="text-label! font-light!"
-                />
+                <FieldBadge key={name} fieldName={name} size="md" />
               ))}
             </div>
             <div className="mt-3 flex items-center gap-2">
