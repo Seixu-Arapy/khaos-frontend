@@ -88,7 +88,7 @@ export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
   return (
     <span
       title={meta.label}
-      className="inline-flex items-center gap-0.5 rounded-md font-mono font-medium tracking-wider uppercase"
+      className="inline-flex items-center gap-0.5 rounded-full font-mono font-medium tracking-wider uppercase"
       style={{
         fontSize: size === 'sm' ? 11 : 13,
         marginRight: size === 'sm' ? 4 : 6,
@@ -158,8 +158,8 @@ export function StatusPicker({ value, onChange }: StatusPickerProps) {
       aria-label="Status"
     >
       {STATUS_ROWS.map((row, i) => (
-        <div key={i} className="flex flex-wrap gap-1">
-          {row.map((s) => {
+        <div key={i} className="flex">
+          {row.map((s, j) => {
             const meta = STATUS_META[s];
             const active = s === value;
             return (
@@ -175,7 +175,9 @@ export function StatusPicker({ value, onChange }: StatusPickerProps) {
                   boxShadow: active ? `0 0 0 1.5px ${meta.iconColor}` : 'none',
                 }}
                 className={clsx(
-                  'inline-flex items-center gap-1 rounded-full py-0.5 pr-2 pl-0.5 transition-all',
+                  'inline-flex items-center gap-1 py-0.5 pr-2 pl-0.5 transition-all',
+                  j === 0 && 'rounded-l-full',
+                  j === row.length - 1 && 'rounded-r-full',
                   active ? 'opacity-100' : 'opacity-45 hover:opacity-75'
                 )}
               >
@@ -201,8 +203,10 @@ interface PriorityPickerProps {
 }
 
 // Same idea for Priority — icon-only circles matching PriorityBadge's own
-// look (no background chip, that's the point), minus its "urgent" bounce,
-// which belongs to a single live badge, not a menu of options.
+// look (no background chip, that's the point). The "urgent" bounce only
+// plays on the option that's both urgent and currently selected — not on
+// every render of the urgent option, which would bounce even while some
+// other priority is active.
 export function PriorityPicker({ value, onChange }: PriorityPickerProps) {
   return (
     <div
@@ -228,7 +232,8 @@ export function PriorityPicker({ value, onChange }: PriorityPickerProps) {
             }}
             className={clsx(
               'inline-flex h-7 w-7 items-center justify-center rounded-full transition-all',
-              active ? 'opacity-100' : 'opacity-40 hover:opacity-70'
+              active ? 'opacity-100' : 'opacity-40 hover:opacity-70',
+              active && p === 'urgent' && 'animate-bounce'
             )}
           >
             <Icon size={15} />
@@ -286,7 +291,7 @@ interface TagProps {
 
 export function Tag({ children, onRemove }: TagProps) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-pontus-500/10 px-2 py-0.5 text-caption font-medium text-pontus-400">
+    <span className="border-pontus-500/40 text-pontus-400 inline-flex items-center gap-1 rounded-full border border-dashed bg-pontus-500/10 px-2 py-0.5 text-caption font-medium">
       {children}
       {onRemove && (
         <button
