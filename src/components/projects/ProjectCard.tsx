@@ -36,7 +36,7 @@ export default function ProjectCard({
         <StatusBadge status={project.status} />
         <DueBadge due={project.due} status={project.status} />
       </div>
-      <div className="text-ink-500 text-xs">
+      <div className="text-ink-500 text-caption">
         {sectionCount} section{sectionCount === 1 ? '' : 's'} · {taskCount} task
         {taskCount === 1 ? '' : 's'}
       </div>

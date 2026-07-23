@@ -159,7 +159,7 @@ export default function ProjectDetailPage() {
               patch: { name: e.target.value },
             })
           }
-          className="font-display text-ink-100 w-full bg-transparent text-2xl focus:outline-none"
+          className="font-display text-ink-100 w-full bg-transparent text-display-lg focus:outline-none"
         />
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Select
@@ -212,7 +212,7 @@ export default function ProjectDetailPage() {
               href={project.doc_reference}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1 text-xs text-teal-400 hover:underline"
+              className="flex items-center gap-1 text-caption text-teal-400 hover:underline"
             >
               <ExternalLink size={12} /> Docs
             </a>
@@ -223,14 +223,14 @@ export default function ProjectDetailPage() {
                 onSuccess: () => navigate('/tasks'),
               })
             }
-            className="text-ink-500 hover:text-ink-300 ml-auto flex items-center gap-1 text-xs"
+            className="text-ink-500 hover:text-ink-300 ml-auto flex items-center gap-1 text-caption"
           >
             <Trash2 size={13} /> Delete project
           </button>
         </div>
 
         <div className="mt-2 max-w-sm">
-          <label className="text-ink-500 mb-1 block text-xs font-medium">
+          <label className="text-ink-500 mb-1 block text-caption font-medium">
             Target{' '}
             <span className="text-ink-600 font-normal normal-case">
               (planned window — optional, must land before due)
@@ -290,7 +290,7 @@ export default function ProjectDetailPage() {
           value={newSectionName}
           onChange={(e) => setNewSectionName(e.target.value)}
           placeholder="Add a section…"
-          className="text-ink-300 placeholder:text-ink-600 flex-1 bg-transparent text-sm focus:outline-none"
+          className="text-ink-300 placeholder:text-ink-600 flex-1 bg-transparent text-body focus:outline-none"
         />
       </form>
 

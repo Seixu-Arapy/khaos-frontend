@@ -35,7 +35,7 @@ function ChangeChip({ change }: { change: ChangeItem }) {
 
   if (isStatus || isPriority) {
     return (
-      <span className="bg-ink-900 border-ink-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs">
+      <span className="bg-ink-900 border-ink-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-caption">
         {change.from != null && (
           <>
             {isStatus ? (
@@ -58,7 +58,7 @@ function ChangeChip({ change }: { change: ChangeItem }) {
   if (isDue) {
     const parts = change.to ? formatDueCompact(change.to as string) : null;
     return (
-      <span className="bg-ink-900 text-ink-300 border-ink-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs">
+      <span className="bg-ink-900 text-ink-300 border-ink-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-caption">
         <span className="text-ink-500">due</span>
         {parts ? (
           <span className="font-mono tracking-tight">
@@ -74,7 +74,7 @@ function ChangeChip({ change }: { change: ChangeItem }) {
 
   if (isEstimate) {
     return (
-      <span className="bg-ink-900 text-ink-300 border-ink-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs">
+      <span className="bg-ink-900 text-ink-300 border-ink-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-caption">
         <span className="text-ink-500">estimate</span>
         <span className="text-ink-100 font-mono font-medium">
           {change.to != null ? minutesToHuman(Number(change.to)) : '—'}
@@ -84,7 +84,7 @@ function ChangeChip({ change }: { change: ChangeItem }) {
   }
 
   return (
-    <span className="bg-ink-900 text-ink-300 border-ink-700 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs">
+    <span className="bg-ink-900 text-ink-300 border-ink-700 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-caption">
       <span className="text-ink-500">{change.label}</span>
       {change.from != null && (
         <>
@@ -146,7 +146,7 @@ export default function ChatMomentPrompt({
 
       <div
         className={clsx(
-          'w-full max-w-[85%] rounded-lg border p-3.5 text-sm leading-relaxed shadow-md transition-all duration-300',
+          'w-full max-w-[85%] rounded-lg border p-3.5 text-body leading-relaxed shadow-md transition-all duration-300',
           isSaved && 'text-ink-300 border-emerald-500/20 bg-emerald-950/10',
           hasError && 'border-rose-500/30 bg-rose-950/20 text-rose-300',
           (isPending || isSaving) && 'bg-ink-800 border-ink-700 text-ink-200'
@@ -154,7 +154,7 @@ export default function ChatMomentPrompt({
       >
         <div
           className={clsx(
-            'mb-1.5 flex items-center justify-between text-xs font-medium',
+            'mb-1.5 flex items-center justify-between text-caption font-medium',
             isSaved && 'text-emerald-500',
             hasError && 'text-rose-400',
             (isPending || isSaving) && 'text-copper-400'
@@ -173,7 +173,7 @@ export default function ChatMomentPrompt({
         </div>
 
         {isSaved && savedNote && (
-          <div className="text-ink-400 my-2 border-l-2 border-emerald-500/30 pl-2 text-xs italic">
+          <div className="text-ink-400 my-2 border-l-2 border-emerald-500/30 pl-2 text-caption italic">
             {wasSkipped && (
               <span className="text-ink-500 mr-1 inline-flex items-center gap-1 not-italic">
                 <Bot size={11} />
@@ -193,10 +193,10 @@ export default function ChatMomentPrompt({
               onKeyDown={handleKeyDown}
               placeholder="Why did you make this modification?"
               disabled={isSaving}
-              className="border-ink-700 bg-ink-900 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 w-full resize-none rounded-md border px-2.5 py-2 text-xs leading-relaxed focus:outline-hidden disabled:opacity-60"
+              className="border-ink-700 bg-ink-900 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 w-full resize-none rounded-md border px-2.5 py-2 text-caption leading-relaxed focus:outline-hidden disabled:opacity-60"
             />
             {hasError && (
-              <p className="text-xs font-medium text-rose-400">
+              <p className="text-caption font-medium text-rose-400">
                 Failed to save context. Try again.
               </p>
             )}
@@ -223,7 +223,7 @@ export default function ChatMomentPrompt({
         )}
 
         {isSaved && (
-          <p className="text-xs font-medium text-emerald-500/80">
+          <p className="text-caption font-medium text-emerald-500/80">
             {wasSkipped ? 'No context provided.' : 'Context saved to moment.'}
           </p>
         )}

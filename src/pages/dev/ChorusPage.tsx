@@ -414,6 +414,40 @@ export default function ChorusPage() {
           – 1.33), and few enough that every choice is obvious.
         </p>
       </div>
+
+      <div className="mt-14 max-w-4xl">
+        <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
+          The wiring — how the old classes map
+        </h2>
+        <p className="text-ink-300 mb-6 max-w-prose text-sm leading-relaxed">
+          The scale is wired into the real app (not just this chamber).
+          Every ad-hoc size class was swept to its named token —
+          pixel-neutral by construction, since each token carries the
+          same size and line-height as the class it replaced.
+        </p>
+        <div className="flex flex-col gap-2 font-mono text-caption">
+          {[
+            ['text-2xl', 'text-display-lg', 'page titles'],
+            ['text-lg', 'text-display', 'modal / section titles'],
+            ['text-sm', 'text-body', 'task names, controls, body copy'],
+            ['text-xs', 'text-caption', 'hints, metadata'],
+            ['text-[10px]', 'text-label', 'micro-labels'],
+          ].map(([from, to, role]) => (
+            <p key={to} className="text-ink-400">
+              <span className="text-ink-600">{from}</span>
+              {' → '}
+              <span className="text-copper-400">{to}</span>
+              <span className="text-ink-600"> · {role}</span>
+            </p>
+          ))}
+        </div>
+        <p className="text-ink-500 mt-6 max-w-prose text-caption leading-relaxed">
+          Deliberately left alone: the wordmark (branding, not
+          typography), icon glyph sizes, and the off-scale strays
+          (text-base, 11px, 9px) — those are normalization candidates
+          for the spacing/size cleanup pass, not silent swaps.
+        </p>
+      </div>
     </Chamber>
   );
 }

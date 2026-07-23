@@ -39,7 +39,7 @@ export function InlineEventPreview({
           </span>
         )}
         <div className="col-start-2 row-start-1 flex min-w-0 items-baseline gap-1.5">
-          <span className="text-ink-100 min-w-0 flex-1 truncate text-sm">
+          <span className="text-ink-100 min-w-0 flex-1 truncate text-body">
             {label}
           </span>
           <span className="text-ink-600 shrink-0 font-mono text-[9px] tracking-wide uppercase">

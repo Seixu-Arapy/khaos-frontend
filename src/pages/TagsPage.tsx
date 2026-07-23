@@ -18,8 +18,8 @@ export default function TagsPage() {
 
   return (
     <div className="px-6 py-5">
-      <h1 className="font-display text-ink-100 mb-1 text-2xl">Tags</h1>
-      <p className="text-ink-500 mb-5 text-sm">
+      <h1 className="font-display text-ink-100 mb-1 text-display-lg">Tags</h1>
+      <p className="text-ink-500 mb-5 text-body">
         Tags can be attached to any project, section, or task — use them to
         filter across project boundaries.
       </p>
@@ -54,9 +54,9 @@ export default function TagsPage() {
               key={tag.id}
               className="flex items-center justify-between px-3.5 py-2.5"
             >
-              <span className="text-ink-100 text-sm">{tag.name}</span>
+              <span className="text-ink-100 text-body">{tag.name}</span>
               <div className="flex items-center gap-3">
-                <span className="text-ink-500 text-xs">{count} linked</span>
+                <span className="text-ink-500 text-caption">{count} linked</span>
                 <button
                   onClick={() => {
                     if (window.confirm(`Delete tag "${tag.name}"?`))

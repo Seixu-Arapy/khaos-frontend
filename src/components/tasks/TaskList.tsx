@@ -53,7 +53,7 @@ export default function TaskList({
 
   return (
     <div className="border-ink-700 overflow-hidden rounded-lg border">
-      <div className="border-ink-700 bg-ink-800 text-ink-500 flex items-center gap-2 border-b px-3 py-2 text-xs">
+      <div className="border-ink-700 bg-ink-800 text-ink-500 flex items-center gap-2 border-b px-3 py-2 text-caption">
         <button
           onClick={() => setSortKey('due')}
           className="hover:text-ink-200 flex items-center gap-1"

@@ -33,7 +33,7 @@ export function ChangeBadge({ change }: { change: FieldChange }) {
   if (field === 'due') {
     const parts = to ? formatDueCompact(to as string) : null;
     return (
-      <span className="bg-ink-700 text-ink-300 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs">
+      <span className="bg-ink-700 text-ink-300 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-caption">
         <span className="text-ink-500">due</span>
         {parts ? (
           <span className="font-mono tracking-tight">
@@ -49,7 +49,7 @@ export function ChangeBadge({ change }: { change: FieldChange }) {
 
   if (field === 'estimate') {
     return (
-      <span className="bg-ink-700 text-ink-300 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs">
+      <span className="bg-ink-700 text-ink-300 inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-caption">
         <span className="text-ink-500">estimate</span>
         <span className="text-ink-100 font-mono font-medium">
           {to != null ? minutesToHuman(Number(to)) : '—'}
@@ -59,7 +59,7 @@ export function ChangeBadge({ change }: { change: FieldChange }) {
   }
 
   return (
-    <span className="bg-ink-700 text-ink-300 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs">
+    <span className="bg-ink-700 text-ink-300 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-caption">
       <span className="text-ink-500">{label}</span>
       {from != null && (
         <>

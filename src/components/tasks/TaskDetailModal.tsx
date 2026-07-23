@@ -134,7 +134,7 @@ function Section({ title, children, action }: SectionProps) {
   return (
     <div className="border-ink-700 border-t pt-3.5 first:border-0 first:pt-0">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+        <h3 className="text-ink-500 text-caption font-semibold tracking-wide uppercase">
           {title}
         </h3>
         {action}
@@ -152,7 +152,7 @@ interface SequenceChipProps {
 
 function SequenceChip({ task, onOpen, onRemove }: SequenceChipProps) {
   return (
-    <span className="bg-ink-700 text-ink-200 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs">
+    <span className="bg-ink-700 text-ink-200 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-caption">
       <button
         type="button"
         onClick={() => onOpen?.(task)}
@@ -186,7 +186,7 @@ function AddButton({ active, onClick, children }: AddButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-[10px] transition-colors ${
+      className={`flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-label transition-colors ${
         active
           ? 'border-copper-500 text-copper-400 bg-copper-500/10'
           : 'border-ink-700 text-ink-500 hover:text-ink-300'
@@ -444,14 +444,14 @@ export default function TaskDetailModal({
           value={nameDraft}
           onChange={(e) => setNameDraft(e.target.value)}
           onBlur={flushName}
-          className="focus:bg-ink-900! w-full border-0! bg-transparent! px-0! py-0! text-lg! font-medium!"
+          className="focus:bg-ink-900! w-full border-0! bg-transparent! px-0! py-0! text-display! font-medium!"
         />
       }
       width="max-w-2xl"
     >
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-ink-500 hover:text-ink-300 inline-flex min-w-0 items-center gap-1 text-xs">
+          <span className="text-ink-500 hover:text-ink-300 inline-flex min-w-0 items-center gap-1 text-caption">
             <FieldBadge fieldName={currentFieldName} size="xs" />
             <select
               value={section?.project_id ?? ''}
@@ -462,7 +462,7 @@ export default function TaskDetailModal({
                 );
                 if (firstSection) patch({ section_id: firstSection.id });
               }}
-              className="focus-visible:ring-copper-400 max-w-32 cursor-pointer truncate border-0 bg-transparent p-0 text-xs focus:outline-none focus-visible:ring-1"
+              className="focus-visible:ring-copper-400 max-w-32 cursor-pointer truncate border-0 bg-transparent p-0 text-caption focus:outline-none focus-visible:ring-1"
             >
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -471,10 +471,10 @@ export default function TaskDetailModal({
               ))}
             </select>
           </span>
-          <span className="text-ink-600 text-xs">›</span>
+          <span className="text-ink-600 text-caption">›</span>
           <Select
             value={task.section_id ?? ''}
-            className="py-0.5! text-xs!"
+            className="py-0.5! text-caption!"
             onChange={(e) => patch({ section_id: e.target.value })}
           >
             {sections
@@ -504,7 +504,7 @@ export default function TaskDetailModal({
           {/* Linha 2: Estimate | Due Date (+ Hora opcional) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-ink-500 mb-1 block text-xs font-medium">
+              <label className="text-ink-500 mb-1 block text-caption font-medium">
                 Estimate
               </label>
               <div className="border-ink-600 bg-ink-800 focus-within:border-copper-400 flex items-center gap-2 rounded border px-3 py-2">
@@ -515,9 +515,9 @@ export default function TaskDetailModal({
                   value={estimateDraft}
                   onChange={(e) => setEstimateDraft(e.target.value)}
                   onBlur={flushEstimate}
-                  className="text-ink-100 font-mono! w-full min-w-0 bg-transparent text-sm focus:outline-none"
+                  className="text-ink-100 font-mono! w-full min-w-0 bg-transparent text-body focus:outline-none"
                 />
-                <span className="text-ink-500 shrink-0 text-xs">min</span>
+                <span className="text-ink-500 shrink-0 text-caption">min</span>
               </div>
               {progress && (
                 <TaskProgressBar
@@ -530,7 +530,7 @@ export default function TaskDetailModal({
 
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label className="text-ink-500 flex items-center gap-1 text-xs font-medium">
+                <label className="text-ink-500 flex items-center gap-1 text-caption font-medium">
                   <Flag
                     size={11}
                     className={
@@ -551,7 +551,7 @@ export default function TaskDetailModal({
                         handleDueChange(dueValues.date, '00:00', false);
                       }
                     }}
-                    className={`flex items-center gap-0.5 rounded border px-1 text-[10px] transition-colors ${
+                    className={`flex items-center gap-0.5 rounded border px-1 text-label transition-colors ${
                       showDueTime
                         ? 'border-copper-500 text-copper-400 bg-copper-500/10'
                         : 'border-ink-700 text-ink-500 hover:text-ink-300'
@@ -587,7 +587,7 @@ export default function TaskDetailModal({
         </div>
 
         <div>
-          <label className="text-ink-500 mb-1 block text-xs font-medium">
+          <label className="text-ink-500 mb-1 block text-caption font-medium">
             Target{' '}
             <span className="text-ink-600 font-normal normal-case">
               (planned window — optional, primarily dates, exported as
@@ -606,7 +606,7 @@ export default function TaskDetailModal({
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-ink-400 flex items-center gap-1 text-xs font-medium">
+                  <span className="text-ink-400 flex items-center gap-1 text-caption font-medium">
                     <CornerUpLeft size={12} /> Previous tasks
                   </span>
                   <AddButton
@@ -634,14 +634,14 @@ export default function TaskDetailModal({
                     />
                   ))}
                   {!before.length && (
-                    <p className="text-ink-600 text-xs">None</p>
+                    <p className="text-ink-600 text-caption">None</p>
                   )}
                 </div>
               </div>
 
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-ink-400 flex items-center gap-1 text-xs font-medium">
+                  <span className="text-ink-400 flex items-center gap-1 text-caption font-medium">
                     <CornerDownRight size={12} /> Next tasks
                   </span>
                   <AddButton
@@ -668,7 +668,7 @@ export default function TaskDetailModal({
                       }
                     />
                   ))}
-                  {!after.length && <p className="text-ink-600 text-xs">None</p>}
+                  {!after.length && <p className="text-ink-600 text-caption">None</p>}
                 </div>
               </div>
             </div>
@@ -682,23 +682,23 @@ export default function TaskDetailModal({
                     setSeqPicker({ ...seqPicker, search: e.target.value })
                   }
                   placeholder="Buscar tarefa…"
-                  className="border-ink-600 bg-ink-800 text-ink-100 placeholder:text-ink-500 mb-2 w-full rounded border px-2.5 py-1.5 text-xs focus:outline-hidden"
+                  className="border-ink-600 bg-ink-800 text-ink-100 placeholder:text-ink-500 mb-2 w-full rounded border px-2.5 py-1.5 text-caption focus:outline-hidden"
                 />
                 {seqError && (
-                  <p className="text-rust-500 mb-1.5 text-xs">{seqError}</p>
+                  <p className="text-rust-500 mb-1.5 text-caption">{seqError}</p>
                 )}
                 <div className="max-h-40 space-y-0.5 overflow-y-auto">
                   {candidateTasks.map((t) => (
                     <button
                       key={t.id}
                       onClick={() => handleAddSequence(t)}
-                      className="text-ink-300 hover:bg-ink-800 w-full truncate rounded px-2 py-1 text-left text-xs"
+                      className="text-ink-300 hover:bg-ink-800 w-full truncate rounded px-2 py-1 text-left text-caption"
                     >
                       {t.name}
                     </button>
                   ))}
                   {!candidateTasks.length && (
-                    <p className="text-ink-600 px-2 py-1 text-xs">
+                    <p className="text-ink-600 px-2 py-1 text-caption">
                       Nada encontrado
                     </p>
                   )}
@@ -708,7 +708,7 @@ export default function TaskDetailModal({
                     setSeqPicker(null);
                     setSeqError(null);
                   }}
-                  className="text-ink-500 hover:text-ink-300 mt-2 text-xs"
+                  className="text-ink-500 hover:text-ink-300 mt-2 text-caption"
                 >
                   Fechar
                 </button>
@@ -743,7 +743,7 @@ export default function TaskDetailModal({
               </Tag>
             ))}
             {!taskTags.length && (
-              <p className="text-ink-600 text-xs">No tags yet</p>
+              <p className="text-ink-600 text-caption">No tags yet</p>
             )}
           </div>
           {tagPickerOpen && (
@@ -758,13 +758,13 @@ export default function TaskDetailModal({
                     });
                     setTagPickerOpen(false);
                   }}
-                  className="border-ink-600 text-ink-300 rounded-full border px-2 py-0.5 text-xs hover:border-teal-500 hover:text-teal-400"
+                  className="border-ink-600 text-ink-300 rounded-full border px-2 py-0.5 text-caption hover:border-teal-500 hover:text-teal-400"
                 >
                   {tag.name}
                 </button>
               ))}
               {!availableTags.length && (
-                <p className="text-ink-600 text-xs">
+                <p className="text-ink-600 text-caption">
                   No more tags — create one on the Tags page
                 </p>
               )}
@@ -808,7 +808,7 @@ export default function TaskDetailModal({
               value={newItem}
               onChange={(e) => setNewItem(e.target.value)}
               placeholder="Add a checklist item…"
-              className="text-ink-200 placeholder:text-ink-600 flex-1 bg-transparent py-1 text-sm focus:outline-none"
+              className="text-ink-200 placeholder:text-ink-600 flex-1 bg-transparent py-1 text-body focus:outline-none"
             />
           </form>
         </Section>
@@ -847,7 +847,7 @@ export default function TaskDetailModal({
               return (
                 <div
                   key={log.id}
-                  className="text-ink-400 flex items-center justify-between text-xs"
+                  className="text-ink-400 flex items-center justify-between text-caption"
                 >
                   <span>
                     {start ? formatDue(start) : '—'}{' '}
@@ -860,7 +860,7 @@ export default function TaskDetailModal({
               );
             })}
             {!logs.length && (
-              <p className="text-ink-600 text-xs">No time logged yet</p>
+              <p className="text-ink-600 text-caption">No time logged yet</p>
             )}
           </div>
         </Section>
@@ -870,14 +870,14 @@ export default function TaskDetailModal({
             {moments.map((moment) => (
               <div
                 key={moment.id}
-                className="group bg-ink-900 text-ink-300 rounded px-2.5 py-2 text-sm"
+                className="group bg-ink-900 text-ink-300 rounded px-2.5 py-2 text-body"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex min-w-0 flex-1 items-start gap-1.5">
                     <MomentIcon moment={moment} />
                     <div className="min-w-0 flex-1">
                       {moment.moment_type !== 'note' && (
-                        <p className="text-ink-400 text-xs font-medium">
+                        <p className="text-ink-400 text-caption font-medium">
                           {describeMoment(moment)}
                         </p>
                       )}
@@ -908,7 +908,7 @@ export default function TaskDetailModal({
               </div>
             ))}
             {!moments.length && (
-              <p className="text-ink-600 text-xs">No moments yet</p>
+              <p className="text-ink-600 text-caption">No moments yet</p>
             )}
           </div>
           <form onSubmit={addNote} className="mt-2 flex items-center gap-1.5">
@@ -927,7 +927,7 @@ export default function TaskDetailModal({
         <div className="border-ink-700 flex justify-end border-t pt-3.5">
           <button
             onClick={() => remove.mutate(task.id, { onSuccess: onClose })}
-            className="text-ink-500 hover:text-ink-300 flex items-center gap-1 text-xs"
+            className="text-ink-500 hover:text-ink-300 flex items-center gap-1 text-caption"
           >
             <Trash2 size={13} /> Delete
           </button>
@@ -939,6 +939,6 @@ export default function TaskDetailModal({
 
 function clsxDone(done: boolean): string {
   return done
-    ? 'flex-1 text-sm text-ink-600 line-through'
-    : 'flex-1 text-sm text-ink-200';
+    ? 'flex-1 text-body text-ink-600 line-through'
+    : 'flex-1 text-body text-ink-200';
 }

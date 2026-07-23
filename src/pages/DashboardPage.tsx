@@ -78,8 +78,8 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-5">
-      <h1 className="font-display text-ink-100 mb-1 text-2xl">Today</h1>
-      <p className="text-ink-500 mb-6 text-sm">
+      <h1 className="font-display text-ink-100 mb-1 text-display-lg">Today</h1>
+      <p className="text-ink-500 mb-6 text-body">
         {new Date().toLocaleDateString(undefined, {
           weekday: 'long',
           month: 'long',
@@ -89,11 +89,11 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <section>
-          <h2 className="text-rust-500 mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+          <h2 className="text-rust-500 mb-2 flex items-center gap-1.5 text-caption font-semibold tracking-wide uppercase">
             <AlertTriangle size={13} /> Overdue ({overdue.length})
           </h2>
           {!overdue.length ? (
-            <p className="text-ink-600 text-sm">Nothing overdue. Good work.</p>
+            <p className="text-ink-600 text-body">Nothing overdue. Good work.</p>
           ) : (
             <div className="space-y-1">
               {overdue.map((task) => {
@@ -113,11 +113,11 @@ export default function DashboardPage() {
         </section>
 
         <section>
-          <h2 className="text-copper-400 mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+          <h2 className="text-copper-400 mb-2 flex items-center gap-1.5 text-caption font-semibold tracking-wide uppercase">
             <CheckCircle2 size={13} /> Due today ({dueToday.length})
           </h2>
           {!dueToday.length ? (
-            <p className="text-ink-600 text-sm">Nothing due today.</p>
+            <p className="text-ink-600 text-body">Nothing due today.</p>
           ) : (
             <div className="space-y-1">
               {dueToday.map((task) => {
@@ -138,7 +138,7 @@ export default function DashboardPage() {
       </div>
 
       <section className="mt-6">
-        <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wide text-teal-400 uppercase">
+        <h2 className="mb-2 flex items-center gap-1.5 text-caption font-semibold tracking-wide text-teal-400 uppercase">
           <CalendarClock size={13} /> Today&lsquo;s calendar
         </h2>
         {!todaysEvents.length ? (
@@ -157,16 +157,16 @@ export default function DashboardPage() {
                   key={ev.id}
                   className="flex items-center gap-3 px-3.5 py-2.5"
                 >
-                  <span className="text-ink-400 w-20 shrink-0 font-mono text-xs">
+                  <span className="text-ink-400 w-20 shrink-0 font-mono text-caption">
                     {ev.start.toLocaleTimeString(undefined, {
                       hour: 'numeric',
                       minute: '2-digit',
                     })}
                   </span>
-                  <span className="text-ink-100 text-sm">
+                  <span className="text-ink-100 text-body">
                     {getEventLabel(ev, taskName)}
                   </span>
-                  <span className="text-ink-600 ml-auto text-xs">
+                  <span className="text-ink-600 ml-auto text-caption">
                     {ev.event_type}
                   </span>
                 </div>

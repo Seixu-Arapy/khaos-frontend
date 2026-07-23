@@ -172,7 +172,7 @@ export function StatusPicker({ value, onChange }: StatusPickerProps) {
           >
             <StatusIcon status={s} size={18} />
             <span
-              className="font-mono text-[10px] font-semibold tracking-wider uppercase"
+              className="font-mono text-label font-semibold tracking-wider uppercase"
               style={{ color: meta.iconColor }}
             >
               {meta.acronym}
@@ -235,7 +235,7 @@ interface TagProps {
 
 export function Tag({ children, onRemove }: TagProps) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/10 px-2 py-0.5 text-xs font-medium text-teal-400">
+    <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/10 px-2 py-0.5 text-caption font-medium text-teal-400">
       {children}
       {onRemove && (
         <button
@@ -265,7 +265,7 @@ export function Button({
     <button
       className={clsx(
         'inline-flex items-center justify-center gap-1.5 rounded font-medium transition-colors disabled:pointer-events-none disabled:opacity-50',
-        size === 'sm' ? 'px-2.5 py-1.5 text-xs' : 'px-3.5 py-2 text-sm',
+        size === 'sm' ? 'px-2.5 py-1.5 text-caption' : 'px-3.5 py-2 text-body',
         variant === 'default' &&
           'bg-copper-500 text-ink-900 hover:bg-copper-400',
         variant === 'secondary' && 'bg-ink-700 text-ink-100 hover:bg-ink-600',
@@ -311,7 +311,7 @@ export function Select({ className, children, ...props }: SelectProps) {
   return (
     <select
       className={clsx(
-        'border-ink-600 bg-ink-800 text-ink-100 rounded border px-2.5 py-1.5 text-sm',
+        'border-ink-600 bg-ink-800 text-ink-100 rounded border px-2.5 py-1.5 text-body',
         'focus:border-copper-400 focus:outline-none',
         className
       )}
@@ -328,7 +328,7 @@ export function TextInput({ className, ...props }: TextInputProps) {
   return (
     <input
       className={clsx(
-        'border-ink-600 bg-ink-800 text-ink-100 placeholder:text-ink-500 w-full rounded border px-3 py-2 text-sm',
+        'border-ink-600 bg-ink-800 text-ink-100 placeholder:text-ink-500 w-full rounded border px-3 py-2 text-body',
         'focus:border-copper-400 focus:outline-none',
         className
       )}
@@ -389,7 +389,7 @@ export function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="border-ink-700 flex items-center justify-between border-b px-5 py-3.5">
-          <h2 className="font-display text-ink-100 min-w-0 flex-1 text-lg">
+          <h2 className="font-display text-ink-100 min-w-0 flex-1 text-display">
             {title}
           </h2>
           <IconButton label="Close" onClick={onClose}>
@@ -418,7 +418,7 @@ export function EmptyState({ icon: Icon, title, hint }: EmptyStateProps) {
     <div className="border-ink-700 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-6 py-14 text-center">
       {Icon && <Icon size={28} className="text-ink-600" />}
       <p className="text-ink-300 font-medium">{title}</p>
-      {hint && <p className="text-ink-500 max-w-xs text-sm">{hint}</p>}
+      {hint && <p className="text-ink-500 max-w-xs text-body">{hint}</p>}
     </div>
   );
 }
@@ -440,7 +440,7 @@ export function DueBadge({ due, status }: DueBadgeProps) {
   return (
     <span
       className={clsx(
-        'inline-flex items-center gap-1 font-mono text-xs tracking-tight',
+        'inline-flex items-center gap-1 font-mono text-caption tracking-tight',
         overdue ? 'text-rust-500 animate-pulse' : 'text-copper-400'
       )}
     >
@@ -533,7 +533,7 @@ export function FieldBadge({ fieldName, size = 'sm' }: FieldBadgeProps) {
     <span
       title={fieldName}
       className={clsx(
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium tracking-wide uppercase',
+        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-caption font-medium tracking-wide uppercase',
         meta.classes.border,
         meta.classes.bg,
         meta.classes.text
@@ -563,7 +563,7 @@ export function ProjectChip({ name, fieldName, className }: ProjectChipProps) {
   return (
     <span
       className={clsx(
-        'text-ink-500 inline-flex min-w-0 items-center gap-1 text-xs',
+        'text-ink-500 inline-flex min-w-0 items-center gap-1 text-caption',
         className
       )}
     >
@@ -610,7 +610,7 @@ export function TaskProgressBar({
     <div
       className={clsx(
         'flex flex-wrap items-center gap-x-1.5 gap-y-0 font-mono leading-tight',
-        full ? 'text-sm' : 'text-[10px]',
+        full ? 'text-body' : 'text-label',
         className
       )}
     >

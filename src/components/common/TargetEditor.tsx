@@ -156,7 +156,7 @@ export default function TargetEditor({
                     showEndTime
                   );
                 }}
-                className={`flex items-center gap-0.5 rounded border px-1 text-[10px] transition-colors ${
+                className={`flex items-center gap-0.5 rounded border px-1 text-label transition-colors ${
                   showStartTime
                     ? 'border-copper-500 text-copper-400 bg-copper-500/10'
                     : 'border-ink-700 text-ink-500 hover:text-ink-300'
@@ -226,7 +226,7 @@ export default function TargetEditor({
                     nextState
                   );
                 }}
-                className={`flex items-center gap-0.5 rounded border px-1 text-[10px] transition-colors ${
+                className={`flex items-center gap-0.5 rounded border px-1 text-label transition-colors ${
                   showEndTime
                     ? 'border-copper-500 text-copper-400 bg-copper-500/10'
                     : 'border-ink-700 text-ink-500 hover:text-ink-300'
@@ -274,7 +274,7 @@ export default function TargetEditor({
               )}
             </div>
           ) : (
-            <div className="border-ink-700 text-ink-600 flex h-[34px] items-center rounded border border-dashed px-3 text-xs italic">
+            <div className="border-ink-700 text-ink-600 flex h-[34px] items-center rounded border border-dashed px-3 text-caption italic">
               Open-ended
             </div>
           )}
@@ -283,7 +283,7 @@ export default function TargetEditor({
 
       <div className="flex items-center justify-between pt-0.5">
         {startValues.date && (
-          <label className="text-ink-500 flex items-center gap-1.5 text-xs select-none">
+          <label className="text-ink-500 flex items-center gap-1.5 text-caption select-none">
             <input
               type="checkbox"
               checked={!showEndInput}
@@ -300,7 +300,7 @@ export default function TargetEditor({
             type="button"
             disabled={disabled}
             onClick={handleClear}
-            className="text-ink-500 hover:text-rust-500 ml-auto flex items-center gap-1 text-xs"
+            className="text-ink-500 hover:text-rust-500 ml-auto flex items-center gap-1 text-caption"
           >
             <X size={12} /> Clear window
           </button>
@@ -308,7 +308,7 @@ export default function TargetEditor({
       </div>
 
       {error && (
-        <p className="text-rust-500 mt-1 text-xs font-medium">{error}</p>
+        <p className="text-rust-500 mt-1 text-caption font-medium">{error}</p>
       )}
     </div>
   );

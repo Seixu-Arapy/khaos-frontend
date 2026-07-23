@@ -21,7 +21,7 @@ export default function ActiveTimerWidget() {
 
   if (!activeLog) {
     return (
-      <div className="border-ink-700 text-ink-500 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs">
+      <div className="border-ink-700 text-ink-500 flex items-center gap-2 rounded-full border px-3 py-1.5 text-caption">
         <span className="bg-ink-600 h-1.5 w-1.5 shrink-0 rounded-full" />
         Not logging
       </div>
@@ -37,7 +37,7 @@ export default function ActiveTimerWidget() {
   return (
     <button
       onClick={() => task && navigate(`/tasks?taskId=${task.id}`)}
-      className="group border-copper-500/40 bg-copper-500/10 hover:bg-copper-500/15 flex items-center gap-2.5 rounded-full border py-1.5 pr-1.5 pl-3 text-xs transition-colors"
+      className="group border-copper-500/40 bg-copper-500/10 hover:bg-copper-500/15 flex items-center gap-2.5 rounded-full border py-1.5 pr-1.5 pl-3 text-caption transition-colors"
       title="Go to running task"
     >
       <span className="bg-copper-500 h-1.5 w-1.5 animate-pulse rounded-full" />

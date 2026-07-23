@@ -50,7 +50,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       )}
       <div
         className={clsx(
-          'max-w-[85%] rounded-lg px-3.5 py-2.5 text-sm leading-relaxed',
+          'max-w-[85%] rounded-lg px-3.5 py-2.5 text-body leading-relaxed',
           isUser ? 'bg-ink-700 text-ink-100' : 'bg-ink-800 text-ink-200',
           message.isError &&
             'text-rust-400 border-rust-500/40 bg-rust-500/10 border'
@@ -151,7 +151,7 @@ export default function ChatPanel({
             bgColor="bg-transparent"
             className="animate-pulse"
           />
-          <h2 className="font-display text-ink-100 text-sm font-semibold">
+          <h2 className="font-display text-ink-100 text-body font-semibold">
             <KhaoticText text="KallKhaos" />
           </h2>
         </div>
@@ -159,7 +159,7 @@ export default function ChatPanel({
           {messages.length > 0 && (
             <button
               onClick={clearHistory}
-              className="text-ink-500 hover:text-rust-500 flex items-center gap-1 text-xs"
+              className="text-ink-500 hover:text-rust-500 flex items-center gap-1 text-caption"
             >
               <Trash2 size={12} /> Clear
             </button>
@@ -177,13 +177,13 @@ export default function ChatPanel({
       </div>
 
       {activeEntity && (
-        <div className="border-ink-700 bg-ink-800/50 flex shrink-0 items-center gap-1.5 border-b px-4 py-1.5 text-xs">
+        <div className="border-ink-700 bg-ink-800/50 flex shrink-0 items-center gap-1.5 border-b px-4 py-1.5 text-caption">
           <Link2 size={11} className="text-copper-400 shrink-0" />
           <span className="text-ink-500 shrink-0">Talking about:</span>
           <span className="text-ink-100 min-w-0 flex-1 truncate font-medium">
             {activeEntity.name}
           </span>
-          <span className="text-ink-600 shrink-0 text-[10px] tracking-wide uppercase">
+          <span className="text-ink-600 shrink-0 text-label tracking-wide uppercase">
             {activeEntity.type}
           </span>
           <button
@@ -204,7 +204,7 @@ export default function ChatPanel({
         {!messages.length && !momentPrompts.length && (
           <div className="text-ink-600 flex h-full flex-col items-center justify-center gap-2 text-center">
             <KhaosIcon size="h-10 w-10" bgColor="bg-transparent" spin={true} />
-            <p className="text-sm">
+            <p className="text-body">
               Try: &ldquo;What&lsquo;s overdue?&rdquo; — or open a task and ask
               about it directly.
             </p>
@@ -235,7 +235,7 @@ export default function ChatPanel({
           />
         )}
         {isSending && !pending && (
-          <div className="text-ink-500 flex items-center gap-2 pl-9 text-xs">
+          <div className="text-ink-500 flex items-center gap-2 pl-9 text-caption">
             <Loader2 size={13} className="animate-spin" /> Thinking…
           </div>
         )}
@@ -253,7 +253,7 @@ export default function ChatPanel({
           onKeyDown={handleKeyDown}
           placeholder="Ask Khaos… (⌘+Enter to send)"
           disabled={isSending}
-          className="border-ink-700 bg-ink-800 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 flex-1 resize-none rounded-2xl border px-4 py-2.5 text-sm leading-normal focus:outline-hidden disabled:opacity-60"
+          className="border-ink-700 bg-ink-800 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 flex-1 resize-none rounded-2xl border px-4 py-2.5 text-body leading-normal focus:outline-hidden disabled:opacity-60"
         />
         <button
           type="submit"

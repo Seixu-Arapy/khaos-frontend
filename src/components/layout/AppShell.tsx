@@ -59,7 +59,7 @@ const SIDEBAR_NAV: NavItem[] = [
 
 function sidebarLinkClass({ isActive }: NavLinkRenderProps): string {
   return clsx(
-    'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors',
+    'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-body font-medium transition-colors',
     isActive
       ? 'bg-copper-500/15 text-copper-400'
       : 'text-ink-300 hover:bg-ink-800 hover:text-ink-100'
@@ -68,7 +68,7 @@ function sidebarLinkClass({ isActive }: NavLinkRenderProps): string {
 
 function bottomLinkClass({ isActive }: NavLinkRenderProps): string {
   return clsx(
-    'flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors',
+    'flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-label font-medium transition-colors',
     isActive ? 'text-copper-400' : 'text-ink-500'
   );
 }
@@ -129,7 +129,7 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
       </nav>
 
       <div className="mt-5 flex items-center justify-between px-4">
-        <span className="text-ink-500 text-xs font-semibold tracking-wide uppercase">
+        <span className="text-ink-500 text-caption font-semibold tracking-wide uppercase">
           Projects
         </span>
         <button
@@ -156,13 +156,13 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
             <ProjectChip
               name={p.name}
               fieldName={p.field_id ? fieldsById.get(p.field_id)?.name : null}
-              className="min-w-0 flex-1 text-sm text-inherit"
+              className="min-w-0 flex-1 text-body text-inherit"
             />
             <StatusBadge status={p.status} />
           </NavLink>
         ))}
         {!projects.length && (
-          <p className="text-ink-600 px-2 text-xs">
+          <p className="text-ink-600 px-2 text-caption">
             Create a project to get started.
           </p>
         )}
@@ -170,7 +170,7 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
 
       <button
         onClick={() => setPaletteOpen(true)}
-        className="border-ink-700 text-ink-500 hover:border-ink-600 hover:text-ink-300 mx-3 mb-3 flex items-center justify-between rounded-md border px-2.5 py-1.5 text-xs"
+        className="border-ink-700 text-ink-500 hover:border-ink-600 hover:text-ink-300 mx-3 mb-3 flex items-center justify-between rounded-md border px-2.5 py-1.5 text-caption"
       >
         <span className="flex items-center gap-1.5">
           <Command size={12} /> Quick navigate
@@ -315,7 +315,7 @@ export default function AppShell() {
             spin={true}
           />
           {pendingMomentPrompts > 0 && (
-            <span className="border-ink-900 bg-rust-500 absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border-2 px-0.5 text-[10px] leading-none font-semibold text-white">
+            <span className="border-ink-900 bg-rust-500 absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border-2 px-0.5 text-label leading-none font-semibold text-white">
               {pendingMomentPrompts}
             </span>
           )}

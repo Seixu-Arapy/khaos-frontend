@@ -22,13 +22,13 @@ export default function ConfirmationCard({
 
   return (
     <div className="border-copper-500/40 bg-ink-800 ml-9 max-w-[85%] rounded-lg border p-3.5">
-      <div className="text-copper-400 mb-2.5 flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+      <div className="text-copper-400 mb-2.5 flex items-center gap-1.5 text-caption font-semibold tracking-wide uppercase">
         <ShieldAlert size={13} />
         Confirm before running
       </div>
 
       {preview.kind === 'generic' && (
-        <p className="text-ink-300 mb-3 font-mono text-xs leading-relaxed">
+        <p className="text-ink-300 mb-3 font-mono text-caption leading-relaxed">
           {preview.summaryText}
         </p>
       )}
@@ -61,7 +61,7 @@ export default function ConfirmationCard({
       )}
 
       {!preview.entityType && preview.kind !== 'generic' && (
-        <p className="text-ink-500 mb-3 text-xs">
+        <p className="text-ink-500 mb-3 text-caption">
           {actionName.replace(/_/g, ' ')} on an entity outside tasks/projects.
         </p>
       )}

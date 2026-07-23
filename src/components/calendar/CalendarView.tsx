@@ -334,18 +334,18 @@ export default function CalendarView({
           </button>
           <button
             onClick={() => setAnchor(defaultAnchorFor(daysToShow))}
-            className="border-ink-700 text-ink-300 hover:bg-ink-800 rounded border px-2 py-1 text-xs sm:py-0.5"
+            className="border-ink-700 text-ink-300 hover:bg-ink-800 rounded border px-2 py-1 text-caption sm:py-0.5"
           >
             Today
           </button>
-          <span className="text-ink-300 ml-1 text-sm sm:ml-2">
+          <span className="text-ink-300 ml-1 text-body sm:ml-2">
             {format(days[0], 'MMM d')} –{' '}
             {format(days[days.length - 1], 'MMM d, yyyy')}
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-          <div className="border-ink-700 flex overflow-hidden rounded border text-xs">
+          <div className="border-ink-700 flex overflow-hidden rounded border text-caption">
             {DAY_COUNT_OPTIONS.map((n) => (
               <button
                 key={n}
@@ -365,7 +365,7 @@ export default function CalendarView({
           </div>
           <button
             onClick={() => setShowLoggedTime((v) => !v)}
-            className="text-ink-300 flex items-center gap-2 text-xs"
+            className="text-ink-300 flex items-center gap-2 text-caption"
           >
             <span
               className={`relative inline-block h-[17px] w-[30px] shrink-0 rounded-full transition-colors ${showLoggedTime ? 'bg-teal-500' : 'bg-ink-700'}`}
@@ -399,7 +399,7 @@ export default function CalendarView({
                   {format(d, 'EEE')}
                 </p>
                 <p
-                  className={`text-sm font-medium ${isToday(d) ? 'text-copper-400' : 'text-ink-200'}`}
+                  className={`text-body font-medium ${isToday(d) ? 'text-copper-400' : 'text-ink-200'}`}
                 >
                   {format(d, 'd')}
                 </p>
@@ -431,7 +431,7 @@ export default function CalendarView({
               <div
                 key={h}
                 style={{ top: h * HOUR_HEIGHT }}
-                className="text-ink-600 absolute right-1.5 -translate-y-2 text-[10px]"
+                className="text-ink-600 absolute right-1.5 -translate-y-2 text-label"
               >
                 {h === 0
                   ? ''
@@ -555,7 +555,7 @@ export default function CalendarView({
             return (
               <div
                 key={day.toISOString()}
-                className="border-ink-700 flex items-center justify-between gap-1 border-l px-2 py-1.5 font-mono text-[10px]"
+                className="border-ink-700 flex items-center justify-between gap-1 border-l px-2 py-1.5 font-mono text-label"
               >
                 <span className={summary.scheduledColorClass}>
                   {minutesToHuman(summary.scheduledMinutes)}

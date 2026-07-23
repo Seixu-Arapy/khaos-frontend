@@ -57,7 +57,7 @@ export default function TaskRow({
         >
           <StatusBadge status={task.status} />
           <span
-            className={`text-ink-100 min-w-0 flex-1 truncate text-sm ${
+            className={`text-ink-100 min-w-0 flex-1 truncate text-body ${
               task.status === 'cancelled' ? 'line-through' : ''
             }`}
           >
@@ -65,7 +65,7 @@ export default function TaskRow({
           </span>
           <PriorityBadge priority={task.priority} />
           {task.estimate ? (
-            <span className="text-ink-600 hidden shrink-0 font-mono text-xs md:block">
+            <span className="text-ink-600 hidden shrink-0 font-mono text-caption md:block">
               {minutesToHuman(task.estimate)}
             </span>
           ) : null}

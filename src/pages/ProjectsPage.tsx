@@ -85,7 +85,7 @@ export default function ProjectsPage() {
   return (
     <div className="px-6 py-5">
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="font-display text-ink-100 text-2xl">Projects</h1>
+        <h1 className="font-display text-ink-100 text-display-lg">Projects</h1>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={addField}>
             New field
@@ -110,7 +110,7 @@ export default function ProjectsPage() {
           if (!fieldProjects.length) return null;
           return (
             <div key={field.id}>
-              <h2 className="text-ink-500 mb-2.5 text-xs font-semibold tracking-wide uppercase">
+              <h2 className="text-ink-500 mb-2.5 text-caption font-semibold tracking-wide uppercase">
                 {field.name}
               </h2>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -129,7 +129,7 @@ export default function ProjectsPage() {
 
         {Boolean(unassigned.length) && (
           <div>
-            <h2 className="text-ink-500 mb-2.5 text-xs font-semibold tracking-wide uppercase">
+            <h2 className="text-ink-500 mb-2.5 text-caption font-semibold tracking-wide uppercase">
               Unsorted
             </h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -156,7 +156,7 @@ export default function ProjectsPage() {
       >
         <form onSubmit={submitProject} className="space-y-3">
           <div>
-            <label className="text-ink-400 mb-1 block text-xs font-medium">
+            <label className="text-ink-400 mb-1 block text-caption font-medium">
               Name
             </label>
             <TextInput
@@ -166,7 +166,7 @@ export default function ProjectsPage() {
             />
           </div>
           <div>
-            <label className="text-ink-400 mb-1 block text-xs font-medium">
+            <label className="text-ink-400 mb-1 block text-caption font-medium">
               Field (optional)
             </label>
             <Select

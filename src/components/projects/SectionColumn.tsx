@@ -68,7 +68,7 @@ export default function SectionColumn({
               patch: { name: e.target.value },
             })
           }
-          className="text-ink-100 flex-1 bg-transparent text-sm font-medium focus:outline-none"
+          className="text-ink-100 flex-1 bg-transparent text-body font-medium focus:outline-none"
         />
         <span
           className="text-ink-600 hover:text-ink-300 flex shrink-0 items-center"
@@ -95,7 +95,7 @@ export default function SectionColumn({
               patch: { status: e.target.value as Status },
             })
           }
-          className="py-1! text-xs!"
+          className="py-1! text-caption!"
         >
           {STATUSES.map((s) => (
             <option key={s} value={s}>
@@ -117,7 +117,7 @@ export default function SectionColumn({
                   removeSection.mutate(section.id);
                   setMenuOpen(false);
                 }}
-                className="text-ink-400 hover:bg-ink-700 flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-xs"
+                className="text-ink-400 hover:bg-ink-700 flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-caption"
               >
                 <Trash2 size={12} /> Remove section
               </button>
@@ -142,7 +142,7 @@ export default function SectionColumn({
             value={newTaskName}
             onChange={(e) => setNewTaskName(e.target.value)}
             placeholder="Add a task…"
-            className="text-ink-300 placeholder:text-ink-600 flex-1 bg-transparent py-0.5 text-sm focus:outline-none"
+            className="text-ink-300 placeholder:text-ink-600 flex-1 bg-transparent py-0.5 text-body focus:outline-none"
           />
         </form>
       </div>

@@ -32,7 +32,7 @@ function Card({ task, projectInfo, onOpen }: CardProps) {
       {...listeners}
       {...attributes}
       onClick={() => !isDragging && onOpen(task)}
-      className="border-ink-700 bg-ink-800 text-ink-100 shadow-card cursor-grab rounded-md border p-2.5 text-sm active:cursor-grabbing"
+      className="border-ink-700 bg-ink-800 text-ink-100 shadow-card cursor-grab rounded-md border p-2.5 text-body active:cursor-grabbing"
     >
       <p className="mb-1.5 leading-snug">{task.name}</p>
       <div className="flex items-center justify-between gap-2">
@@ -68,10 +68,10 @@ function Column({ priority, tasks, projectInfoById, onOpen }: ColumnProps) {
         <span
           className={`h-1.5 w-1.5 rounded-full ${meta?.dot || 'bg-ink-500'}`}
         />
-        <span className="text-ink-400 text-xs font-semibold tracking-wide uppercase">
+        <span className="text-ink-400 text-caption font-semibold tracking-wide uppercase">
           {priority}
         </span>
-        <span className="text-ink-600 ml-auto text-xs">{tasks.length}</span>
+        <span className="text-ink-600 ml-auto text-caption">{tasks.length}</span>
       </div>
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-2">
         {tasks.map((task) => (
