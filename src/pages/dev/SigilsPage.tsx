@@ -141,15 +141,83 @@ export default function SigilsPage() {
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Field</dt>
-            <dd className="text-nyx-400">
+            <dd className="text-nyx-400 mb-3">
               The top-level life-domain a project (and by extension its
               tasks) belongs to — Design, Costura, Programação, etc. It
               carries the strongest, most saturated color signal of any
-              entity (the full 11-hue circle, above) because it&rsquo;s
-              the highest grouping level in the app; every other color
-              system (status, priority) is deliberately more restrained
-              by comparison.
+              entity (all 11, below) because it&rsquo;s the highest
+              grouping level in the app; every other color system
+              (status, priority) is deliberately more restrained by
+              comparison.
             </dd>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {fieldNames.map((name) => (
+                <div key={name} className="flex items-center gap-1.5">
+                  <FieldBadge fieldName={name} size="xs" />
+                  <span className="text-nyx-400 text-label font-light">
+                    {name}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-nyx-500 mt-3 text-label leading-relaxed font-light">
+              All 11 form one full hue circle, anchored on Staging
+              Academy&rsquo;s existing brand blue (fixed, doesn&rsquo;t
+              move) with the other 10 spaced evenly around it in this
+              order — adjacent fields here are adjacent hues. Saturation
+              and lightness held constant except where a hue fell under
+              WCAG AA against the background (Som, lightened to clear
+              it) — nothing else tuned by eye.{' '}
+              <code className="text-eros-400">Textos</code> had no config
+              entry at all before this pass: the app has 11 real fields,
+              this list only carried 10 of them.
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-nyx-600 text-label font-light">
+                e.g. a project in Design:
+              </span>
+              <ProjectChip name="Roadmap Q3" fieldName="Design" />
+            </div>
+
+            <p className="text-nyx-200 mb-2 mt-6 text-label font-semibold tracking-wide uppercase">
+              Field, everywhere it needs to render
+            </p>
+            <p className="text-nyx-400 mb-3 text-caption leading-relaxed">
+              In chat: the same <code className="text-eros-400">FieldBadge</code>{' '}
+              the app already uses — no new component needed, chat already
+              renders real React (<code className="text-eros-400">EntityChip</code>{' '}
+              does this for task/project/event today). <em>Not yet wired:</em>{' '}
+              <code className="text-eros-400">ChatEntityType</code> only
+              recognizes <code className="text-eros-400">task</code>/
+              <code className="text-eros-400">project</code>/
+              <code className="text-eros-400">event</code> tokens — adding{' '}
+              <code className="text-eros-400">field</code> is a real follow-up,
+              not done here.
+            </p>
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-nyx-600 text-label font-light">chat:</span>
+              <FieldBadge fieldName="Design" size="md" />
+            </div>
+            <p className="text-nyx-400 mb-3 text-caption leading-relaxed">
+              On Telegram, color and icons don&rsquo;t exist — plain text/
+              markdown only. Proposal: one emoji per field (reusing the same
+              identity, just translated to an emoji instead of a lucide
+              icon) plus the name in caps, e.g.{' '}
+              <code className="text-eros-400">🎨 DESIGN</code>. All 11:
+            </p>
+            <p className="text-nyx-400 max-w-prose text-caption leading-relaxed">
+              🧑 PESSOAL · 🎓 PESQUISA · 📄 TEXTOS · 🖌️ CALIGRAFIA · ✨ ARTES
+              · 📦 DESIGN · ✂️ COSTURA · 🏫 STAGING ACADEMY · 🎧 SOM · 🖼️
+              IMAGEM · 💻 PROGRAMAÇÃO
+            </p>
+            <p className="text-nyx-500 mt-2 text-label leading-relaxed font-light">
+              Real small-caps isn&rsquo;t reliable on Telegram (no universal
+              unicode small-caps font support), so this uses plain caps
+              instead of trying to fake it. Not wired into{' '}
+              <code className="text-eros-400">telegram-bot</code>/
+              <code className="text-eros-400">telegram-notify</code> yet —
+              proposal only.
+            </p>
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Tag (work_tags)</dt>
@@ -299,31 +367,6 @@ export default function SigilsPage() {
           </Swatch>
         </Section>
 
-        <Section title="Fields — all 11">
-          {fieldNames.map((name) => (
-            <Swatch key={name} label={name}>
-              <div className="flex items-center gap-2">
-                <FieldBadge fieldName={name} size="xs" />
-                <FieldBadge fieldName={name} size="sm" />
-                <FieldBadge fieldName={name} size="md" />
-              </div>
-            </Swatch>
-          ))}
-        </Section>
-
-        <p className="text-nyx-400 max-w-prose text-caption leading-relaxed">
-          The 11 fields form one full hue circle, anchored on Staging
-          Academy&rsquo;s existing brand blue (it doesn&rsquo;t move) with
-          the other 10 spaced evenly around it in the order shown above —
-          adjacent fields in that list read as adjacent hues. Saturation
-          and lightness are held constant across all 11 except where a hue
-          landed under WCAG AA against the background (Som, in the
-          blue-violet range) and needed lightening to clear it; nothing
-          else was tuned by eye. <code className="text-eros-400">Textos</code>{' '}
-          was missing a config entry entirely before this pass — the app
-          has always had 11 real fields, this list only carried 10.
-        </p>
-
         <Section title="Dates, estimate &amp; progress">
           <Swatch label="due (upcoming)">
             <DueBadge due="2026-08-01" status="todo" />
@@ -396,6 +439,76 @@ export default function SigilsPage() {
           new expanded forms, or mainly recognize and consolidate the ones
           that already exist (TaskRow, section header, routine row) onto
           shared building blocks?
+        </p>
+
+        <p className="text-nyx-200 mb-3 mt-8 text-caption font-semibold tracking-wide uppercase">
+          Proposal: a Project row
+        </p>
+        <p className="text-nyx-400 mb-6 max-w-prose text-caption leading-relaxed">
+          Project has a chip (<code className="text-eros-400">ProjectChip</code>)
+          but no expanded form at all — <code className="text-eros-400">
+            ProjectCard
+          </code>{' '}
+          is a grid tile, not a row, and today only shows status/priority/due
+          plus a section/task count line; <code className="text-eros-400">
+            target
+          </code>{' '}
+          exists on the real{' '}
+          <code className="text-eros-400">projects</code> table but isn&rsquo;t
+          shown anywhere yet. A row version, TaskRow-shaped, would carry:
+          status, priority, due, target, section count, task count.
+        </p>
+
+        <Section title="Option A — one line">
+          <Swatch label="everything inline, TaskRow-shaped">
+            <div className="border-nyx-700 flex w-[420px] items-center gap-1.5 rounded-md border border-transparent px-2 py-1.5 hover:border-current">
+              <StatusBadge status="in_progress" />
+              <span className="text-nyx-100 min-w-0 flex-1 truncate text-body">
+                Roadmap Q3
+              </span>
+              <PriorityBadge priority="high" />
+              <TargetBadge target='["2026-07-01 00:00:00+00","2026-09-30 00:00:00+00")' />
+              <DueBadge due="2026-09-30" status="in_progress" />
+              <span className="text-nyx-600 shrink-0 text-caption">
+                3 sections · 12 tasks
+              </span>
+            </div>
+          </Swatch>
+        </Section>
+
+        <Section title="Option B — two lines">
+          <Swatch label="identity on top, badges below">
+            <div className="border-nyx-700 flex w-[420px] flex-col gap-0.5 rounded-md border border-transparent px-2 py-1.5 hover:border-current">
+              <div className="flex items-center gap-1.5">
+                <StatusBadge status="in_progress" />
+                <span className="text-nyx-100 min-w-0 flex-1 truncate text-body">
+                  Roadmap Q3
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 pl-0.5">
+                <PriorityBadge priority="high" />
+                <TargetBadge target='["2026-07-01 00:00:00+00","2026-09-30 00:00:00+00")' />
+                <DueBadge due="2026-09-30" status="in_progress" />
+                <span className="text-nyx-600 text-caption">
+                  3 sections · 12 tasks
+                </span>
+              </div>
+            </div>
+          </Swatch>
+        </Section>
+
+        <p className="text-nyx-400 max-w-prose text-caption leading-relaxed">
+          <b className="text-nyx-200">My take:</b> Option A. TaskRow already
+          established the one-line pattern (status + name + badges, wrapping
+          to two lines only on narrow viewports via its own responsive
+          classes) — a Project row splitting into two lines <em>by
+          default</em> would read as a different, heavier kind of row next
+          to task rows in the same list context (e.g. a combined
+          projects-and-tasks view), when a project row realistically has
+          the same or less information density than a task row does. Two
+          lines only makes sense if projects end up needing more fields
+          than tasks show, which target/section-count/task-count don&rsquo;t
+          push past.
         </p>
       </div>
     </Chamber>
