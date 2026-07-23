@@ -52,11 +52,11 @@ export default function SectionColumn({
   }
 
   return (
-    <div className="border-ink-700 bg-ink-800/40 rounded-lg border">
-      <div className="border-ink-700 flex items-center gap-2 border-b px-3 py-2.5">
+    <div className="border-nyx-700 bg-nyx-800/40 rounded-lg border">
+      <div className="border-nyx-700 flex items-center gap-2 border-b px-3 py-2.5">
         <span
           {...dragHandleProps}
-          className="text-ink-600 hover:text-ink-300 cursor-grab active:cursor-grabbing"
+          className="text-nyx-600 hover:text-nyx-300 cursor-grab active:cursor-grabbing"
         >
           <GripVertical size={14} />
         </span>
@@ -68,17 +68,17 @@ export default function SectionColumn({
               patch: { name: e.target.value },
             })
           }
-          className="text-ink-100 flex-1 bg-transparent text-body font-medium focus:outline-none"
+          className="text-nyx-100 flex-1 bg-transparent text-body font-medium focus:outline-none"
         />
         <span
-          className="text-ink-600 hover:text-ink-300 flex shrink-0 items-center"
+          className="text-nyx-600 hover:text-nyx-300 flex shrink-0 items-center"
           title="Tasks below are ordered by target start date, then due date — tasks with neither go last."
         >
           <Info size={13} />
         </span>
         <button
           onClick={() => setTargetOpen(true)}
-          className="text-ink-500 hover:text-ink-200 flex shrink-0 items-center"
+          className="text-nyx-500 hover:text-nyx-200 flex shrink-0 items-center"
           title="Edit target"
         >
           {section.target ? (
@@ -106,18 +106,18 @@ export default function SectionColumn({
         <div className="relative">
           <button
             onClick={() => setMenuOpen((o) => !o)}
-            className="text-ink-500 hover:text-ink-200"
+            className="text-nyx-500 hover:text-nyx-200"
           >
             <MoreVertical size={15} />
           </button>
           {menuOpen && (
-            <div className="border-ink-700 bg-ink-800 shadow-panel absolute right-0 z-10 mt-1 w-44 rounded-md border py-1">
+            <div className="border-nyx-700 bg-nyx-800 shadow-panel absolute right-0 z-10 mt-1 w-44 rounded-md border py-1">
               <button
                 onClick={() => {
                   removeSection.mutate(section.id);
                   setMenuOpen(false);
                 }}
-                className="text-ink-400 hover:bg-ink-700 flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-caption"
+                className="text-nyx-400 hover:bg-nyx-700 flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-caption"
               >
                 <Trash2 size={12} /> Remove section
               </button>
@@ -137,12 +137,12 @@ export default function SectionColumn({
           onSubmit={addTask}
           className="mt-1 flex items-center gap-1.5 px-2 py-1"
         >
-          <Plus size={13} className="text-ink-600" />
+          <Plus size={13} className="text-nyx-600" />
           <input
             value={newTaskName}
             onChange={(e) => setNewTaskName(e.target.value)}
             placeholder="Add a task…"
-            className="text-ink-300 placeholder:text-ink-600 flex-1 bg-transparent py-0.5 text-body focus:outline-none"
+            className="text-nyx-300 placeholder:text-nyx-600 flex-1 bg-transparent py-0.5 text-body focus:outline-none"
           />
         </form>
       </div>

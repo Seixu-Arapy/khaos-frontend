@@ -86,10 +86,10 @@ const SPACING_ROLES: SpacingRole[] = [
 export default function SpacingSection() {
   return (
     <section className="mt-14">
-      <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
+      <h2 className="text-nyx-200 font-display mb-3 text-sm tracking-wide uppercase">
         The spacing ladder
       </h2>
-      <p className="text-ink-300 mb-8 max-w-prose text-sm leading-relaxed">
+      <p className="text-nyx-300 mb-8 max-w-prose text-sm leading-relaxed">
         Not invented — audited. These seven steps already carry ~80% of
         every gap, margin, and padding in the app; the ladder just names
         what the code was already doing. Each bar below is the real
@@ -106,34 +106,34 @@ export default function SpacingSection() {
               >
                 {r.name}
               </span>
-              <span className="text-ink-600 font-mono text-[10px]">
+              <span className="text-nyx-600 font-mono text-[10px]">
                 {r.px}px · Tailwind {r.tw} · {r.deity}
               </span>
             </div>
-            <p className="text-ink-300 mb-1.5 max-w-prose text-xs leading-relaxed">
+            <p className="text-nyx-300 mb-1.5 max-w-prose text-xs leading-relaxed">
               {r.rule}
             </p>
             {/* The demo: two blocks separated by exactly this step, the
                 gap itself tinted so the distance is the visible thing. */}
             <div className="flex items-center">
-              <div className="bg-ink-700 h-6 w-24" />
+              <div className="bg-nyx-700 h-6 w-24" />
               <div
                 className="h-6"
                 style={{ width: r.px, backgroundColor: `${r.color}66` }}
               />
-              <div className="bg-ink-700 h-6 w-24" />
+              <div className="bg-nyx-700 h-6 w-24" />
             </div>
-            <p className="text-ink-600 mt-1 font-mono text-[10px]">
+            <p className="text-nyx-600 mt-1 font-mono text-[10px]">
               {r.usedIn}
             </p>
           </div>
         ))}
       </div>
 
-      <p className="text-ink-300 mt-10 max-w-prose text-sm leading-relaxed">
-        <b className="text-ink-100">The noise:</b> the half-steps — 10px
-        and 14px (<code className="text-copper-400 font-mono text-xs">gap-2.5</code>,{' '}
-        <code className="text-copper-400 font-mono text-xs">px-3.5</code>{' '}
+      <p className="text-nyx-300 mt-10 max-w-prose text-sm leading-relaxed">
+        <b className="text-nyx-100">The noise:</b> the half-steps — 10px
+        and 14px (<code className="text-eros-400 font-mono text-xs">gap-2.5</code>,{' '}
+        <code className="text-eros-400 font-mono text-xs">px-3.5</code>{' '}
         and friends) — appear ~40 times and sit between rungs. They read
         as indecision, not intent: candidates to normalize onto the
         ladder, one page at a time, rather than a new rung.

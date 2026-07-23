@@ -21,8 +21,8 @@ export default function ActiveTimerWidget() {
 
   if (!activeLog) {
     return (
-      <div className="border-ink-700 text-ink-500 flex items-center gap-2 rounded-full border px-3 py-1.5 text-caption">
-        <span className="bg-ink-600 h-1.5 w-1.5 shrink-0 rounded-full" />
+      <div className="border-nyx-700 text-nyx-500 flex items-center gap-2 rounded-full border px-3 py-1.5 text-caption">
+        <span className="bg-nyx-600 h-1.5 w-1.5 shrink-0 rounded-full" />
         Not logging
       </div>
     );
@@ -37,14 +37,14 @@ export default function ActiveTimerWidget() {
   return (
     <button
       onClick={() => task && navigate(`/tasks?taskId=${task.id}`)}
-      className="group border-copper-500/40 bg-copper-500/10 hover:bg-copper-500/15 flex items-center gap-2.5 rounded-full border py-1.5 pr-1.5 pl-3 text-caption transition-colors"
+      className="group border-eros-500/40 bg-eros-500/10 hover:bg-eros-500/15 flex items-center gap-2.5 rounded-full border py-1.5 pr-1.5 pl-3 text-caption transition-colors"
       title="Go to running task"
     >
-      <span className="bg-copper-500 h-1.5 w-1.5 animate-pulse rounded-full" />
-      <span className="text-ink-100 max-w-56 truncate font-medium">
+      <span className="bg-eros-500 h-1.5 w-1.5 animate-pulse rounded-full" />
+      <span className="text-nyx-100 max-w-56 truncate font-medium">
         {task?.name || 'Untitled task'}
       </span>
-      <span className="tabular text-copper-400 font-mono">
+      <span className="tabular text-eros-400 font-mono">
         {liveStopwatch(start)}
       </span>
       <span
@@ -61,7 +61,7 @@ export default function ActiveTimerWidget() {
           }
         }}
         aria-label="Stop timer"
-        className="bg-ink-900 text-ink-300 hover:bg-rust-500/20 hover:text-rust-500 flex h-6 w-6 items-center justify-center rounded-full"
+        className="bg-nyx-900 text-nyx-300 hover:bg-tartarus-500/20 hover:text-tartarus-500 flex h-6 w-6 items-center justify-center rounded-full"
       >
         <Square size={11} fill="currentColor" />
       </span>

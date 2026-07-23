@@ -47,7 +47,7 @@ export default function CalendarPage() {
   return (
     <div className="flex h-full flex-col px-6 py-5">
       <div className="mb-3 flex items-center justify-between">
-        <h1 className="font-display text-ink-100 text-display-lg">Calendar</h1>
+        <h1 className="font-display text-nyx-100 text-display-lg">Calendar</h1>
         <Button onClick={() => setCreatingAt(new Date())}>
           <Plus size={14} /> New event
         </Button>

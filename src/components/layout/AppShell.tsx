@@ -61,15 +61,15 @@ function sidebarLinkClass({ isActive }: NavLinkRenderProps): string {
   return clsx(
     'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-body font-medium transition-colors',
     isActive
-      ? 'bg-copper-500/15 text-copper-400'
-      : 'text-ink-300 hover:bg-ink-800 hover:text-ink-100'
+      ? 'bg-eros-500/15 text-eros-400'
+      : 'text-nyx-300 hover:bg-nyx-800 hover:text-nyx-100'
   );
 }
 
 function bottomLinkClass({ isActive }: NavLinkRenderProps): string {
   return clsx(
     'flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-label font-medium transition-colors',
-    isActive ? 'text-copper-400' : 'text-ink-500'
+    isActive ? 'text-eros-400' : 'text-nyx-500'
   );
 }
 
@@ -77,7 +77,7 @@ function KhaosLogo({ spinning }: { spinning?: boolean }) {
   return (
     <div className="flex items-center gap-2">
       <KhaosIcon size="h-5 w-5" spin={spinning} />
-      <span className="font-display text-ink-100 text-base font-semibold tracking-tight">
+      <span className="font-display text-nyx-100 text-base font-semibold tracking-tight">
         Khaos
       </span>
     </div>
@@ -105,7 +105,7 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
         {onClose && (
           <button
             onClick={onClose}
-            className="text-ink-400 hover:text-ink-100"
+            className="text-nyx-400 hover:text-nyx-100"
             aria-label="Close menu"
           >
             <X size={18} />
@@ -129,7 +129,7 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
       </nav>
 
       <div className="mt-5 flex items-center justify-between px-4">
-        <span className="text-ink-500 text-caption font-semibold tracking-wide uppercase">
+        <span className="text-nyx-500 text-caption font-semibold tracking-wide uppercase">
           Projects
         </span>
         <button
@@ -138,7 +138,7 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
             if (name?.trim())
               create.mutate({ name: name.trim(), status: 'planning' });
           }}
-          className="text-ink-500 hover:bg-ink-800 hover:text-ink-200 flex h-5 w-5 items-center justify-center rounded"
+          className="text-nyx-500 hover:bg-nyx-800 hover:text-nyx-200 flex h-5 w-5 items-center justify-center rounded"
           aria-label="New project"
         >
           <Plus size={13} />
@@ -162,7 +162,7 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
           </NavLink>
         ))}
         {!projects.length && (
-          <p className="text-ink-600 px-2 text-caption">
+          <p className="text-nyx-600 px-2 text-caption">
             Create a project to get started.
           </p>
         )}
@@ -170,7 +170,7 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
 
       <button
         onClick={() => setPaletteOpen(true)}
-        className="border-ink-700 text-ink-500 hover:border-ink-600 hover:text-ink-300 mx-3 mb-3 flex items-center justify-between rounded-md border px-2.5 py-1.5 text-caption"
+        className="border-nyx-700 text-nyx-500 hover:border-nyx-600 hover:text-nyx-300 mx-3 mb-3 flex items-center justify-between rounded-md border px-2.5 py-1.5 text-caption"
       >
         <span className="flex items-center gap-1.5">
           <Command size={12} /> Quick navigate
@@ -221,9 +221,9 @@ export default function AppShell() {
   }, []);
 
   return (
-    <div className="bg-ink-900 flex h-dvh overflow-hidden">
+    <div className="bg-nyx-900 flex h-dvh overflow-hidden">
       {/* ── Desktop nav sidebar ─────────────────────────────── */}
-      <aside className="border-ink-700 bg-ink-900 hidden w-60 shrink-0 flex-col border-r md:flex">
+      <aside className="border-nyx-700 bg-nyx-900 hidden w-60 shrink-0 flex-col border-r md:flex">
         <Sidebar onNavigate={() => {}} spinning={spinning} />
       </aside>
 
@@ -238,7 +238,7 @@ export default function AppShell() {
       {/* ── Mobile drawer panel ──────────────────────────────── */}
       <aside
         className={clsx(
-          'border-ink-700 bg-ink-900 fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r transition-transform duration-200 md:hidden',
+          'border-nyx-700 bg-nyx-900 fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r transition-transform duration-200 md:hidden',
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -254,10 +254,10 @@ export default function AppShell() {
       {/* ── Main content + persistent chat ──────────────────── */}
       <div className="flex min-w-0 flex-1 overflow-hidden">
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="border-ink-700 flex shrink-0 items-center gap-2 border-b px-3 py-2.5 md:px-5 md:py-3">
+          <header className="border-nyx-700 flex shrink-0 items-center gap-2 border-b px-3 py-2.5 md:px-5 md:py-3">
             <button
               onClick={() => setDrawerOpen(true)}
-              className="text-ink-400 hover:bg-ink-800 flex h-8 w-8 shrink-0 items-center justify-center rounded md:hidden"
+              className="text-nyx-400 hover:bg-nyx-800 flex h-8 w-8 shrink-0 items-center justify-center rounded md:hidden"
               aria-label="Open menu"
             >
               <Menu size={18} />
@@ -276,7 +276,7 @@ export default function AppShell() {
           </main>
 
           {/* ── Mobile bottom tab bar ─────────────────────────── */}
-          <nav className="border-ink-700 bg-ink-900 flex shrink-0 border-t md:hidden">
+          <nav className="border-nyx-700 bg-nyx-900 flex shrink-0 border-t md:hidden">
             {BOTTOM_NAV.map((item) => (
               <NavLink
                 key={item.to}
@@ -292,7 +292,7 @@ export default function AppShell() {
         </div>
 
         {/* ── Persistent chat column — desktop/lg only ────────── */}
-        <aside className="border-ink-700 bg-ink-900 hidden w-100 shrink-0 flex-col border-l lg:flex">
+        <aside className="border-nyx-700 bg-nyx-900 hidden w-100 shrink-0 flex-col border-l lg:flex">
           <ChatPanel />
         </aside>
       </div>
@@ -310,12 +310,12 @@ export default function AppShell() {
         >
           <KhaosIcon
             size="h-13 w-13"
-            bgColor="bg-copper-500"
-            color="text-ink-900"
+            bgColor="bg-eros-500"
+            color="text-nyx-900"
             spin={true}
           />
           {pendingMomentPrompts > 0 && (
-            <span className="border-ink-900 bg-rust-500 absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border-2 px-0.5 text-label leading-none font-semibold text-white">
+            <span className="border-nyx-900 bg-tartarus-500 absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border-2 px-0.5 text-label leading-none font-semibold text-white">
               {pendingMomentPrompts}
             </span>
           )}
@@ -329,7 +329,7 @@ export default function AppShell() {
             className="absolute inset-0 bg-black/60"
             onClick={() => setChatSheetOpen(false)}
           />
-          <div className="border-ink-700 bg-ink-900 shadow-panel relative flex h-[88vh] flex-col rounded-t-2xl border-t">
+          <div className="border-nyx-700 bg-nyx-900 shadow-panel relative flex h-[88vh] flex-col rounded-t-2xl border-t">
             <ChatPanel onRequestClose={() => setChatSheetOpen(false)} />
           </div>
         </div>

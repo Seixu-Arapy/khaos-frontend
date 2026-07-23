@@ -39,12 +39,12 @@ export default function TaskRow({
     <div
       ref={dragRef}
       style={{ ...dragStyle, opacity: dimmed ? 0.38 : 1 }}
-      className="group hover:border-ink-700 hover:bg-ink-900 flex items-start gap-1.5 rounded-md border border-transparent px-2 py-1.5"
+      className="group hover:border-nyx-700 hover:bg-nyx-900 flex items-start gap-1.5 rounded-md border border-transparent px-2 py-1.5"
     >
       {draggable && (
         <span
           {...dragHandleProps}
-          className="text-ink-700 hover:text-ink-400 mt-0.5 cursor-grab active:cursor-grabbing"
+          className="text-nyx-700 hover:text-nyx-400 mt-0.5 cursor-grab active:cursor-grabbing"
         >
           <GripVertical size={13} />
         </span>
@@ -57,7 +57,7 @@ export default function TaskRow({
         >
           <StatusBadge status={task.status} />
           <span
-            className={`text-ink-100 min-w-0 flex-1 truncate text-body ${
+            className={`text-nyx-100 min-w-0 flex-1 truncate text-body ${
               task.status === 'cancelled' ? 'line-through' : ''
             }`}
           >
@@ -65,14 +65,14 @@ export default function TaskRow({
           </span>
           <PriorityBadge priority={task.priority} />
           {task.estimate ? (
-            <span className="text-ink-600 hidden shrink-0 font-mono text-caption md:block">
+            <span className="text-nyx-600 hidden shrink-0 font-mono text-caption md:block">
               {minutesToHuman(task.estimate)}
             </span>
           ) : null}
           {Boolean(seqCounts?.before) && (
             <span
               title={`${seqCounts!.before} tarefa(s) antes desta`}
-              className="text-ink-500 flex shrink-0 items-center gap-0.5 text-[11px]"
+              className="text-nyx-500 flex shrink-0 items-center gap-0.5 text-[11px]"
             >
               <CornerUpLeft size={11} />
               {seqCounts!.before}
@@ -81,7 +81,7 @@ export default function TaskRow({
           {Boolean(seqCounts?.after) && (
             <span
               title={`${seqCounts!.after} tarefa(s) depois desta`}
-              className="text-ink-500 flex shrink-0 items-center gap-0.5 text-[11px]"
+              className="text-nyx-500 flex shrink-0 items-center gap-0.5 text-[11px]"
             >
               <CornerDownRight size={11} />
               {seqCounts!.after}

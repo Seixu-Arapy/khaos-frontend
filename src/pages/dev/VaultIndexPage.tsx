@@ -77,11 +77,11 @@ export default function VaultIndexPage() {
           <KhaosIcon
             size="h-24 w-24"
             fontSize="text-8xl"
-            color="text-ink-700"
+            color="text-nyx-700"
             spin
             className="animate-pulse mx-auto mb-2"
           />
-          <h1 className="text-ink-300">
+          <h1 className="text-nyx-300">
             <KhaoticText
               text="Khaos Vortex"
               family={['display', 'serif', 'mono']}
@@ -89,7 +89,7 @@ export default function VaultIndexPage() {
               shimmer
             />
           </h1>
-          <p className="text-ink-600 mx-auto mt-4 max-w-sm font-mono text-[11px] tracking-widest uppercase">
+          <p className="text-nyx-600 mx-auto mt-4 max-w-sm font-mono text-[11px] tracking-widest uppercase">
             every token, every component, exactly as it renders
           </p>
         </div>
@@ -99,17 +99,17 @@ export default function VaultIndexPage() {
             <Link
               key={c.to}
               to={c.to}
-              className="group border-ink-700 hover:border-ink-600 flex items-start gap-6 border-t py-8 transition-colors duration-300 last:border-b"
+              className="group border-nyx-700 hover:border-nyx-600 flex items-start gap-6 border-t py-8 transition-colors duration-300 last:border-b"
             >
-              <span className="text-ink-700 group-hover:text-ink-400 w-20 shrink-0 font-serif text-right text-6xl leading-none transition-colors duration-300">
+              <span className="text-nyx-700 group-hover:text-nyx-400 w-20 shrink-0 font-serif text-right text-6xl leading-none transition-colors duration-300">
                 {c.index}
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="font-serif text-ink-100 text-2xl">
+                <h2 className="font-serif text-nyx-100 text-2xl">
                   {c.name}
                 </h2>
-                <p className="text-ink-600 mt-1 text-sm">{c.tagline}</p>
-                <p className="text-ink-700 mt-2 font-mono text-[10px] tracking-wide">
+                <p className="text-nyx-600 mt-1 text-sm">{c.tagline}</p>
+                <p className="text-nyx-700 mt-2 font-mono text-[10px] tracking-wide">
                   {c.contains}
                 </p>
               </div>

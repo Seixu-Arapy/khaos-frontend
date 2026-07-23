@@ -30,24 +30,24 @@ export function InlineEventPreview({
 
   return (
     <div
-      className={`bg-ink-900 border-ink-700 rounded-md border border-l-4 px-2.5 py-2 ${meta.border} ${meta.borderStyle}`}
+      className={`bg-nyx-900 border-nyx-700 rounded-md border border-l-4 px-2.5 py-2 ${meta.border} ${meta.borderStyle}`}
     >
       <div className="grid grid-cols-[38px_1fr] items-baseline gap-x-2 gap-y-0.5">
         {start && (
-          <span className="text-ink-300 col-start-1 row-start-1 font-mono text-[11px] leading-tight">
+          <span className="text-nyx-300 col-start-1 row-start-1 font-mono text-[11px] leading-tight">
             {format(start, 'h:mmaaaaa')}
           </span>
         )}
         <div className="col-start-2 row-start-1 flex min-w-0 items-baseline gap-1.5">
-          <span className="text-ink-100 min-w-0 flex-1 truncate text-body">
+          <span className="text-nyx-100 min-w-0 flex-1 truncate text-body">
             {label}
           </span>
-          <span className="text-ink-600 shrink-0 font-mono text-[9px] tracking-wide uppercase">
+          <span className="text-nyx-600 shrink-0 font-mono text-[9px] tracking-wide uppercase">
             event
           </span>
         </div>
         {end && (
-          <span className="text-ink-600 col-start-1 row-start-2 font-mono text-[11px] leading-tight">
+          <span className="text-nyx-600 col-start-1 row-start-2 font-mono text-[11px] leading-tight">
             {format(end, 'h:mmaaaaa')}
           </span>
         )}

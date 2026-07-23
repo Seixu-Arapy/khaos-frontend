@@ -127,7 +127,7 @@ export default function EventModal({
     >
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="text-ink-400 mb-1 block text-caption font-medium">
+          <label className="text-nyx-400 mb-1 block text-caption font-medium">
             Title
             {isTitleOptional &&
               ' (optional — defaults to the task\u2019s name)'}
@@ -141,7 +141,7 @@ export default function EventModal({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-ink-400 mb-1 block text-caption font-medium">
+            <label className="text-nyx-400 mb-1 block text-caption font-medium">
               Starts
             </label>
             <TextInput
@@ -151,7 +151,7 @@ export default function EventModal({
             />
           </div>
           <div>
-            <label className="text-ink-400 mb-1 block text-caption font-medium">
+            <label className="text-nyx-400 mb-1 block text-caption font-medium">
               Ends
             </label>
             <TextInput
@@ -163,7 +163,7 @@ export default function EventModal({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-ink-400 mb-1 block text-caption font-medium">
+            <label className="text-nyx-400 mb-1 block text-caption font-medium">
               Type
             </label>
             <Select
@@ -181,14 +181,14 @@ export default function EventModal({
             </Select>
           </div>
           <div className="flex items-end pb-2">
-            <label className="text-ink-300 flex items-center gap-2 text-body">
+            <label className="text-nyx-300 flex items-center gap-2 text-body">
               <input
                 type="checkbox"
                 checked={form.recurrent}
                 onChange={(e) =>
                   setForm({ ...form, recurrent: e.target.checked })
                 }
-                className="border-ink-600 bg-ink-800 accent-copper-500 h-4 w-4 rounded"
+                className="border-nyx-600 bg-nyx-800 accent-eros-500 h-4 w-4 rounded"
               />
               Recurring
             </label>
@@ -196,7 +196,7 @@ export default function EventModal({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-ink-400 mb-1 block text-caption font-medium">
+            <label className="text-nyx-400 mb-1 block text-caption font-medium">
               Linked project (optional)
             </label>
             <Select
@@ -215,7 +215,7 @@ export default function EventModal({
             </Select>
           </div>
           <div>
-            <label className="text-ink-400 mb-1 block text-caption font-medium">
+            <label className="text-nyx-400 mb-1 block text-caption font-medium">
               Linked task (optional)
             </label>
             <Select

@@ -10,7 +10,7 @@ export function KhaosLogo({ spinning }: KhaosLogoProps) {
     <div className="flex items-center gap-2">
       <KhaosIcon
         size="h-5 w-5"
-        color="text-copper-400"
+        color="text-eros-400"
         bgColor="bg-transparent"
         spin={spinning}
       />
@@ -27,7 +27,7 @@ export function KhaosTitle({ className }: KhaosTitleProps) {
   return (
     <KhaoticText
       text="Khaos"
-      className={`${className} text-ink-100 tracking-widest capitalize`}
+      className={`${className} text-nyx-100 tracking-widest capitalize`}
     />
   );
 }

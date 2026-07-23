@@ -137,7 +137,7 @@ export default function TargetEditor({
         {/* Start Bound Input */}
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-ink-500 text-[11px] font-medium tracking-wider uppercase">
+            <span className="text-nyx-500 text-[11px] font-medium tracking-wider uppercase">
               Start Date
             </span>
             {startValues.date && (
@@ -158,8 +158,8 @@ export default function TargetEditor({
                 }}
                 className={`flex items-center gap-0.5 rounded border px-1 text-label transition-colors ${
                   showStartTime
-                    ? 'border-copper-500 text-copper-400 bg-copper-500/10'
-                    : 'border-ink-700 text-ink-500 hover:text-ink-300'
+                    ? 'border-eros-500 text-eros-400 bg-eros-500/10'
+                    : 'border-nyx-700 text-nyx-500 hover:text-nyx-300'
                 }`}
               >
                 <Clock size={10} /> {showStartTime ? 'Remove time' : 'Add time'}
@@ -207,7 +207,7 @@ export default function TargetEditor({
         {/* End Bound Input */}
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-ink-500 text-[11px] font-medium tracking-wider uppercase">
+            <span className="text-nyx-500 text-[11px] font-medium tracking-wider uppercase">
               End Date
             </span>
             {showEndInput && endValues.date && (
@@ -228,8 +228,8 @@ export default function TargetEditor({
                 }}
                 className={`flex items-center gap-0.5 rounded border px-1 text-label transition-colors ${
                   showEndTime
-                    ? 'border-copper-500 text-copper-400 bg-copper-500/10'
-                    : 'border-ink-700 text-ink-500 hover:text-ink-300'
+                    ? 'border-eros-500 text-eros-400 bg-eros-500/10'
+                    : 'border-nyx-700 text-nyx-500 hover:text-nyx-300'
                 }`}
               >
                 <Clock size={10} /> {showEndTime ? 'Remove time' : 'Add time'}
@@ -274,7 +274,7 @@ export default function TargetEditor({
               )}
             </div>
           ) : (
-            <div className="border-ink-700 text-ink-600 flex h-[34px] items-center rounded border border-dashed px-3 text-caption italic">
+            <div className="border-nyx-700 text-nyx-600 flex h-[34px] items-center rounded border border-dashed px-3 text-caption italic">
               Open-ended
             </div>
           )}
@@ -283,13 +283,13 @@ export default function TargetEditor({
 
       <div className="flex items-center justify-between pt-0.5">
         {startValues.date && (
-          <label className="text-ink-500 flex items-center gap-1.5 text-caption select-none">
+          <label className="text-nyx-500 flex items-center gap-1.5 text-caption select-none">
             <input
               type="checkbox"
               checked={!showEndInput}
               disabled={disabled}
               onChange={handleNoEndToggle}
-              className="border-ink-600 bg-ink-800 checked:bg-copper-500 accent-copper-500 h-3.5 w-3.5 rounded"
+              className="border-nyx-600 bg-nyx-800 checked:bg-eros-500 accent-eros-500 h-3.5 w-3.5 rounded"
             />
             No end date yet
           </label>
@@ -300,7 +300,7 @@ export default function TargetEditor({
             type="button"
             disabled={disabled}
             onClick={handleClear}
-            className="text-ink-500 hover:text-rust-500 ml-auto flex items-center gap-1 text-caption"
+            className="text-nyx-500 hover:text-tartarus-500 ml-auto flex items-center gap-1 text-caption"
           >
             <X size={12} /> Clear window
           </button>
@@ -308,7 +308,7 @@ export default function TargetEditor({
       </div>
 
       {error && (
-        <p className="text-rust-500 mt-1 text-caption font-medium">{error}</p>
+        <p className="text-tartarus-500 mt-1 text-caption font-medium">{error}</p>
       )}
     </div>
   );

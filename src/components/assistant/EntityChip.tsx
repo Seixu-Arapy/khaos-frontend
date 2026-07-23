@@ -28,7 +28,7 @@ export function EntityChip({ entityType, id }: EntityChipProps) {
     const event = events.find((e) => e.id === id);
     if (!event) {
       return (
-        <span className="text-ink-600 my-1 block text-caption italic">
+        <span className="text-nyx-600 my-1 block text-caption italic">
           (event unavailable)
         </span>
       );
@@ -72,7 +72,7 @@ export function EntityChip({ entityType, id }: EntityChipProps) {
 
   if (!data) {
     return (
-      <span className="text-ink-600 my-1 block text-caption italic">
+      <span className="text-nyx-600 my-1 block text-caption italic">
         ({entityType} unavailable)
       </span>
     );

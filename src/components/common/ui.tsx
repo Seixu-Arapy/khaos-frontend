@@ -235,12 +235,12 @@ interface TagProps {
 
 export function Tag({ children, onRemove }: TagProps) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/10 px-2 py-0.5 text-caption font-medium text-teal-400">
+    <span className="inline-flex items-center gap-1 rounded-full bg-pontus-500/10 px-2 py-0.5 text-caption font-medium text-pontus-400">
       {children}
       {onRemove && (
         <button
           onClick={onRemove}
-          className="rounded-full hover:bg-teal-500/20"
+          className="rounded-full hover:bg-pontus-500/20"
           aria-label="Remove tag"
         >
           <X size={11} />
@@ -267,12 +267,12 @@ export function Button({
         'inline-flex items-center justify-center gap-1.5 rounded font-medium transition-colors disabled:pointer-events-none disabled:opacity-50',
         size === 'sm' ? 'px-2.5 py-1.5 text-caption' : 'px-3.5 py-2 text-body',
         variant === 'default' &&
-          'bg-copper-500 text-ink-900 hover:bg-copper-400',
-        variant === 'secondary' && 'bg-ink-700 text-ink-100 hover:bg-ink-600',
+          'bg-eros-500 text-nyx-900 hover:bg-eros-400',
+        variant === 'secondary' && 'bg-nyx-700 text-nyx-100 hover:bg-nyx-600',
         variant === 'ghost' &&
-          'text-ink-300 hover:bg-ink-800 hover:text-ink-100 bg-transparent',
+          'text-nyx-300 hover:bg-nyx-800 hover:text-nyx-100 bg-transparent',
         variant === 'danger' &&
-          'text-rust-500 hover:bg-rust-500/10 bg-transparent',
+          'text-tartarus-500 hover:bg-tartarus-500/10 bg-transparent',
         className
       )}
       {...props}
@@ -295,7 +295,7 @@ export function IconButton({
       aria-label={label}
       title={label}
       className={clsx(
-        'text-ink-400 hover:bg-ink-700 hover:text-ink-100 inline-flex h-8 w-8 items-center justify-center rounded transition-colors',
+        'text-nyx-400 hover:bg-nyx-700 hover:text-nyx-100 inline-flex h-8 w-8 items-center justify-center rounded transition-colors',
         className
       )}
       {...props}
@@ -311,8 +311,8 @@ export function Select({ className, children, ...props }: SelectProps) {
   return (
     <select
       className={clsx(
-        'border-ink-600 bg-ink-800 text-ink-100 rounded border px-2.5 py-1.5 text-body',
-        'focus:border-copper-400 focus:outline-none',
+        'border-nyx-600 bg-nyx-800 text-nyx-100 rounded border px-2.5 py-1.5 text-body',
+        'focus:border-eros-400 focus:outline-none',
         className
       )}
       {...props}
@@ -328,8 +328,8 @@ export function TextInput({ className, ...props }: TextInputProps) {
   return (
     <input
       className={clsx(
-        'border-ink-600 bg-ink-800 text-ink-100 placeholder:text-ink-500 w-full rounded border px-3 py-2 text-body',
-        'focus:border-copper-400 focus:outline-none',
+        'border-nyx-600 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 w-full rounded border px-3 py-2 text-body',
+        'focus:border-eros-400 focus:outline-none',
         className
       )}
       {...props}
@@ -383,13 +383,13 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         className={clsx(
-          'border-ink-700 bg-ink-800 shadow-panel w-full rounded-lg border focus:outline-none',
+          'border-nyx-700 bg-nyx-800 shadow-panel w-full rounded-lg border focus:outline-none',
           width
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="border-ink-700 flex items-center justify-between border-b px-5 py-3.5">
-          <h2 className="font-display text-ink-100 min-w-0 flex-1 text-display">
+        <div className="border-nyx-700 flex items-center justify-between border-b px-5 py-3.5">
+          <h2 className="font-display text-nyx-100 min-w-0 flex-1 text-display">
             {title}
           </h2>
           <IconButton label="Close" onClick={onClose}>
@@ -398,7 +398,7 @@ export function Modal({
         </div>
         <div className="max-h-[70vh] overflow-y-auto px-5 py-4">{children}</div>
         {footer && (
-          <div className="border-ink-700 flex justify-end gap-2 border-t px-5 py-3.5">
+          <div className="border-nyx-700 flex justify-end gap-2 border-t px-5 py-3.5">
             {footer}
           </div>
         )}
@@ -415,10 +415,10 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon: Icon, title, hint }: EmptyStateProps) {
   return (
-    <div className="border-ink-700 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-6 py-14 text-center">
-      {Icon && <Icon size={28} className="text-ink-600" />}
-      <p className="text-ink-300 font-medium">{title}</p>
-      {hint && <p className="text-ink-500 max-w-xs text-body">{hint}</p>}
+    <div className="border-nyx-700 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-6 py-14 text-center">
+      {Icon && <Icon size={28} className="text-nyx-600" />}
+      <p className="text-nyx-300 font-medium">{title}</p>
+      {hint && <p className="text-nyx-500 max-w-xs text-body">{hint}</p>}
     </div>
   );
 }
@@ -441,7 +441,7 @@ export function DueBadge({ due, status }: DueBadgeProps) {
     <span
       className={clsx(
         'inline-flex items-center gap-1 font-mono text-caption tracking-tight',
-        overdue ? 'text-rust-500 animate-pulse' : 'text-copper-400'
+        overdue ? 'text-tartarus-500 animate-pulse' : 'text-eros-400'
       )}
     >
       <Flag size={11} className="shrink-0" />
@@ -469,13 +469,13 @@ export function TargetBadge({ target }: TargetBadgeProps) {
   if (!startParts) return null;
 
   return (
-    <span className="border-ink-600 text-ink-400 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[11px] tracking-tight">
+    <span className="border-nyx-600 text-nyx-400 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[11px] tracking-tight">
       <Target size={11} className="shrink-0" />
       <span>
         <span className="font-bold">{startParts.day}</span>
         {startParts.month}
       </span>
-      <span className="text-ink-600">→</span>
+      <span className="text-nyx-600">→</span>
       {endParts && (
         <span>
           <span className="font-bold">{endParts.day}</span>
@@ -563,7 +563,7 @@ export function ProjectChip({ name, fieldName, className }: ProjectChipProps) {
   return (
     <span
       className={clsx(
-        'text-ink-500 inline-flex min-w-0 items-center gap-1 text-caption',
+        'text-nyx-500 inline-flex min-w-0 items-center gap-1 text-caption',
         className
       )}
     >
@@ -575,9 +575,9 @@ export function ProjectChip({ name, fieldName, className }: ProjectChipProps) {
 
 const PROGRESS_BAR_LENGTH = 8;
 const PROGRESS_LEVEL_COLOR: Record<TaskProgress['level'], string> = {
-  ok: 'text-sage-500',
-  warn: 'text-copper-500',
-  over: 'text-rust-500',
+  ok: 'text-gaia-500',
+  warn: 'text-eros-500',
+  over: 'text-tartarus-500',
 };
 
 interface TaskProgressBarProps {
@@ -615,15 +615,15 @@ export function TaskProgressBar({
       )}
     >
       {full && (
-        <DraftingCompass size={15} className="text-ink-400 shrink-0" />
+        <DraftingCompass size={15} className="text-nyx-400 shrink-0" />
       )}
       <span className="shrink-0 tracking-[-1px]">
         <span className={PROGRESS_LEVEL_COLOR[progress.level]}>
           {'▰'.repeat(filled)}
         </span>
-        <span className="text-ink-700">{'▱'.repeat(empty)}</span>
+        <span className="text-nyx-700">{'▱'.repeat(empty)}</span>
       </span>
-      <span className="text-ink-400 shrink-0 whitespace-nowrap">
+      <span className="text-nyx-400 shrink-0 whitespace-nowrap">
         {full
           ? `${minutesToHuman(progress.loggedMinutes)} logged / ${minutesToHuman(progress.estimateMinutes)} estimated`
           : `${minutesToHuman(progress.loggedMinutes)} / ${minutesToHuman(progress.estimateMinutes)}`}

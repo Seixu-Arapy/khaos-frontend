@@ -18,8 +18,8 @@ export default function TagsPage() {
 
   return (
     <div className="px-6 py-5">
-      <h1 className="font-display text-ink-100 mb-1 text-display-lg">Tags</h1>
-      <p className="text-ink-500 mb-5 text-body">
+      <h1 className="font-display text-nyx-100 mb-1 text-display-lg">Tags</h1>
+      <p className="text-nyx-500 mb-5 text-body">
         Tags can be attached to any project, section, or task — use them to
         filter across project boundaries.
       </p>
@@ -46,7 +46,7 @@ export default function TagsPage() {
         />
       )}
 
-      <div className="divide-ink-700 border-ink-700 max-w-md divide-y rounded-lg border">
+      <div className="divide-nyx-700 border-nyx-700 max-w-md divide-y rounded-lg border">
         {tags.map((tag) => {
           const count = links.filter((l) => l.work_tag_id === tag.id).length;
           return (
@@ -54,15 +54,15 @@ export default function TagsPage() {
               key={tag.id}
               className="flex items-center justify-between px-3.5 py-2.5"
             >
-              <span className="text-ink-100 text-body">{tag.name}</span>
+              <span className="text-nyx-100 text-body">{tag.name}</span>
               <div className="flex items-center gap-3">
-                <span className="text-ink-500 text-caption">{count} linked</span>
+                <span className="text-nyx-500 text-caption">{count} linked</span>
                 <button
                   onClick={() => {
                     if (window.confirm(`Delete tag "${tag.name}"?`))
                       remove.mutate(tag.id);
                   }}
-                  className="text-ink-500 hover:text-rust-500"
+                  className="text-nyx-500 hover:text-tartarus-500"
                 >
                   <Trash2 size={14} />
                 </button>

@@ -61,7 +61,7 @@ export const STATUS_META: Record<Status, StatusMeta> = {
     icon: 'MessageCircle',
     iconColor: '#AEB6C4',
     circleBg: '#2B3340',
-    dot: 'bg-ink-500',
+    dot: 'bg-nyx-500',
   },
   todo: {
     label: 'To do',
@@ -85,7 +85,7 @@ export const STATUS_META: Record<Status, StatusMeta> = {
     icon: 'Eye',
     iconColor: '#5DCAA5',
     circleBg: '#085041',
-    dot: 'bg-teal-400',
+    dot: 'bg-pontus-400',
   },
   done: {
     label: 'Done',
@@ -101,7 +101,7 @@ export const STATUS_META: Record<Status, StatusMeta> = {
     icon: 'Pause',
     iconColor: '#888780',
     circleBg: '#2B3340',
-    dot: 'bg-ink-400',
+    dot: 'bg-nyx-400',
   },
   cancelled: {
     label: 'Cancelled',
@@ -169,23 +169,23 @@ interface EventTypeMeta {
 export const EVENT_TYPE_META: Record<EventType, EventTypeMeta> = {
   fixed: {
     label: 'Fixed',
-    text: 'text-teal-400',
-    bg: 'bg-teal-500/10',
-    border: 'border-teal-400',
+    text: 'text-pontus-400',
+    bg: 'bg-pontus-500/10',
+    border: 'border-pontus-400',
     borderStyle: 'border-solid',
   },
   scheduled: {
     label: 'Plan',
-    text: 'text-violet-400',
-    bg: 'bg-violet-500/10',
-    border: 'border-violet-400',
+    text: 'text-hypnos-400',
+    bg: 'bg-hypnos-500/10',
+    border: 'border-hypnos-400',
     borderStyle: 'border-dotted',
   },
   routine: {
     label: 'Routine',
-    text: 'text-teal-400',
-    bg: 'bg-teal-500/10',
-    border: 'border-teal-400',
+    text: 'text-pontus-400',
+    bg: 'bg-pontus-500/10',
+    border: 'border-pontus-400',
     borderStyle: 'border-dotted',
   },
 };

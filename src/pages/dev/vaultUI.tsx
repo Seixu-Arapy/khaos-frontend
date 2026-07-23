@@ -28,11 +28,11 @@ export function MuseumFrame({
   children: ReactNode;
 }) {
   return (
-    <div className="bg-ink-900 relative min-h-screen">
+    <div className="bg-nyx-900 relative min-h-screen">
       <Link
         to={exitTo}
         aria-label="Exit"
-        className="text-ink-700 hover:text-ink-300 fixed top-6 right-6 z-10 transition-colors duration-300"
+        className="text-nyx-700 hover:text-nyx-300 fixed top-6 right-6 z-10 transition-colors duration-300"
       >
         <X size={18} strokeWidth={1.5} />
       </Link>
@@ -40,12 +40,12 @@ export function MuseumFrame({
       <div className="fixed top-6 left-6 z-10 flex items-center gap-4">
         <Link
           to="/dev/vortex"
-          className="text-ink-700 hover:text-ink-300 flex items-center gap-2 font-mono text-[10px] tracking-[0.35em] uppercase transition-colors duration-300"
+          className="text-nyx-700 hover:text-nyx-300 flex items-center gap-2 font-mono text-[10px] tracking-[0.35em] uppercase transition-colors duration-300"
         >
           <KhaosIcon
             size="h-7 w-7"
             fontSize="text-2xl"
-            color="text-ink-400"
+            color="text-nyx-400"
             spin
             className="animate-pulse"
           />
@@ -59,15 +59,15 @@ export function MuseumFrame({
                 to={c.to}
                 className={`font-serif text-sm transition-colors duration-300 ${
                   c.index === currentIndex
-                    ? 'text-ink-300'
-                    : 'text-ink-700 hover:text-ink-400'
+                    ? 'text-nyx-300'
+                    : 'text-nyx-700 hover:text-nyx-400'
                 }`}
               >
                 {c.index}
               </Link>
               <Link
                 to={c.to}
-                className="font-serif text-ink-400 hover:text-ink-200 max-w-0 overflow-hidden text-sm whitespace-nowrap opacity-0 transition-all duration-300 group-hover:ml-2 group-hover:max-w-xs group-hover:opacity-100"
+                className="font-serif text-nyx-400 hover:text-nyx-200 max-w-0 overflow-hidden text-sm whitespace-nowrap opacity-0 transition-all duration-300 group-hover:ml-2 group-hover:max-w-xs group-hover:opacity-100"
               >
                 {c.name}
               </Link>
@@ -89,8 +89,8 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="border-ink-700 mb-10 border-t pt-6">
-      <h2 className="text-ink-400 mb-5 font-mono text-[10px] tracking-[0.25em] uppercase">
+    <section className="border-nyx-700 mb-10 border-t pt-6">
+      <h2 className="text-nyx-400 mb-5 font-mono text-[10px] tracking-[0.25em] uppercase">
         {title}
       </h2>
       <div className="flex flex-wrap items-center gap-5">{children}</div>
@@ -107,7 +107,7 @@ export function Swatch({
 }) {
   return (
     <div className="flex flex-col items-start gap-2">
-      <span className="text-ink-400 font-mono text-[10px]">{label}</span>
+      <span className="text-nyx-400 font-mono text-[10px]">{label}</span>
       {children}
     </div>
   );
@@ -143,14 +143,14 @@ export function Chamber({
         className={`mx-auto px-6 pt-16 pb-12 ${wide ? 'max-w-6xl' : 'max-w-4xl'}`}
       >
         <div className="mb-14 max-w-4xl">
-          <h1 className="font-serif text-ink-100 text-3xl">
+          <h1 className="font-serif text-nyx-100 text-3xl">
             {chaotic ? (
               <KhaoticText text={name} family="serif" className="text-3xl" />
             ) : (
               name
             )}
           </h1>
-          <p className="text-ink-400 mt-2 font-mono text-[11px] tracking-widest uppercase">
+          <p className="text-nyx-400 mt-2 font-mono text-[11px] tracking-widest uppercase">
             {tagline}
           </p>
         </div>

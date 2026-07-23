@@ -92,19 +92,19 @@ function describeMoment(moment: Moment): string {
 function MomentIcon({ moment }: { moment: Moment }) {
   switch (moment.moment_type) {
     case 'due':
-      return <Flag size={13} className="text-copper-400 mt-0.5 shrink-0" />;
+      return <Flag size={13} className="text-eros-400 mt-0.5 shrink-0" />;
     case 'target':
-      return <Target size={13} className="text-ink-400 mt-0.5 shrink-0" />;
+      return <Target size={13} className="text-nyx-400 mt-0.5 shrink-0" />;
     case 'estimate':
       return (
-        <DraftingCompass size={13} className="text-ink-400 mt-0.5 shrink-0" />
+        <DraftingCompass size={13} className="text-nyx-400 mt-0.5 shrink-0" />
       );
     case 'started':
       return (
         <Play
           size={12}
           fill="currentColor"
-          className="text-copper-500 mt-0.5 shrink-0"
+          className="text-eros-500 mt-0.5 shrink-0"
         />
       );
     case 'stopped':
@@ -112,12 +112,12 @@ function MomentIcon({ moment }: { moment: Moment }) {
         <Square
           size={12}
           fill="currentColor"
-          className="text-ink-400 mt-0.5 shrink-0"
+          className="text-nyx-400 mt-0.5 shrink-0"
         />
       );
     case 'scheduled':
       return (
-        <span className="bg-violet-400 mt-1.5 h-2 w-2 shrink-0 rounded-full" />
+        <span className="bg-hypnos-400 mt-1.5 h-2 w-2 shrink-0 rounded-full" />
       );
     default:
       return null;
@@ -132,9 +132,9 @@ interface SectionProps {
 
 function Section({ title, children, action }: SectionProps) {
   return (
-    <div className="border-ink-700 border-t pt-3.5 first:border-0 first:pt-0">
+    <div className="border-nyx-700 border-t pt-3.5 first:border-0 first:pt-0">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-ink-500 text-caption font-semibold tracking-wide uppercase">
+        <h3 className="text-nyx-500 text-caption font-semibold tracking-wide uppercase">
           {title}
         </h3>
         {action}
@@ -152,19 +152,19 @@ interface SequenceChipProps {
 
 function SequenceChip({ task, onOpen, onRemove }: SequenceChipProps) {
   return (
-    <span className="bg-ink-700 text-ink-200 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-caption">
+    <span className="bg-nyx-700 text-nyx-200 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-caption">
       <button
         type="button"
         onClick={() => onOpen?.(task)}
         disabled={!onOpen}
-        className={onOpen ? 'hover:text-copper-400' : 'cursor-default'}
+        className={onOpen ? 'hover:text-eros-400' : 'cursor-default'}
       >
         {task.name}
       </button>
       <button
         type="button"
         onClick={onRemove}
-        className="hover:text-rust-500"
+        className="hover:text-tartarus-500"
         aria-label="Remover da sequência"
       >
         <X size={11} />
@@ -188,8 +188,8 @@ function AddButton({ active, onClick, children }: AddButtonProps) {
       onClick={onClick}
       className={`flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-label transition-colors ${
         active
-          ? 'border-copper-500 text-copper-400 bg-copper-500/10'
-          : 'border-ink-700 text-ink-500 hover:text-ink-300'
+          ? 'border-eros-500 text-eros-400 bg-eros-500/10'
+          : 'border-nyx-700 text-nyx-500 hover:text-nyx-300'
       }`}
     >
       <Plus size={10} /> {children}
@@ -444,14 +444,14 @@ export default function TaskDetailModal({
           value={nameDraft}
           onChange={(e) => setNameDraft(e.target.value)}
           onBlur={flushName}
-          className="focus:bg-ink-900! w-full border-0! bg-transparent! px-0! py-0! text-display! font-medium!"
+          className="focus:bg-nyx-900! w-full border-0! bg-transparent! px-0! py-0! text-display! font-medium!"
         />
       }
       width="max-w-2xl"
     >
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-ink-500 hover:text-ink-300 inline-flex min-w-0 items-center gap-1 text-caption">
+          <span className="text-nyx-500 hover:text-nyx-300 inline-flex min-w-0 items-center gap-1 text-caption">
             <FieldBadge fieldName={currentFieldName} size="xs" />
             <select
               value={section?.project_id ?? ''}
@@ -462,7 +462,7 @@ export default function TaskDetailModal({
                 );
                 if (firstSection) patch({ section_id: firstSection.id });
               }}
-              className="focus-visible:ring-copper-400 max-w-32 cursor-pointer truncate border-0 bg-transparent p-0 text-caption focus:outline-none focus-visible:ring-1"
+              className="focus-visible:ring-eros-400 max-w-32 cursor-pointer truncate border-0 bg-transparent p-0 text-caption focus:outline-none focus-visible:ring-1"
             >
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -471,7 +471,7 @@ export default function TaskDetailModal({
               ))}
             </select>
           </span>
-          <span className="text-ink-600 text-caption">›</span>
+          <span className="text-nyx-600 text-caption">›</span>
           <Select
             value={task.section_id ?? ''}
             className="py-0.5! text-caption!"
@@ -504,20 +504,20 @@ export default function TaskDetailModal({
           {/* Linha 2: Estimate | Due Date (+ Hora opcional) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-ink-500 mb-1 block text-caption font-medium">
+              <label className="text-nyx-500 mb-1 block text-caption font-medium">
                 Estimate
               </label>
-              <div className="border-ink-600 bg-ink-800 focus-within:border-copper-400 flex items-center gap-2 rounded border px-3 py-2">
-                <DraftingCompass size={15} className="text-ink-500 shrink-0" />
+              <div className="border-nyx-600 bg-nyx-800 focus-within:border-eros-400 flex items-center gap-2 rounded border px-3 py-2">
+                <DraftingCompass size={15} className="text-nyx-500 shrink-0" />
                 <input
                   type="number"
                   min="0"
                   value={estimateDraft}
                   onChange={(e) => setEstimateDraft(e.target.value)}
                   onBlur={flushEstimate}
-                  className="text-ink-100 font-mono! w-full min-w-0 bg-transparent text-body focus:outline-none"
+                  className="text-nyx-100 font-mono! w-full min-w-0 bg-transparent text-body focus:outline-none"
                 />
-                <span className="text-ink-500 shrink-0 text-caption">min</span>
+                <span className="text-nyx-500 shrink-0 text-caption">min</span>
               </div>
               {progress && (
                 <TaskProgressBar
@@ -530,13 +530,13 @@ export default function TaskDetailModal({
 
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label className="text-ink-500 flex items-center gap-1 text-caption font-medium">
+                <label className="text-nyx-500 flex items-center gap-1 text-caption font-medium">
                   <Flag
                     size={11}
                     className={
                       isOverdue(task.due, task.status)
-                        ? 'text-rust-500'
-                        : 'text-copper-400'
+                        ? 'text-tartarus-500'
+                        : 'text-eros-400'
                     }
                   />
                   Due
@@ -553,8 +553,8 @@ export default function TaskDetailModal({
                     }}
                     className={`flex items-center gap-0.5 rounded border px-1 text-label transition-colors ${
                       showDueTime
-                        ? 'border-copper-500 text-copper-400 bg-copper-500/10'
-                        : 'border-ink-700 text-ink-500 hover:text-ink-300'
+                        ? 'border-eros-500 text-eros-400 bg-eros-500/10'
+                        : 'border-nyx-700 text-nyx-500 hover:text-nyx-300'
                     }`}
                   >
                     <Clock size={10} />{' '}
@@ -587,9 +587,9 @@ export default function TaskDetailModal({
         </div>
 
         <div>
-          <label className="text-ink-500 mb-1 block text-caption font-medium">
+          <label className="text-nyx-500 mb-1 block text-caption font-medium">
             Target{' '}
-            <span className="text-ink-600 font-normal normal-case">
+            <span className="text-nyx-600 font-normal normal-case">
               (planned window — optional, primarily dates, exported as
               tstzrange)
             </span>
@@ -606,7 +606,7 @@ export default function TaskDetailModal({
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-ink-400 flex items-center gap-1 text-caption font-medium">
+                  <span className="text-nyx-400 flex items-center gap-1 text-caption font-medium">
                     <CornerUpLeft size={12} /> Previous tasks
                   </span>
                   <AddButton
@@ -634,14 +634,14 @@ export default function TaskDetailModal({
                     />
                   ))}
                   {!before.length && (
-                    <p className="text-ink-600 text-caption">None</p>
+                    <p className="text-nyx-600 text-caption">None</p>
                   )}
                 </div>
               </div>
 
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="text-ink-400 flex items-center gap-1 text-caption font-medium">
+                  <span className="text-nyx-400 flex items-center gap-1 text-caption font-medium">
                     <CornerDownRight size={12} /> Next tasks
                   </span>
                   <AddButton
@@ -668,13 +668,13 @@ export default function TaskDetailModal({
                       }
                     />
                   ))}
-                  {!after.length && <p className="text-ink-600 text-caption">None</p>}
+                  {!after.length && <p className="text-nyx-600 text-caption">None</p>}
                 </div>
               </div>
             </div>
 
             {seqPicker && (
-              <div className="border-ink-700 bg-ink-900 rounded-md border p-2.5">
+              <div className="border-nyx-700 bg-nyx-900 rounded-md border p-2.5">
                 <input
                   autoFocus
                   value={seqPicker.search}
@@ -682,23 +682,23 @@ export default function TaskDetailModal({
                     setSeqPicker({ ...seqPicker, search: e.target.value })
                   }
                   placeholder="Buscar tarefa…"
-                  className="border-ink-600 bg-ink-800 text-ink-100 placeholder:text-ink-500 mb-2 w-full rounded border px-2.5 py-1.5 text-caption focus:outline-hidden"
+                  className="border-nyx-600 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 mb-2 w-full rounded border px-2.5 py-1.5 text-caption focus:outline-hidden"
                 />
                 {seqError && (
-                  <p className="text-rust-500 mb-1.5 text-caption">{seqError}</p>
+                  <p className="text-tartarus-500 mb-1.5 text-caption">{seqError}</p>
                 )}
                 <div className="max-h-40 space-y-0.5 overflow-y-auto">
                   {candidateTasks.map((t) => (
                     <button
                       key={t.id}
                       onClick={() => handleAddSequence(t)}
-                      className="text-ink-300 hover:bg-ink-800 w-full truncate rounded px-2 py-1 text-left text-caption"
+                      className="text-nyx-300 hover:bg-nyx-800 w-full truncate rounded px-2 py-1 text-left text-caption"
                     >
                       {t.name}
                     </button>
                   ))}
                   {!candidateTasks.length && (
-                    <p className="text-ink-600 px-2 py-1 text-caption">
+                    <p className="text-nyx-600 px-2 py-1 text-caption">
                       Nada encontrado
                     </p>
                   )}
@@ -708,7 +708,7 @@ export default function TaskDetailModal({
                     setSeqPicker(null);
                     setSeqError(null);
                   }}
-                  className="text-ink-500 hover:text-ink-300 mt-2 text-caption"
+                  className="text-nyx-500 hover:text-nyx-300 mt-2 text-caption"
                 >
                   Fechar
                 </button>
@@ -743,7 +743,7 @@ export default function TaskDetailModal({
               </Tag>
             ))}
             {!taskTags.length && (
-              <p className="text-ink-600 text-caption">No tags yet</p>
+              <p className="text-nyx-600 text-caption">No tags yet</p>
             )}
           </div>
           {tagPickerOpen && (
@@ -758,13 +758,13 @@ export default function TaskDetailModal({
                     });
                     setTagPickerOpen(false);
                   }}
-                  className="border-ink-600 text-ink-300 rounded-full border px-2 py-0.5 text-caption hover:border-teal-500 hover:text-teal-400"
+                  className="border-nyx-600 text-nyx-300 rounded-full border px-2 py-0.5 text-caption hover:border-pontus-500 hover:text-pontus-400"
                 >
                   {tag.name}
                 </button>
               ))}
               {!availableTags.length && (
-                <p className="text-ink-600 text-caption">
+                <p className="text-nyx-600 text-caption">
                   No more tags — create one on the Tags page
                 </p>
               )}
@@ -779,7 +779,7 @@ export default function TaskDetailModal({
             {items.map((item) => (
               <div
                 key={item.id}
-                className="group hover:bg-ink-900 flex items-center gap-2 rounded px-1.5 py-1"
+                className="group hover:bg-nyx-900 flex items-center gap-2 rounded px-1.5 py-1"
               >
                 <input
                   type="checkbox"
@@ -790,25 +790,25 @@ export default function TaskDetailModal({
                       patch: { done: e.target.checked },
                     })
                   }
-                  className="border-ink-600 bg-ink-800 accent-copper-500 h-4 w-4 rounded"
+                  className="border-nyx-600 bg-nyx-800 accent-eros-500 h-4 w-4 rounded"
                 />
                 <span className={clsxDone(item.done)}>{item.description}</span>
                 <button
                   onClick={() => itemMutations.remove.mutate(item.id)}
                   className="ml-auto opacity-0 group-hover:opacity-100"
                 >
-                  <X size={13} className="text-ink-500 hover:text-rust-500" />
+                  <X size={13} className="text-nyx-500 hover:text-tartarus-500" />
                 </button>
               </div>
             ))}
           </div>
           <form onSubmit={addItem} className="mt-1.5 flex items-center gap-1.5">
-            <Plus size={14} className="text-ink-500" />
+            <Plus size={14} className="text-nyx-500" />
             <input
               value={newItem}
               onChange={(e) => setNewItem(e.target.value)}
               placeholder="Add a checklist item…"
-              className="text-ink-200 placeholder:text-ink-600 flex-1 bg-transparent py-1 text-body focus:outline-none"
+              className="text-nyx-200 placeholder:text-nyx-600 flex-1 bg-transparent py-1 text-body focus:outline-none"
             />
           </form>
         </Section>
@@ -847,7 +847,7 @@ export default function TaskDetailModal({
               return (
                 <div
                   key={log.id}
-                  className="text-ink-400 flex items-center justify-between text-caption"
+                  className="text-nyx-400 flex items-center justify-between text-caption"
                 >
                   <span>
                     {start ? formatDue(start) : '—'}{' '}
@@ -860,7 +860,7 @@ export default function TaskDetailModal({
               );
             })}
             {!logs.length && (
-              <p className="text-ink-600 text-caption">No time logged yet</p>
+              <p className="text-nyx-600 text-caption">No time logged yet</p>
             )}
           </div>
         </Section>
@@ -870,14 +870,14 @@ export default function TaskDetailModal({
             {moments.map((moment) => (
               <div
                 key={moment.id}
-                className="group bg-ink-900 text-ink-300 rounded px-2.5 py-2 text-body"
+                className="group bg-nyx-900 text-nyx-300 rounded px-2.5 py-2 text-body"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex min-w-0 flex-1 items-start gap-1.5">
                     <MomentIcon moment={moment} />
                     <div className="min-w-0 flex-1">
                       {moment.moment_type !== 'note' && (
-                        <p className="text-ink-400 text-caption font-medium">
+                        <p className="text-nyx-400 text-caption font-medium">
                           {describeMoment(moment)}
                         </p>
                       )}
@@ -886,7 +886,7 @@ export default function TaskDetailModal({
                           {moment.authored_by !== 'user' && (
                             <Bot
                               size={12}
-                              className="text-ink-500 mt-0.5 shrink-0"
+                              className="text-nyx-500 mt-0.5 shrink-0"
                               aria-label={`Note ${moment.authored_by === 'assistant' ? 'written by the assistant' : 'auto-generated'}`}
                             />
                           )}
@@ -899,16 +899,16 @@ export default function TaskDetailModal({
                     onClick={() => noteMutations.remove.mutate(moment.id)}
                     className="opacity-0 group-hover:opacity-100"
                   >
-                    <X size={12} className="text-ink-500 hover:text-rust-500" />
+                    <X size={12} className="text-nyx-500 hover:text-tartarus-500" />
                   </button>
                 </div>
-                <p className="text-ink-600 mt-1 text-[11px]">
+                <p className="text-nyx-600 mt-1 text-[11px]">
                   {formatDue(parseMomentTime(moment.created_at))}
                 </p>
               </div>
             ))}
             {!moments.length && (
-              <p className="text-ink-600 text-caption">No moments yet</p>
+              <p className="text-nyx-600 text-caption">No moments yet</p>
             )}
           </div>
           <form onSubmit={addNote} className="mt-2 flex items-center gap-1.5">
@@ -924,10 +924,10 @@ export default function TaskDetailModal({
           </form>
         </Section>
 
-        <div className="border-ink-700 flex justify-end border-t pt-3.5">
+        <div className="border-nyx-700 flex justify-end border-t pt-3.5">
           <button
             onClick={() => remove.mutate(task.id, { onSuccess: onClose })}
-            className="text-ink-500 hover:text-ink-300 flex items-center gap-1 text-caption"
+            className="text-nyx-500 hover:text-nyx-300 flex items-center gap-1 text-caption"
           >
             <Trash2 size={13} /> Delete
           </button>
@@ -939,6 +939,6 @@ export default function TaskDetailModal({
 
 function clsxDone(done: boolean): string {
   return done
-    ? 'flex-1 text-body text-ink-600 line-through'
-    : 'flex-1 text-body text-ink-200';
+    ? 'flex-1 text-body text-nyx-600 line-through'
+    : 'flex-1 text-body text-nyx-200';
 }

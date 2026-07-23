@@ -20,7 +20,7 @@ function readVar(name: string): string {
 
 function GroupTitle({ children }: { children: string }) {
   return (
-    <h2 className="text-ink-200 font-display mb-4 text-sm tracking-wide uppercase">
+    <h2 className="text-nyx-200 font-display mb-4 text-sm tracking-wide uppercase">
       {children}
     </h2>
   );
@@ -111,7 +111,7 @@ const SHADOW_RULES: UsageRule[] = [
   },
   {
     token: 'border only',
-    swatchClass: 'border-ink-600 border',
+    swatchClass: 'border-nyx-600 border',
     value: 'no shadow token',
     rule: "The common case. Flat content uses a border instead of a shadow -- shadows are reserved for things that genuinely float, a bordered flat surface doesn't need one.",
     usedIn: 'task lists, project cards, section columns',
@@ -123,17 +123,17 @@ const SHADOW_RULES: UsageRule[] = [
 function UsageTable({ title, rows }: { title: string; rows: UsageRule[] }) {
   return (
     <div className="mt-8">
-      <span className="text-ink-500 mb-3 block font-mono text-[10px] tracking-wide uppercase">
+      <span className="text-nyx-500 mb-3 block font-mono text-[10px] tracking-wide uppercase">
         {title}
       </span>
-      <div className="border-ink-700 flex flex-col border">
+      <div className="border-nyx-700 flex flex-col border">
         {rows.map((r) => (
           <div
             key={r.token}
-            className="border-ink-700 flex items-center gap-5 border-t p-4 first:border-t-0"
+            className="border-nyx-700 flex items-center gap-5 border-t p-4 first:border-t-0"
           >
             <div
-              className={`bg-ink-700 h-14 w-14 shrink-0 ${r.swatchClass}`}
+              className={`bg-nyx-700 h-14 w-14 shrink-0 ${r.swatchClass}`}
               title={r.deity}
             />
             <div className="min-w-0 flex-1">
@@ -141,15 +141,15 @@ function UsageTable({ title, rows }: { title: string; rows: UsageRule[] }) {
                 <code className="font-mono text-sm font-semibold" style={{ color: r.color }}>
                   {r.token}
                 </code>
-                <span className="text-ink-600 font-mono text-[10px]">
+                <span className="text-nyx-600 font-mono text-[10px]">
                   {r.value}
                 </span>
               </div>
-              <p className="text-ink-300 mb-1.5 text-xs leading-relaxed">
+              <p className="text-nyx-300 mb-1.5 text-xs leading-relaxed">
                 {r.rule}
               </p>
-              <p className="text-ink-500 text-[11px]">
-                <span className="text-ink-600 font-mono text-[10px] uppercase tracking-wide">
+              <p className="text-nyx-500 text-[11px]">
+                <span className="text-nyx-600 font-mono text-[10px] uppercase tracking-wide">
                   Used in:
                 </span>{' '}
                 {r.usedIn}
@@ -173,10 +173,10 @@ export default function FoundationsSection() {
           return (
             <div key={varName} className="flex flex-col items-center gap-1.5">
               <div
-                className="bg-ink-700 border-ink-600 h-16 w-16 border"
+                className="bg-nyx-700 border-nyx-600 h-16 w-16 border"
                 style={{ borderRadius: value || undefined }}
               />
-              <span className="text-ink-500 font-mono text-[10px]">
+              <span className="text-nyx-500 font-mono text-[10px]">
                 {varName}: {value}
               </span>
             </div>
@@ -188,10 +188,10 @@ export default function FoundationsSection() {
           return (
             <div key={varName} className="flex flex-col items-center gap-1.5">
               <div
-                className="bg-ink-800 h-16 w-24"
+                className="bg-nyx-800 h-16 w-24"
                 style={{ boxShadow: value || undefined }}
               />
-              <span className="text-ink-500 font-mono text-[10px]">
+              <span className="text-nyx-500 font-mono text-[10px]">
                 {varName}
               </span>
             </div>

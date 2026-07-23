@@ -206,7 +206,7 @@ export default function CalendarView({
           scheduledMinutes: 0,
           loggedMinutes: 0,
           matchedMinutes: 0,
-          scheduledColorClass: 'text-ink-500',
+          scheduledColorClass: 'text-nyx-500',
         },
       ])
     );
@@ -226,8 +226,8 @@ export default function CalendarView({
       summary.scheduledMinutes = minutes;
       summary.scheduledColorClass =
         types.size === 1
-          ? (EVENT_TYPE_META[[...types][0]]?.text ?? 'text-ink-500')
-          : 'text-ink-500';
+          ? (EVENT_TYPE_META[[...types][0]]?.text ?? 'text-nyx-500')
+          : 'text-nyx-500';
     }
 
     for (const log of taskLogs) {
@@ -322,30 +322,30 @@ export default function CalendarView({
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setAnchor(addDays(anchor, -daysToShow))}
-            className="text-ink-400 hover:bg-ink-800 rounded p-1.5 sm:p-1"
+            className="text-nyx-400 hover:bg-nyx-800 rounded p-1.5 sm:p-1"
           >
             <ChevronLeft size={16} />
           </button>
           <button
             onClick={() => setAnchor(addDays(anchor, daysToShow))}
-            className="text-ink-400 hover:bg-ink-800 rounded p-1.5 sm:p-1"
+            className="text-nyx-400 hover:bg-nyx-800 rounded p-1.5 sm:p-1"
           >
             <ChevronRight size={16} />
           </button>
           <button
             onClick={() => setAnchor(defaultAnchorFor(daysToShow))}
-            className="border-ink-700 text-ink-300 hover:bg-ink-800 rounded border px-2 py-1 text-caption sm:py-0.5"
+            className="border-nyx-700 text-nyx-300 hover:bg-nyx-800 rounded border px-2 py-1 text-caption sm:py-0.5"
           >
             Today
           </button>
-          <span className="text-ink-300 ml-1 text-body sm:ml-2">
+          <span className="text-nyx-300 ml-1 text-body sm:ml-2">
             {format(days[0], 'MMM d')} –{' '}
             {format(days[days.length - 1], 'MMM d, yyyy')}
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-          <div className="border-ink-700 flex overflow-hidden rounded border text-caption">
+          <div className="border-nyx-700 flex overflow-hidden rounded border text-caption">
             {DAY_COUNT_OPTIONS.map((n) => (
               <button
                 key={n}
@@ -355,8 +355,8 @@ export default function CalendarView({
                 }}
                 className={`px-2.5 py-1 sm:px-2 sm:py-0.5 ${
                   daysToShow === n
-                    ? 'bg-ink-700 text-ink-100'
-                    : 'text-ink-400 hover:bg-ink-800'
+                    ? 'bg-nyx-700 text-nyx-100'
+                    : 'text-nyx-400 hover:bg-nyx-800'
                 }`}
               >
                 {n}d
@@ -365,13 +365,13 @@ export default function CalendarView({
           </div>
           <button
             onClick={() => setShowLoggedTime((v) => !v)}
-            className="text-ink-300 flex items-center gap-2 text-caption"
+            className="text-nyx-300 flex items-center gap-2 text-caption"
           >
             <span
-              className={`relative inline-block h-[17px] w-[30px] shrink-0 rounded-full transition-colors ${showLoggedTime ? 'bg-teal-500' : 'bg-ink-700'}`}
+              className={`relative inline-block h-[17px] w-[30px] shrink-0 rounded-full transition-colors ${showLoggedTime ? 'bg-pontus-500' : 'bg-nyx-700'}`}
             >
               <span
-                className={`bg-ink-100 absolute top-0.5 h-[13px] w-[13px] rounded-full transition-all ${showLoggedTime ? 'right-0.5' : 'left-0.5'}`}
+                className={`bg-nyx-100 absolute top-0.5 h-[13px] w-[13px] rounded-full transition-all ${showLoggedTime ? 'right-0.5' : 'left-0.5'}`}
               />
             </span>
             Show logged time
@@ -381,11 +381,11 @@ export default function CalendarView({
 
       <div
         ref={scrollRef}
-        className="border-ink-700 flex-1 overflow-y-auto rounded-t-lg border border-b-0"
+        className="border-nyx-700 flex-1 overflow-y-auto rounded-t-lg border border-b-0"
       >
         <div
           style={gridColsStyle}
-          className="border-ink-700 bg-ink-900 sticky top-0 z-10 grid border-b"
+          className="border-nyx-700 bg-nyx-900 sticky top-0 z-10 grid border-b"
         >
           <div />
           {days.map((d) => {
@@ -393,13 +393,13 @@ export default function CalendarView({
             return (
               <div
                 key={d.toISOString()}
-                className={`border-ink-700 border-l px-1.5 py-2 text-center ${isToday(d) ? 'bg-copper-500/10' : ''}`}
+                className={`border-nyx-700 border-l px-1.5 py-2 text-center ${isToday(d) ? 'bg-eros-500/10' : ''}`}
               >
-                <p className="text-ink-500 text-[11px] tracking-wide uppercase">
+                <p className="text-nyx-500 text-[11px] tracking-wide uppercase">
                   {format(d, 'EEE')}
                 </p>
                 <p
-                  className={`text-body font-medium ${isToday(d) ? 'text-copper-400' : 'text-ink-200'}`}
+                  className={`text-body font-medium ${isToday(d) ? 'text-eros-400' : 'text-nyx-200'}`}
                 >
                   {format(d, 'd')}
                 </p>
@@ -413,7 +413,7 @@ export default function CalendarView({
                           e.stopPropagation();
                           onMilestoneClick?.(item);
                         }}
-                        className="text-copper-400 hover:text-copper-300"
+                        className="text-eros-400 hover:text-eros-300"
                       >
                         <Flag size={10} />
                       </button>
@@ -431,7 +431,7 @@ export default function CalendarView({
               <div
                 key={h}
                 style={{ top: h * HOUR_HEIGHT }}
-                className="text-ink-600 absolute right-1.5 -translate-y-2 text-label"
+                className="text-nyx-600 absolute right-1.5 -translate-y-2 text-label"
               >
                 {h === 0
                   ? ''
@@ -449,21 +449,21 @@ export default function CalendarView({
                 key={day.toISOString()}
                 onClick={(e) => handleColumnClick(day, e)}
                 style={{ height: DAY_HEIGHT }}
-                className={`border-ink-700 relative cursor-pointer border-l ${todayColumn ? 'bg-copper-500/5' : ''}`}
+                className={`border-nyx-700 relative cursor-pointer border-l ${todayColumn ? 'bg-eros-500/5' : ''}`}
               >
                 {Array.from({ length: 24 }).map((_, h) => (
                   <div
                     key={h}
                     style={{ top: h * HOUR_HEIGHT }}
-                    className="bg-ink-800 pointer-events-none absolute h-px w-full"
+                    className="bg-nyx-800 pointer-events-none absolute h-px w-full"
                   />
                 ))}
                 {todayColumn && (
                   <div
                     style={{ top: (minutesFromMidnight(now) / 60) * HOUR_HEIGHT }}
-                    className="pointer-events-none absolute z-20 h-0.5 w-full bg-copper-400"
+                    className="pointer-events-none absolute z-20 h-0.5 w-full bg-eros-400"
                   >
-                    <span className="bg-copper-400 absolute top-1/2 -left-1 h-2 w-2 -translate-y-1/2 rounded-full" />
+                    <span className="bg-eros-400 absolute top-1/2 -left-1 h-2 w-2 -translate-y-1/2 rounded-full" />
                   </div>
                 )}
                 {dayEvents.map((ev) => {
@@ -486,7 +486,7 @@ export default function CalendarView({
                       style={{ top, height, opacity: ev.isDone ? 0.38 : 1 }}
                       className={`absolute left-1 flex flex-col overflow-hidden rounded border-l-2 px-1.5 py-0.5 text-left text-[11px] leading-tight ${showLoggedTime ? 'right-2.5' : 'right-1'} ${meta.bg} ${meta.text} ${meta.border} ${meta.borderStyle} ${
                         ev.isLate && !ev.isDone
-                          ? 'border-rust-500! border-solid! animate-pulse'
+                          ? 'border-tartarus-500! border-solid! animate-pulse'
                           : ''
                       }`}
                     >
@@ -519,15 +519,15 @@ export default function CalendarView({
                           key={i}
                           style={{ top: seg.top, height: seg.height }}
                           className={`pointer-events-none absolute right-1 w-1 rounded-sm ${
-                            seg.matched ? 'bg-ink-100' : 'log-rail-gap'
+                            seg.matched ? 'bg-nyx-100' : 'log-rail-gap'
                           }`}
                         />
                       ))}
                       <div
                         style={{ top: log.labelTop }}
-                        className="bg-ink-900/95 text-ink-400 pointer-events-none absolute right-1.5 z-10 max-w-[85%] rounded px-1 py-0.5 text-right font-mono text-[9px] leading-tight"
+                        className="bg-nyx-900/95 text-nyx-400 pointer-events-none absolute right-1.5 z-10 max-w-[85%] rounded px-1 py-0.5 text-right font-mono text-[9px] leading-tight"
                       >
-                        <span className="text-ink-200 block truncate">
+                        <span className="text-nyx-200 block truncate">
                           {log.taskName}
                         </span>
                         {log.timeRangeLabel}
@@ -543,7 +543,7 @@ export default function CalendarView({
       {showLoggedTime && (
         <div
           style={gridColsStyle}
-          className="border-ink-700 bg-ink-800 grid rounded-b-lg border border-t-0"
+          className="border-nyx-700 bg-nyx-800 grid rounded-b-lg border border-t-0"
         >
           <div />
           {days.map((day) => {
@@ -555,12 +555,12 @@ export default function CalendarView({
             return (
               <div
                 key={day.toISOString()}
-                className="border-ink-700 flex items-center justify-between gap-1 border-l px-2 py-1.5 font-mono text-label"
+                className="border-nyx-700 flex items-center justify-between gap-1 border-l px-2 py-1.5 font-mono text-label"
               >
                 <span className={summary.scheduledColorClass}>
                   {minutesToHuman(summary.scheduledMinutes)}
                 </span>
-                <span className="text-ink-400">
+                <span className="text-nyx-400">
                   {hasMix
                     ? `${minutesToHuman(summary.matchedMinutes)}/${minutesToHuman(summary.loggedMinutes)}`
                     : minutesToHuman(summary.loggedMinutes)}

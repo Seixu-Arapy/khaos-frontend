@@ -162,7 +162,7 @@ function Coin({
 }) {
   return (
     <div
-      className="border-ink-700 shrink-0 rounded-full border"
+      className="border-nyx-700 shrink-0 rounded-full border"
       style={{
         width: size,
         height: size,
@@ -205,7 +205,7 @@ function ContrastPair({
       >
         {role}
       </p>
-      <p className="text-ink-300 max-w-prose text-sm">{description}</p>
+      <p className="text-nyx-300 max-w-prose text-sm">{description}</p>
 
       <div
         className="mt-3 w-fit px-6 py-3 text-3xl font-medium"
@@ -214,7 +214,7 @@ function ContrastPair({
         {sample}
       </div>
 
-      <p className="text-ink-600 mt-2 font-mono text-[10px]">
+      <p className="text-nyx-600 mt-2 font-mono text-[10px]">
         {contrast ? `${contrast} · ` : ''}
         {fgLabel} on {bgLabel}
       </p>
@@ -250,11 +250,11 @@ export default function PantheonPage() {
                   text-xs/text-sm made them read far wider than 65 real
                   characters. Applied per-paragraph instead so each one's
                   own font-size governs its own line length. */}
-              <p className="text-ink-500 mb-3 max-w-prose text-xs">
+              <p className="text-nyx-500 mb-3 max-w-prose text-xs">
                 {d.role}
               </p>
 
-              <p className="text-ink-300 mb-8 max-w-prose text-sm leading-relaxed">
+              <p className="text-nyx-300 mb-8 max-w-prose text-sm leading-relaxed">
                 {d.story}
               </p>
 
@@ -262,7 +262,7 @@ export default function PantheonPage() {
                 {d.shades.map((s) => (
                   <div key={s.label} className="flex flex-col items-center gap-1">
                     <Coin hex={s.hex} ring />
-                    <span className="text-ink-600 font-mono text-[9px]">
+                    <span className="text-nyx-600 font-mono text-[9px]">
                       {s.label}
                     </span>
                   </div>
@@ -273,7 +273,7 @@ export default function PantheonPage() {
         ))}
 
         <div className="mt-4">
-          <h3 className="text-ink-200 font-display mb-4 text-sm tracking-wide uppercase">
+          <h3 className="text-nyx-200 font-display mb-4 text-sm tracking-wide uppercase">
             When the gods share a screen
           </h3>
           <div className="flex flex-col gap-10">
@@ -377,8 +377,8 @@ export default function PantheonPage() {
               contrast="3.08:1"
             />
           </div>
-          <p className="text-ink-300 mt-10 max-w-prose text-sm leading-relaxed">
-            <b className="text-ink-100">Warning settled:</b> caution is
+          <p className="text-nyx-300 mt-10 max-w-prose text-sm leading-relaxed">
+            <b className="text-nyx-100">Warning settled:</b> caution is
             Tartarus at 300 — a lighter dose of the same abyss, so
             severity reads as lightness (which survives every kind of
             color vision) instead of a new amber hue that would sit one

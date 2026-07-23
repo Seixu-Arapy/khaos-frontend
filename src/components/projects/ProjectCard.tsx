@@ -23,10 +23,10 @@ export default function ProjectCard({
   return (
     <button
       onClick={() => navigate(`/projects/${project.id}`)}
-      className="border-ink-700 bg-ink-800/40 hover:border-ink-600 hover:bg-ink-800 flex flex-col gap-2.5 rounded-lg border p-4 text-left transition-colors"
+      className="border-nyx-700 bg-nyx-800/40 hover:border-nyx-600 hover:bg-nyx-800 flex flex-col gap-2.5 rounded-lg border p-4 text-left transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
-        <h3 className="text-ink-100 font-medium">{project.name}</h3>
+        <h3 className="text-nyx-100 font-medium">{project.name}</h3>
         <div className="flex shrink-0 items-center gap-1.5">
           <FieldBadge fieldName={fieldName} />
           <PriorityBadge priority={project.priority} />
@@ -36,14 +36,14 @@ export default function ProjectCard({
         <StatusBadge status={project.status} />
         <DueBadge due={project.due} status={project.status} />
       </div>
-      <div className="text-ink-500 text-caption">
+      <div className="text-nyx-500 text-caption">
         {sectionCount} section{sectionCount === 1 ? '' : 's'} · {taskCount} task
         {taskCount === 1 ? '' : 's'}
       </div>
       {Boolean(taskCount) && (
-        <div className="bg-ink-700 h-1.5 w-full overflow-hidden rounded-full">
+        <div className="bg-nyx-700 h-1.5 w-full overflow-hidden rounded-full">
           <div
-            className="bg-sage-500 h-full rounded-full"
+            className="bg-gaia-500 h-full rounded-full"
             style={{ width: `${pct}%` }}
           />
         </div>

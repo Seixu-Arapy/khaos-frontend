@@ -35,7 +35,7 @@ function ChangeChip({ change }: { change: ChangeItem }) {
 
   if (isStatus || isPriority) {
     return (
-      <span className="bg-ink-900 border-ink-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-caption">
+      <span className="bg-nyx-900 border-nyx-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-caption">
         {change.from != null && (
           <>
             {isStatus ? (
@@ -43,7 +43,7 @@ function ChangeChip({ change }: { change: ChangeItem }) {
             ) : (
               <PriorityBadge priority={change.from as Priority} size="sm" />
             )}
-            <span className="text-ink-600">→</span>
+            <span className="text-nyx-600">→</span>
           </>
         )}
         {isStatus ? (
@@ -58,15 +58,15 @@ function ChangeChip({ change }: { change: ChangeItem }) {
   if (isDue) {
     const parts = change.to ? formatDueCompact(change.to as string) : null;
     return (
-      <span className="bg-ink-900 text-ink-300 border-ink-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-caption">
-        <span className="text-ink-500">due</span>
+      <span className="bg-nyx-900 text-nyx-300 border-nyx-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-caption">
+        <span className="text-nyx-500">due</span>
         {parts ? (
           <span className="font-mono tracking-tight">
             <span className="font-bold">{parts.day}</span>
             {parts.month}
           </span>
         ) : (
-          <span className="text-ink-500">cleared</span>
+          <span className="text-nyx-500">cleared</span>
         )}
       </span>
     );
@@ -74,9 +74,9 @@ function ChangeChip({ change }: { change: ChangeItem }) {
 
   if (isEstimate) {
     return (
-      <span className="bg-ink-900 text-ink-300 border-ink-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-caption">
-        <span className="text-ink-500">estimate</span>
-        <span className="text-ink-100 font-mono font-medium">
+      <span className="bg-nyx-900 text-nyx-300 border-nyx-700 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-caption">
+        <span className="text-nyx-500">estimate</span>
+        <span className="text-nyx-100 font-mono font-medium">
           {change.to != null ? minutesToHuman(Number(change.to)) : '—'}
         </span>
       </span>
@@ -84,14 +84,14 @@ function ChangeChip({ change }: { change: ChangeItem }) {
   }
 
   return (
-    <span className="bg-ink-900 text-ink-300 border-ink-700 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-caption">
-      <span className="text-ink-500">{change.label}</span>
+    <span className="bg-nyx-900 text-nyx-300 border-nyx-700 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-caption">
+      <span className="text-nyx-500">{change.label}</span>
       {change.from != null && (
         <>
-          <span className="text-ink-600 line-through">
+          <span className="text-nyx-600 line-through">
             {String(change.from)}
           </span>
-          <span className="text-ink-600">→</span>
+          <span className="text-nyx-600">→</span>
         </>
       )}
       <span className="font-medium text-amber-400">{String(change.to)}</span>
@@ -136,7 +136,7 @@ export default function ChatMomentPrompt({
           'flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors duration-300',
           isSaved && 'bg-emerald-500/20 text-emerald-400',
           hasError && 'bg-rose-500/20 text-rose-400',
-          (isPending || isSaving) && 'bg-copper-500/15 text-copper-400'
+          (isPending || isSaving) && 'bg-eros-500/15 text-eros-400'
         )}
       >
         {isSaved && <CheckCircle2 size={15} />}
@@ -147,9 +147,9 @@ export default function ChatMomentPrompt({
       <div
         className={clsx(
           'w-full max-w-[85%] rounded-lg border p-3.5 text-body leading-relaxed shadow-md transition-all duration-300',
-          isSaved && 'text-ink-300 border-emerald-500/20 bg-emerald-950/10',
+          isSaved && 'text-nyx-300 border-emerald-500/20 bg-emerald-950/10',
           hasError && 'border-rose-500/30 bg-rose-950/20 text-rose-300',
-          (isPending || isSaving) && 'bg-ink-800 border-ink-700 text-ink-200'
+          (isPending || isSaving) && 'bg-nyx-800 border-nyx-700 text-nyx-200'
         )}
       >
         <div
@@ -157,12 +157,12 @@ export default function ChatMomentPrompt({
             'mb-1.5 flex items-center justify-between text-caption font-medium',
             isSaved && 'text-emerald-500',
             hasError && 'text-rose-400',
-            (isPending || isSaving) && 'text-copper-400'
+            (isPending || isSaving) && 'text-eros-400'
           )}
         >
           <span>Context Log: {entityName || 'Change'}</span>
           {isSaving && (
-            <Loader2 size={12} className="text-ink-500 animate-spin" />
+            <Loader2 size={12} className="text-nyx-500 animate-spin" />
           )}
         </div>
 
@@ -173,9 +173,9 @@ export default function ChatMomentPrompt({
         </div>
 
         {isSaved && savedNote && (
-          <div className="text-ink-400 my-2 border-l-2 border-emerald-500/30 pl-2 text-caption italic">
+          <div className="text-nyx-400 my-2 border-l-2 border-emerald-500/30 pl-2 text-caption italic">
             {wasSkipped && (
-              <span className="text-ink-500 mr-1 inline-flex items-center gap-1 not-italic">
+              <span className="text-nyx-500 mr-1 inline-flex items-center gap-1 not-italic">
                 <Bot size={11} />
               </span>
             )}
@@ -193,7 +193,7 @@ export default function ChatMomentPrompt({
               onKeyDown={handleKeyDown}
               placeholder="Why did you make this modification?"
               disabled={isSaving}
-              className="border-ink-700 bg-ink-900 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 w-full resize-none rounded-md border px-2.5 py-2 text-caption leading-relaxed focus:outline-hidden disabled:opacity-60"
+              className="border-nyx-700 bg-nyx-900 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 w-full resize-none rounded-md border px-2.5 py-2 text-caption leading-relaxed focus:outline-hidden disabled:opacity-60"
             />
             {hasError && (
               <p className="text-caption font-medium text-rose-400">

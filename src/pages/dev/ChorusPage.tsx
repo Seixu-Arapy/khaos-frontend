@@ -211,31 +211,31 @@ export default function ChorusPage() {
       wide
     >
       <div className="mb-10">
-        <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
+        <h2 className="text-nyx-200 font-display mb-3 text-sm tracking-wide uppercase">
           Fonts
         </h2>
         <div className="flex flex-col gap-8">
           {fontRows.map(({ token, stack, family, loaded }) => (
             <div key={token}>
-              <span className="text-ink-500 block font-mono text-[10px]">
+              <span className="text-nyx-500 block font-mono text-[10px]">
                 --font-{token}
               </span>
               <div className="mt-1 flex items-center gap-3">
-                <span className="text-ink-300 font-mono text-xs">
+                <span className="text-nyx-300 font-mono text-xs">
                   {family || '(empty)'}
                 </span>
                 {loaded ? (
-                  <span className="text-sage-500 inline-flex items-center gap-1 font-mono text-[10px]">
+                  <span className="text-gaia-500 inline-flex items-center gap-1 font-mono text-[10px]">
                     <Check size={11} /> loaded
                   </span>
                 ) : (
-                  <span className="text-rust-500 inline-flex items-center gap-1 font-mono text-[10px]">
+                  <span className="text-tartarus-500 inline-flex items-center gap-1 font-mono text-[10px]">
                     <AlertTriangle size={11} /> NOT loaded — falling back
                   </span>
                 )}
               </div>
               <p
-                className="text-ink-100 mt-2 text-3xl leading-snug"
+                className="text-nyx-100 mt-2 text-3xl leading-snug"
                 style={{ fontFamily: stack }}
               >
                 {FONT_SAMPLES[token]}
@@ -246,7 +246,7 @@ export default function ChorusPage() {
       </div>
 
       <div className="mb-10">
-        <h2 className="text-ink-200 font-display mb-8 text-sm tracking-wide uppercase">
+        <h2 className="text-nyx-200 font-display mb-8 text-sm tracking-wide uppercase">
           The strings of the scale
         </h2>
         <div className="flex items-end justify-between gap-3 overflow-x-auto pb-2">
@@ -259,8 +259,8 @@ export default function ChorusPage() {
                 {s.deity[0]}
               </span>
               <div className="text-center">
-                <p className="text-ink-100 font-mono text-xs">{s.token}</p>
-                <p className="text-ink-400 font-mono text-[10px]">
+                <p className="text-nyx-100 font-mono text-xs">{s.token}</p>
+                <p className="text-nyx-400 font-mono text-[10px]">
                   {s.px}px · {s.ratioFromPrev}
                 </p>
               </div>
@@ -268,7 +268,7 @@ export default function ChorusPage() {
           ))}
         </div>
 
-        <p className="text-ink-200 max-w-prose text-sm leading-relaxed mt-10">
+        <p className="text-nyx-200 max-w-prose text-sm leading-relaxed mt-10">
           Pythagoras tied musical harmony to small-integer ratios — an
           octave is 2:1, a fifth is 3:2, a major third is 5:4. This
           scale&apos;s five steps grow by ratios in that same family (1.17
@@ -315,10 +315,10 @@ export default function ChorusPage() {
                   </div>
                 </div>
                 <div className="text-right font-mono text-[10px]">
-                  <p className="text-ink-400">
+                  <p className="text-nyx-400">
                     {pair.name} · {pair.ratio}
                   </p>
-                  <p className="text-ink-600">
+                  <p className="text-nyx-600">
                     {pair.a.token} : {pair.b.token}
                   </p>
                 </div>
@@ -329,10 +329,10 @@ export default function ChorusPage() {
       </div>
 
       <div className="max-w-4xl">
-        <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
+        <h2 className="text-nyx-200 font-display mb-3 text-sm tracking-wide uppercase">
           The scale in motion
         </h2>
-        <p className="text-ink-300 mb-8 max-w-prose text-sm leading-relaxed">
+        <p className="text-nyx-300 mb-8 max-w-prose text-sm leading-relaxed">
           Why five steps and not one? Because hierarchy is what makes a
           screen readable without reading it. Below, every step of the
           scale works one real screen fragment together — cover the
@@ -344,28 +344,28 @@ export default function ChorusPage() {
           {/* A believable Khaos screen fragment, using real app chrome
               (card surface, borders, dots) so the scale is judged in
               its natural habitat rather than on empty ink. */}
-          <div className="border-ink-700 bg-ink-800/40 min-w-0 flex-1 rounded-lg border p-6">
+          <div className="border-nyx-700 bg-nyx-800/40 min-w-0 flex-1 rounded-lg border p-6">
             <Annotated token="text-label">
-              <p className="text-ink-500 font-mono text-label font-semibold tracking-wide uppercase">
+              <p className="text-nyx-500 font-mono text-label font-semibold tracking-wide uppercase">
                 court of eros · tonight
               </p>
             </Annotated>
 
             <Annotated token="text-display-lg" className="mt-1">
-              <h3 className="font-display text-ink-100 text-display-lg font-bold">
+              <h3 className="font-display text-nyx-100 text-display-lg font-bold">
                 Pontus&rsquo;s tide report
               </h3>
             </Annotated>
 
             <Annotated token="text-caption" className="mt-1">
-              <p className="text-ink-500 text-caption">
+              <p className="text-nyx-500 text-caption">
                 last seen in Aether, 2m ago · 3 embers drifting
               </p>
             </Annotated>
 
-            <div className="border-ink-700 mt-5 border-t pt-5">
+            <div className="border-nyx-700 mt-5 border-t pt-5">
               <Annotated token="text-display">
-                <h4 className="font-display text-ink-200 text-display font-semibold">
+                <h4 className="font-display text-nyx-200 text-display font-semibold">
                   Tasks for tonight
                 </h4>
               </Annotated>
@@ -373,30 +373,30 @@ export default function ChorusPage() {
               <div className="mt-3 flex flex-col gap-2.5">
                 <Annotated token="text-body">
                   <div className="flex items-center gap-2.5">
-                    <span className="border-ink-600 h-3.5 w-3.5 shrink-0 rounded-full border" />
-                    <p className="text-ink-100 text-body font-medium">
+                    <span className="border-nyx-600 h-3.5 w-3.5 shrink-0 rounded-full border" />
+                    <p className="text-nyx-100 text-body font-medium">
                       Chart Nyx&rsquo;s darkest shade before dawn
                     </p>
                   </div>
                 </Annotated>
 
                 <Annotated token="text-caption">
-                  <p className="text-ink-500 pl-6 text-caption">
+                  <p className="text-nyx-500 pl-6 text-caption">
                     due before first light · 1h 45m logged
                   </p>
                 </Annotated>
 
                 <Annotated token="text-body">
                   <div className="flex items-center gap-2.5">
-                    <span className="border-ink-600 h-3.5 w-3.5 shrink-0 rounded-full border" />
-                    <p className="text-ink-100 text-body font-medium">
+                    <span className="border-nyx-600 h-3.5 w-3.5 shrink-0 rounded-full border" />
+                    <p className="text-nyx-100 text-body font-medium">
                       Count Gaia&rsquo;s finished seasons
                     </p>
                   </div>
                 </Annotated>
 
                 <Annotated token="text-label">
-                  <span className="bg-sage-500/10 text-sage-500 ml-6 inline-flex w-fit items-center rounded-full px-2 py-0.5 font-mono text-label font-semibold tracking-wide uppercase">
+                  <span className="bg-gaia-500/10 text-gaia-500 ml-6 inline-flex w-fit items-center rounded-full px-2 py-0.5 font-mono text-label font-semibold tracking-wide uppercase">
                     marked as done
                   </span>
                 </Annotated>
@@ -405,7 +405,7 @@ export default function ChorusPage() {
           </div>
         </div>
 
-        <p className="text-ink-500 mt-6 max-w-prose text-xs leading-relaxed">
+        <p className="text-nyx-500 mt-6 max-w-prose text-xs leading-relaxed">
           One page title, one section title, task rows, their metadata,
           and a micro-label — five distinct jobs, five distinct sizes,
           zero ambiguity about what outranks what. That is the whole
@@ -416,10 +416,10 @@ export default function ChorusPage() {
       </div>
 
       <div className="mt-14 max-w-4xl">
-        <h2 className="text-ink-200 font-display mb-3 text-sm tracking-wide uppercase">
+        <h2 className="text-nyx-200 font-display mb-3 text-sm tracking-wide uppercase">
           The wiring — how the old classes map
         </h2>
-        <p className="text-ink-300 mb-6 max-w-prose text-sm leading-relaxed">
+        <p className="text-nyx-300 mb-6 max-w-prose text-sm leading-relaxed">
           The scale is wired into the real app (not just this chamber).
           Every ad-hoc size class was swept to its named token —
           pixel-neutral by construction, since each token carries the
@@ -434,7 +434,7 @@ export default function ChorusPage() {
               'text-2xl',
               'text-display-lg',
               'page titles',
-              <h3 key="s" className="font-display text-ink-100 text-display-lg font-bold">
+              <h3 key="s" className="font-display text-nyx-100 text-display-lg font-bold">
                 All tasks
               </h3>,
             ],
@@ -442,7 +442,7 @@ export default function ChorusPage() {
               'text-lg',
               'text-display',
               'modal / section titles',
-              <h4 key="s" className="font-display text-ink-100 text-display">
+              <h4 key="s" className="font-display text-nyx-100 text-display">
                 Edit task
               </h4>,
             ],
@@ -450,7 +450,7 @@ export default function ChorusPage() {
               'text-sm',
               'text-body',
               'task names, controls, body copy',
-              <p key="s" className="text-ink-100 text-body font-medium">
+              <p key="s" className="text-nyx-100 text-body font-medium">
                 Chart Nyx&rsquo;s darkest shade before dawn
               </p>,
             ],
@@ -458,7 +458,7 @@ export default function ChorusPage() {
               'text-xs',
               'text-caption',
               'hints, metadata',
-              <p key="s" className="text-ink-500 text-caption">
+              <p key="s" className="text-nyx-500 text-caption">
                 Last synced 2 minutes ago
               </p>,
             ],
@@ -466,23 +466,23 @@ export default function ChorusPage() {
               'text-[10px]',
               'text-label',
               'micro-labels',
-              <span key="s" className="text-ink-500 font-mono text-label font-semibold tracking-wide uppercase">
+              <span key="s" className="text-nyx-500 font-mono text-label font-semibold tracking-wide uppercase">
                 in progress
               </span>,
             ],
           ].map(([from, to, role, sample]) => (
             <div key={to as string}>
-              <p className="font-mono text-caption text-ink-400">
-                <span className="text-ink-600">{from as string}</span>
+              <p className="font-mono text-caption text-nyx-400">
+                <span className="text-nyx-600">{from as string}</span>
                 {' → '}
-                <span className="text-copper-400">{to as string}</span>
-                <span className="text-ink-600"> · {role as string}</span>
+                <span className="text-eros-400">{to as string}</span>
+                <span className="text-nyx-600"> · {role as string}</span>
               </p>
               <div className="mt-1.5">{sample}</div>
             </div>
           ))}
         </div>
-        <p className="text-ink-500 mt-6 max-w-prose text-caption leading-relaxed">
+        <p className="text-nyx-500 mt-6 max-w-prose text-caption leading-relaxed">
           Deliberately left alone: the wordmark (branding, not
           typography), icon glyph sizes, and the off-scale strays
           (text-base, 11px, 9px) — those are normalization candidates
