@@ -43,7 +43,7 @@ export default function EmblemPage() {
           <KhaosLogo />
         </Swatch>
         <Swatch label="wordmark alone">
-          <KhaosTitle className="text-xl" />
+          <KhaosTitle className="text-base" />
         </Swatch>
         <Swatch label="wordmark, large (password gate)">
           <KhaosTitle className="text-6xl" />
@@ -57,14 +57,14 @@ export default function EmblemPage() {
         <Swatch label="serif (chamber titles)">
           <KhaoticText text="The Emblem" family="serif" className="text-3xl" />
         </Swatch>
-        <Swatch label="display (wordmark)">
+        <Swatch label="single-family (comparison only)">
           <KhaoticText text="Khaos" family="display" className="text-3xl" />
         </Swatch>
         <Swatch label="multi-family + shimmer (home hero)">
           <KhaoticText
             text="Khaos Vortex"
             family={['display', 'serif', 'mono']}
-            className="text-3xl"
+            className="text-4xl"
             shimmer
           />
         </Swatch>
