@@ -121,6 +121,106 @@ export default function SigilsPage() {
             </span>
           </Swatch>
         </Section>
+
+        <p className="text-nyx-200 mb-4 mt-2 max-w-prose text-caption font-semibold tracking-wide uppercase">
+          What each entity is, and why it looks the way it does
+        </p>
+        <dl className="max-w-prose space-y-4 text-caption leading-relaxed">
+          <div>
+            <dt className="text-nyx-200 font-semibold">Project</dt>
+            <dd className="text-nyx-400">
+              The container tasks belong to — the level users actually
+              organize around. <code className="text-eros-400">ProjectChip</code>{' '}
+              keeps the project&rsquo;s own name in plain Nyx-grey and lets
+              only its <code className="text-eros-400">FieldBadge</code>{' '}
+              icon carry color. <em>Question:</em> is that restraint
+              deliberate (color belongs to the field, not the project), or
+              did the project just never get its own color and this
+              reads that way by accident?
+            </dd>
+          </div>
+          <div>
+            <dt className="text-nyx-200 font-semibold">Field</dt>
+            <dd className="text-nyx-400">
+              The top-level life-domain a project (and by extension its
+              tasks) belongs to — Design, Costura, Programação, etc. It
+              carries the strongest, most saturated color signal of any
+              entity (the full 11-hue circle, above) because it&rsquo;s
+              the highest grouping level in the app; every other color
+              system (status, priority) is deliberately more restrained
+              by comparison.
+            </dd>
+          </div>
+          <div>
+            <dt className="text-nyx-200 font-semibold">Tag (work_tags)</dt>
+            <dd className="text-nyx-400">
+              A freeform label a task can carry, many-to-many. Every tag
+              renders in the same single Pontus tone regardless of what
+              the tag says — text is what differentiates them, not color.
+              Reasonable inference: this avoids needing to store or
+              assign a color per tag (there could be dozens), unlike
+              Field&rsquo;s fixed, small, curated set.
+            </dd>
+          </div>
+          <div>
+            <dt className="text-nyx-200 font-semibold">Task</dt>
+            <dd className="text-nyx-400">
+              The atomic unit of work — the entity everything else in
+              this app ultimately organizes around. See &ldquo;Compact vs.
+              expanded chips&rdquo; below for why it doesn&rsquo;t have a
+              small pill form of its own.
+            </dd>
+          </div>
+          <div>
+            <dt className="text-nyx-200 font-semibold">Section</dt>
+            <dd className="text-nyx-400">
+              A named grouping of tasks inside one project (kanban-column
+              shaped). Recently redesigned with collapse/expand and
+              up/down reordering. <em>Question:</em> does it need a
+              standalone mark outside its own column context, or is it
+              only ever meaningful in place?
+            </dd>
+          </div>
+          <div>
+            <dt className="text-nyx-200 font-semibold">Event</dt>
+            <dd className="text-nyx-400">
+              A calendar entry, optionally linked to a task or project.
+              The least-marked entity in the app today — no compact chip,
+              no expanded row, only a rich card in chat and the full
+              modal. <em>Question:</em> is that a real gap, or does an
+              event only ever need to be read on the calendar itself?
+            </dd>
+          </div>
+          <div>
+            <dt className="text-nyx-200 font-semibold">Task log (time entry)</dt>
+            <dd className="text-nyx-400">
+              One logged span of time against a task. Never shown
+              individually — always folded into{' '}
+              <code className="text-eros-400">TaskProgressBar</code>&rsquo;s
+              aggregate. Reasonable inference: a single time entry isn&rsquo;t
+              a meaningful unit to a user on its own, only the running
+              total is.
+            </dd>
+          </div>
+          <div>
+            <dt className="text-nyx-200 font-semibold">Routine</dt>
+            <dd className="text-nyx-400">
+              A recurring task template (frequency + preferred time).
+              Shown only as a list row on its own page today.{' '}
+              <em>Question:</em> same as Section — worth a standalone
+              mark, or always read in its own list?
+            </dd>
+          </div>
+          <div>
+            <dt className="text-nyx-200 font-semibold">Task item (checklist item)</dt>
+            <dd className="text-nyx-400">
+              One row of a task&rsquo;s checklist. Reasonable inference:
+              this one almost certainly never needs a mark of its own —
+              it&rsquo;s never referenced from outside the task that owns
+              it, unlike every other entity here.
+            </dd>
+          </div>
+        </dl>
       </div>
 
       <div className="border-nyx-700 mb-10 border-t pt-10">
@@ -199,8 +299,8 @@ export default function SigilsPage() {
           </Swatch>
         </Section>
 
-        <Section title="Fields">
-          {fieldNames.slice(0, 6).map((name) => (
+        <Section title="Fields — all 11">
+          {fieldNames.map((name) => (
             <Swatch key={name} label={name}>
               <div className="flex items-center gap-2">
                 <FieldBadge fieldName={name} size="xs" />
@@ -210,6 +310,19 @@ export default function SigilsPage() {
             </Swatch>
           ))}
         </Section>
+
+        <p className="text-nyx-400 max-w-prose text-caption leading-relaxed">
+          The 11 fields form one full hue circle, anchored on Staging
+          Academy&rsquo;s existing brand blue (it doesn&rsquo;t move) with
+          the other 10 spaced evenly around it in the order shown above —
+          adjacent fields in that list read as adjacent hues. Saturation
+          and lightness are held constant across all 11 except where a hue
+          landed under WCAG AA against the background (Som, in the
+          blue-violet range) and needed lightening to clear it; nothing
+          else was tuned by eye. <code className="text-eros-400">Textos</code>{' '}
+          was missing a config entry entirely before this pass — the app
+          has always had 11 real fields, this list only carried 10.
+        </p>
 
         <Section title="Dates, estimate &amp; progress">
           <Swatch label="due (upcoming)">
@@ -256,6 +369,33 @@ export default function SigilsPage() {
           TaskDetailModal after the sequencing redesign) and moments/notes
           (an entity list, not a single value — closer to Part I&rsquo;s
           territory than a column badge).
+        </p>
+      </div>
+
+      <div className="border-nyx-700 border-t pt-10">
+        <h2 className="font-serif text-nyx-100 mb-3 text-2xl">
+          Compact vs. expanded chips
+        </h2>
+        <p className="text-nyx-400 mb-3 max-w-prose text-caption leading-relaxed">
+          Not every entity&rsquo;s natural mark is a small pill. Some
+          already have a denser, multi-field <b>expanded</b> form that
+          plays the same role a compact chip would elsewhere — the{' '}
+          <b className="text-nyx-200">task row is an expanded task chip</b>:
+          no atomic <code className="text-eros-400">TaskChip</code> exists
+          or is obviously needed, because a task without its status/
+          priority/due showing usually isn&rsquo;t useful at a glance the
+          way a bare project name is.
+        </p>
+        <p className="text-nyx-400 max-w-prose text-caption leading-relaxed">
+          Reading the rest of Part I against that lens: Section&rsquo;s
+          header row and Routine&rsquo;s list row are arguably their own
+          expanded chips too, same reasoning as the task row. Event has
+          neither a compact nor an expanded standalone mark yet — only the
+          chat preview card and the full modal. <em>Open question:</em>{' '}
+          does <code className="text-eros-400">ENT</code> need to design
+          new expanded forms, or mainly recognize and consolidate the ones
+          that already exist (TaskRow, section header, routine row) onto
+          shared building blocks?
         </p>
       </div>
     </Chamber>
