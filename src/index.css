@@ -97,6 +97,15 @@
      default rounded-sm directly instead of maintaining a duplicate. */
   --radius: 6px;
   --radius-lg: 10px;
+
+  /* Animation */
+  /* The KhaosIcon "spinning" state (sidebar during fetch/chat, corner
+     placard, password gate) always uses this instead of Tailwind's
+     built-in animate-spin (1s) -- 1s read as frantic for an ambient
+     "something's happening" indicator, not an urgent progress spinner.
+     Reuses Tailwind's own `spin` keyframe (already emitted wherever
+     animate-spin is used, e.g. ChatPanel's Loader2), just slower. */
+  --animate-spin-slow: spin 3s linear infinite;
 }
 
 /* ── Base styles ───────────────────────────────────────────────────────── */

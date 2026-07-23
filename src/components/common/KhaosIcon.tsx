@@ -35,10 +35,17 @@ export default function KhaosIcon({
     >
       <span
         className={clsx(
-          'inline-block',
+          // flex + h-full/w-full instead of a bare inline-block: the
+          // glyph's own font-metrics box isn't symmetric around its
+          // visual shape, so a spin centered on that box (via inline
+          // sizing) rotated visibly off-axis. This span is now exactly
+          // as square as the (always-square) outer container, so
+          // rotation and the outer's own animate-pulse (used together
+          // on the Vortex hero icon) both read as centered.
+          'flex h-full w-full items-center justify-center',
           fontSize,
           color,
-          spin ? 'animate-spin' : ''
+          spin ? 'animate-spin-slow' : ''
         )}
       >
         ✷

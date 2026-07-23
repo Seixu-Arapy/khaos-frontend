@@ -142,11 +142,6 @@ export default function ChatPanel({
     <div className="flex h-full min-h-0 flex-col">
       <div className="border-nyx-700 flex shrink-0 items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
-          <KhaosIcon
-            size="h-5 w-5"
-            bgColor="bg-transparent"
-            className="animate-pulse"
-          />
           <h2 className="font-display text-nyx-100 text-body font-semibold">
             <KhaoticText text="KallKhaos" />
           </h2>

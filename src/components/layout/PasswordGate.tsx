@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import KhaosIcon from '../common/KhaosIcon';
 import { KhaosTitle } from '../common/KhaosLogo';
 
 const HASH = import.meta.env.VITE_APP_PASSWORD_HASH;
@@ -59,8 +60,11 @@ export function PasswordGate({ children }: PasswordGateProps) {
   return (
     <div className="bg-nyx-900 flex h-dvh flex-col items-center justify-center px-4">
       <div className="mb-8 flex flex-col items-center gap-2 select-none">
-        <span className="animate-spin-slow text-eros-400 text-5xl">✷</span>
-        <KhaosTitle className="text-2xl" />
+        {/* Was a bare unicode span, hand-styled -- and referenced an
+            animate-spin-slow class that didn't exist yet, so it never
+            actually spun. Now the real KhaosIcon, with the fix. */}
+        <KhaosIcon size="h-16 w-16" fontSize="text-6xl" color="text-eros-400" spin />
+        <KhaosTitle className="text-display-lg" />
       </div>
 
       <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-3">
@@ -73,27 +77,27 @@ export function PasswordGate({ children }: PasswordGateProps) {
             setError(false);
           }}
           placeholder="Password"
-          className={`bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 w-full rounded-lg border px-4 py-3 text-center text-sm transition-colors focus:outline-hidden ${
+          className={`bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 w-full rounded-lg border px-4 py-3 text-center text-body transition-colors focus:outline-hidden ${
             error
               ? 'border-tartarus-500 focus:border-tartarus-500'
               : 'border-nyx-600 focus:border-eros-400'
           }`}
         />
         {error && (
-          <p className="text-tartarus-500 text-center text-xs">
+          <p className="text-tartarus-500 text-center text-caption">
             Incorrect password
           </p>
         )}
         <button
           type="submit"
           disabled={checking || !value.trim()}
-          className="bg-eros-500 text-nyx-900 hover:bg-eros-400 w-full rounded-lg py-3 text-sm font-medium transition-colors disabled:opacity-40"
+          className="bg-eros-500 text-nyx-900 hover:bg-eros-400 w-full rounded-lg py-3 text-body font-medium transition-colors disabled:opacity-40"
         >
           {checking ? 'Checking…' : 'Enter'}
         </button>
       </form>
 
-      <p className="text-nyx-600 mt-8 text-xs">Ordo ab chao</p>
+      <p className="text-nyx-600 mt-8 text-caption">Ordo ab chao</p>
     </div>
   );
 }
