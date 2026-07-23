@@ -307,7 +307,11 @@ export default function ProjectDetailPage() {
               patch: { name: e.target.value },
             })
           }
-          className="font-display text-nyx-100 w-full bg-transparent text-display-lg focus:outline-none"
+          // font-normal, not the page-title default -- this borrows
+          // font-display/text-display-lg's size but is an editable
+          // input, not a static h1, and shouldn't inherit the display
+          // font's heavier default weight the way real page titles do.
+          className="font-display text-nyx-100 w-full bg-transparent text-display-lg font-normal focus:outline-none"
         />
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Select
