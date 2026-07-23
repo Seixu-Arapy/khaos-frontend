@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Chamber, Section, Swatch } from './vaultUI';
 import {
   StatusBadge,
@@ -19,12 +20,13 @@ import ProjectRow from '../../components/projects/ProjectRow';
 import SectionChip from '../../components/projects/SectionChip';
 import SectionRow from '../../components/projects/SectionRow';
 import TaskRow from '../../components/tasks/TaskRow';
+import { InlineEventPreview } from '../../components/assistant/InlineEventPreview';
 import DueEditor from '../../components/common/DueEditor';
 import TargetEditor from '../../components/common/TargetEditor';
 import { minutesToHuman } from '../../lib/dateUtils';
 import { STATUSES, PRIORITIES } from '../../lib/constants';
 import { FIELDS_CONFIG, FIELD_EMOJI } from '../../lib/fieldsConfig';
-import type { Status, Priority, Project, Section as SectionRecord, Task } from '../../lib/types';
+import type { Status, Priority, Project, Section as SectionRecord, Task, Event } from '../../lib/types';
 
 const SAMPLE_CHANGES = [
   { field: 'status' as const, label: 'Status', from: 'todo', to: 'in_progress' },
@@ -69,6 +71,54 @@ const SAMPLE_TASK: Task = {
   deleted_at: null,
 };
 
+// Every field populated at once -- not a realistic task, a stress test for
+// how the row degrades at mobile widths when nothing is empty.
+const SAMPLE_PROJECT_FULL: Project = {
+  ...SAMPLE_PROJECT,
+  id: 'sample-full',
+  name: 'A genuinely long project name to stress-test wrapping',
+};
+const SAMPLE_SECTION_FULL: SectionRecord = {
+  ...SAMPLE_SECTION,
+  id: 'sample-full',
+  name: 'A genuinely long section name to stress-test wrapping',
+  target: '["2026-08-01 00:00:00+00","2026-08-10 00:00:00+00")',
+};
+const SAMPLE_TASK_FULL: Task = {
+  ...SAMPLE_TASK,
+  id: 'sample-full',
+  name: 'A genuinely long task name to stress-test wrapping',
+  target: '["2026-08-01 00:00:00+00","2026-08-10 00:00:00+00")',
+};
+
+const SAMPLE_EVENT_FIXED: Event = {
+  id: 'sample-fixed',
+  name: 'Design review',
+  event_type: 'fixed',
+  duration: '["2026-08-01 14:00:00+00","2026-08-01 15:00:00+00")',
+  project_id: null,
+  task_id: null,
+  field_id: null,
+  routine_id: null,
+  recurrent: false,
+  deleted_at: null,
+};
+const SAMPLE_EVENT_SCHEDULED: Event = {
+  ...SAMPLE_EVENT_FIXED,
+  id: 'sample-scheduled',
+  name: 'Work on empty states',
+  event_type: 'scheduled',
+  duration: '["2026-08-02 09:00:00+00","2026-08-02 11:00:00+00")',
+};
+const SAMPLE_EVENT_ROUTINE: Event = {
+  ...SAMPLE_EVENT_FIXED,
+  id: 'sample-routine',
+  name: 'Weekly planning',
+  event_type: 'routine',
+  duration: '["2026-08-03 08:00:00+00","2026-08-03 08:30:00+00")',
+  recurrent: true,
+};
+
 export default function SigilsPage() {
   const [status, setStatus] = useState<Status>('in_progress');
   const [priority, setPriority] = useState<Priority>('medium');
@@ -88,6 +138,19 @@ export default function SigilsPage() {
   const [estimateDraft, setEstimateDraft] = useState('120');
   const fieldNames = Object.keys(FIELDS_CONFIG);
   const sampleField = fieldNames[0];
+
+  // Seeds the same react-query cache TaskRow's useSequenceCounts reads
+  // from, purely so the "full row" stress-test swatch below can show a
+  // populated sequence indicator too -- this docs page is the only
+  // consumer, real task data is untouched.
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    queryClient.setQueryData(['tasksSequence'], [
+      { task_previous: 'sample-full-before-1', task_next: 'sample-full' },
+      { task_previous: 'sample-full-before-2', task_next: 'sample-full' },
+      { task_previous: 'sample-full', task_next: 'sample-full-after-1' },
+    ]);
+  }, [queryClient]);
 
   return (
     <Chamber
@@ -359,9 +422,26 @@ export default function SigilsPage() {
               A calendar entry, optionally linked to a task or project.
               The least-marked entity in the app today — no compact chip,
               no expanded row, only a rich card in chat and the full
-              modal. <em>Question:</em> is that a real gap, or does an
-              event only ever need to be read on the calendar itself?
+              modal — no expanded row of its own, since it&rsquo;s already
+              always read alongside the calendar it lives on.
             </dd>
+            <Section title="Event, in chat">
+              <Swatch label="fixed">
+                <div className="w-72">
+                  <InlineEventPreview event={SAMPLE_EVENT_FIXED} projectName="Roadmap Q3" projectField="Design" />
+                </div>
+              </Swatch>
+              <Swatch label="scheduled">
+                <div className="w-72">
+                  <InlineEventPreview event={SAMPLE_EVENT_SCHEDULED} taskName="Redesign the empty states" projectName="Roadmap Q3" projectField="Design" />
+                </div>
+              </Swatch>
+              <Swatch label="routine">
+                <div className="w-72">
+                  <InlineEventPreview event={SAMPLE_EVENT_ROUTINE} projectName="Roadmap Q3" projectField="Design" />
+                </div>
+              </Swatch>
+            </Section>
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Task log (time entry)</dt>
@@ -386,10 +466,9 @@ export default function SigilsPage() {
           <div>
             <dt className="text-nyx-200 font-semibold">Task item (checklist item)</dt>
             <dd className="text-nyx-400">
-              One row of a task&rsquo;s checklist. Reasonable inference:
-              this one almost certainly never needs a mark of its own —
-              it&rsquo;s never referenced from outside the task that owns
-              it, unlike every other entity here.
+              One row of a task&rsquo;s checklist. Confirmed: does not need
+              a mark of its own — it&rsquo;s never referenced from outside
+              the task that owns it, unlike every other entity here.
             </dd>
           </div>
         </dl>
@@ -613,6 +692,44 @@ export default function SigilsPage() {
           header row and Routine&rsquo;s list row are their own expanded
           chips too, same reasoning as the task row.
         </p>
+      </div>
+
+      <div className="border-nyx-700 border-t pt-10">
+        <h2 className="font-serif text-nyx-100 mb-3 text-2xl">
+          Full row, mobile stress test
+        </h2>
+        <p className="text-nyx-400 mb-6 max-w-prose text-caption leading-relaxed">
+          Every field populated at once, on a 375px frame — not a realistic
+          record, a check that <code className="text-eros-400">ProjectRow</code>
+          , <code className="text-eros-400">SectionRow</code>, and{' '}
+          <code className="text-eros-400">TaskRow</code> hold together when
+          nothing is empty and the name itself is long.
+        </p>
+        <div className="flex flex-col gap-4">
+          <div className="border-nyx-700 w-[375px] rounded-md border p-2">
+            <ProjectRow
+              project={SAMPLE_PROJECT_FULL}
+              fieldName="Design"
+              sectionCount={12}
+              taskCount={148}
+            />
+          </div>
+          <div className="border-nyx-700 w-[375px] rounded-md border p-2">
+            <SectionRow
+              section={SAMPLE_SECTION_FULL}
+              projectName="Roadmap Q3"
+              fieldName="Design"
+            />
+          </div>
+          <div className="border-nyx-700 w-[375px] rounded-md border p-2">
+            <TaskRow
+              task={SAMPLE_TASK_FULL}
+              onOpen={() => {}}
+              projectName="Roadmap Q3"
+              projectField="Design"
+            />
+          </div>
+        </div>
       </div>
     </Chamber>
   );

@@ -107,7 +107,10 @@ export function Section({
       <div
         className={clsx(
           'flex items-center gap-5',
-          nowrap ? 'flex-nowrap overflow-x-auto' : 'flex-wrap'
+          // Padding compensates for focus rings / active borders on the
+          // first and last item -- without it, overflow-x-auto's edge
+          // sits flush against the content and clips them.
+          nowrap ? 'flex-nowrap overflow-x-auto px-1 py-1' : 'flex-wrap'
         )}
       >
         {children}
