@@ -22,12 +22,13 @@ import SectionChip from '../../components/projects/SectionChip';
 import SectionRow from '../../components/projects/SectionRow';
 import TaskRow from '../../components/tasks/TaskRow';
 import { InlineEventPreview } from '../../components/assistant/InlineEventPreview';
+import RoutineCard from '../../components/routines/RoutineCard';
 import DueEditor from '../../components/common/DueEditor';
 import TargetEditor from '../../components/common/TargetEditor';
 import { minutesToHuman } from '../../lib/dateUtils';
 import { STATUSES, PRIORITIES } from '../../lib/constants';
 import { FIELDS_CONFIG, FIELD_EMOJI } from '../../lib/fieldsConfig';
-import type { Status, Priority, Project, Section as SectionRecord, Task, Event } from '../../lib/types';
+import type { Status, Priority, Project, Section as SectionRecord, Task, Event, RoutineWithField } from '../../lib/types';
 
 const SAMPLE_CHANGES = [
   { field: 'status' as const, label: 'Status', from: 'todo', to: 'in_progress' },
@@ -118,6 +119,19 @@ const SAMPLE_EVENT_ROUTINE: Event = {
   event_type: 'routine',
   duration: '["2026-08-03 08:00:00+00","2026-08-03 08:30:00+00")',
   recurrent: true,
+};
+
+const SAMPLE_ROUTINE: RoutineWithField = {
+  id: 'sample',
+  name: 'Gym',
+  frequency: '3x_week',
+  preferred_time: 'morning',
+  estimate: 60,
+  constraints: 'Can be done anytime the gym is open — no fixed slot needed.',
+  active: true,
+  field_id: null,
+  task_id: null,
+  fields: null,
 };
 
 export default function SigilsPage() {
@@ -426,6 +440,17 @@ export default function SigilsPage() {
               <code className="text-eros-400">MomentTagChip</code>: same
               shape, Hypnos instead of Pontus.
             </dd>
+            <Section title="Tags">
+              <Swatch label="work tag">
+                <Tag onRemove={() => {}}>design</Tag>
+              </Swatch>
+              <Swatch label="moment tag">
+                <MomentTagChip onRemove={() => {}}>breakthrough</MomentTagChip>
+              </Swatch>
+              <Swatch label="suggestion">
+                <TagSuggestion onClick={() => {}}>urgent</TagSuggestion>
+              </Swatch>
+            </Section>
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Event</dt>
@@ -453,26 +478,93 @@ export default function SigilsPage() {
                 </div>
               </Swatch>
             </Section>
+            <p className="text-nyx-400 mb-3 max-w-prose text-caption leading-relaxed">
+              The calendar renders the same event with the exact same{' '}
+              <code className="text-eros-400">EVENT_TYPE_META</code> lookup
+              (bg/text/border/borderStyle) — same classes shown below,
+              copied from <code className="text-eros-400">
+                CalendarView.tsx
+              </code>
+              . The one deliberate difference: a <code className="text-eros-400">
+                border-l-2
+              </code>{' '}
+              accent on the calendar block vs. <code className="text-eros-400">
+                border-l-4
+              </code>{' '}
+              on the chat card — calendar blocks are dense, small,
+              often 30 minutes tall, so a thinner accent fits; the chat
+              card has room for a bolder one. Confirmed deliberate, not
+              drift.
+            </p>
+            <Section title="Event, on the calendar">
+              <Swatch label="fixed">
+                <div className="border-pontus-400 bg-pontus-500/10 text-pontus-400 flex w-48 flex-col overflow-hidden rounded border-l-2 border-solid px-1.5 py-0.5 text-left text-[11px] leading-tight">
+                  <span className="shrink-0 truncate font-medium">Design review</span>
+                  <ProjectChip name="Roadmap Q3" fieldName="Design" className="mt-0.5 shrink-0" />
+                </div>
+              </Swatch>
+              <Swatch label="scheduled">
+                <div className="border-hypnos-400 bg-hypnos-500/10 text-hypnos-400 flex w-48 flex-col overflow-hidden rounded border-l-2 border-dotted px-1.5 py-0.5 text-left text-[11px] leading-tight">
+                  <span className="shrink-0 truncate font-medium">Work on empty states</span>
+                  <ProjectChip name="Roadmap Q3" fieldName="Design" className="mt-0.5 shrink-0" />
+                </div>
+              </Swatch>
+              <Swatch label="routine">
+                <div className="border-pontus-400 bg-pontus-500/10 text-pontus-400 flex w-48 flex-col overflow-hidden rounded border-l-2 border-dotted px-1.5 py-0.5 text-left text-[11px] leading-tight">
+                  <span className="shrink-0 truncate font-medium">Weekly planning</span>
+                  <ProjectChip name="Roadmap Q3" fieldName="Design" className="mt-0.5 shrink-0" />
+                </div>
+              </Swatch>
+            </Section>
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Task log (time entry)</dt>
-            <dd className="text-nyx-400">
+            <dd className="text-nyx-400 mb-3">
               One logged span of time against a task. Never shown
-              individually — always folded into{' '}
+              individually as a chip or badge — always folded into{' '}
               <code className="text-eros-400">TaskProgressBar</code>&rsquo;s
               aggregate. Reasonable inference: a single time entry isn&rsquo;t
               a meaningful unit to a user on its own, only the running
-              total is.
+              total is. It does have one real per-entry visual, though —
+              the calendar&rsquo;s logged-time rail (a thin bar next to
+              each event block, plus a floating label), shown when
+              &ldquo;show logged time&rdquo; is toggled on.
             </dd>
+            <Section title="Task log, on the calendar">
+              <Swatch label="rail + label">
+                <div className="relative h-16 w-40">
+                  <div className="bg-nyx-100 absolute top-2 right-1 h-10 w-1 rounded-sm" />
+                  <div className="bg-nyx-900/95 text-nyx-400 absolute top-1 right-1.5 max-w-[85%] rounded px-1 py-0.5 text-right font-mono text-[9px] leading-tight">
+                    <span className="text-nyx-200 block truncate">
+                      Redesign empty states
+                    </span>
+                    9:00–10:30
+                  </div>
+                </div>
+              </Swatch>
+            </Section>
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Routine</dt>
-            <dd className="text-nyx-400">
+            <dd className="text-nyx-400 mb-3">
               A recurring task template (frequency + preferred time).
-              Shown only as a list row on its own page today.{' '}
-              <em>Question:</em> same as Section — worth a standalone
-              mark, or always read in its own list?
+              Confirmed: no prior chip/mockup exists for it — only{' '}
+              <code className="text-eros-400">RoutineCard</code>, the real
+              list row from <code className="text-eros-400">
+                RoutinesPage
+              </code>{' '}
+              (extracted into its own component so it could be demoed
+              here directly, instead of a lookalike). Same reasoning as
+              Section: read only in its own list today, no compact chip
+              or chat mention.
             </dd>
+            <Section title="Routine row">
+              <Swatch label="name + frequency + time + estimate">
+                <div className="w-[420px]">
+                  <RoutineCard routine={SAMPLE_ROUTINE} />
+                </div>
+              </Swatch>
+            </Section>
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Task item (checklist item)</dt>
@@ -657,18 +749,6 @@ export default function SigilsPage() {
               />
               m
             </div>
-          </Swatch>
-        </Section>
-
-        <Section title="Tags" nowrap>
-          <Swatch label="work tag">
-            <Tag onRemove={() => {}}>design</Tag>
-          </Swatch>
-          <Swatch label="moment tag">
-            <MomentTagChip onRemove={() => {}}>breakthrough</MomentTagChip>
-          </Swatch>
-          <Swatch label="suggestion">
-            <TagSuggestion onClick={() => {}}>urgent</TagSuggestion>
           </Swatch>
         </Section>
 
