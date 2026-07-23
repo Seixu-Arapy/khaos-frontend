@@ -176,45 +176,47 @@ export default function ForgePage() {
         </Swatch>
       </Section>
 
-      <Section title="Add / remove">
-        <Swatch label="add button">
-          {/* AddButton pattern from TaskDetailModal -- bordered pill,
-              lights up eros when active. */}
+      <Section title="Action buttons">
+        <Swatch label="add, bordered">
+          {/* AddButton pattern from TaskDetailModal -- bordered pill.
+              No color exception anymore: active state brightens to
+              neutral Nyx instead of lighting up Eros, matching every
+              other add control. */}
           <button
             type="button"
             onClick={() => setAddActive((v) => !v)}
             className={`flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-label transition-colors ${
               addActive
-                ? 'border-eros-500 text-eros-400 bg-eros-500/10'
+                ? 'border-nyx-500 text-nyx-200 bg-nyx-800'
                 : 'border-nyx-700 text-nyx-500 hover:text-nyx-300'
             }`}
           >
             <Plus size={10} /> Add time
           </button>
         </Swatch>
-        <Swatch label="add (inline, checklist)">
+        <Swatch label="add, inline">
           {/* From the checklist's "add item" row. */}
           <div className="flex items-center gap-1.5">
             <Plus size={14} className="text-nyx-500" />
-            <span className="text-nyx-500 text-body">Add a checklist item…</span>
+            <span className="text-nyx-500 text-caption">Add a checklist item…</span>
           </div>
         </Swatch>
-        <Swatch label="add (icon-only)">
+        <Swatch label="add, icon-only">
           {/* IconAddButton, from TaskDetailModal's "Add previous/next
               task" -- icon-only because the adjacent field label
               ("Previous tasks") already says what's being added, with
-              no spare width for a second label. Ghost by default, same
-              language as IconButton, just smaller (inline, dense row). */}
+              no spare width for a second label. Bordered like the other
+              add controls, ghost fill, same language as IconButton. */}
           <button
             type="button"
             aria-label="Add previous task"
             title="Add previous task"
-            className="text-nyx-500 hover:bg-nyx-700 hover:text-nyx-100 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors"
+            className="border-nyx-700 text-nyx-500 hover:bg-nyx-700 hover:text-nyx-100 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors"
           >
             <Plus size={10} />
           </button>
         </Swatch>
-        <Swatch label="remove / close (×)">
+        <Swatch label="remove, icon-only">
           {/* From checklist item rows and chip removal -- bare icon,
               hover reveals danger. Hover class must live on the icon
               itself, not the button -- the icon's own color class wins
@@ -230,15 +232,13 @@ export default function ForgePage() {
           Why add/remove stay this muted
         </p>
         <p className="text-nyx-400">
-          Every add control — pill, inline, or icon-only — defaults to
-          neutral Nyx, so Eros keeps meaning one thing app-wide:{' '}
-          <em>this needs you</em>. Add isn&rsquo;t a call to act, it&rsquo;s
-          just always there — coloring it would dilute the one signal
-          Eros carries. The add-time pill is the one exception: it lights
-          up Eros only while actively toggled on, the same way any other
-          active-state control would. Remove earns its danger hover
-          because deleting is the one add/remove action with real
-          consequence.
+          Every add control — bordered, inline, or icon-only — stays
+          neutral Nyx always, no exceptions, so Eros keeps meaning one
+          thing app-wide: <em>this needs you</em>. Add isn&rsquo;t a call
+          to act, it&rsquo;s just always there — coloring it, even for an
+          active/toggled state, would dilute the one signal Eros carries.
+          Remove earns its danger hover because deleting is the one
+          add/remove action with real consequence.
         </p>
       </div>
 
@@ -254,7 +254,7 @@ export default function ForgePage() {
           >
             <span
               className={`relative inline-block h-[17px] w-[30px] shrink-0 rounded-full transition-colors ${
-                toggled ? 'bg-gaia-500' : 'bg-nyx-700'
+                toggled ? 'bg-eros-500' : 'bg-nyx-700'
               }`}
             >
               <span
@@ -268,7 +268,7 @@ export default function ForgePage() {
         </Swatch>
         <Swatch label="switch, disabled">
           <button type="button" disabled className="text-nyx-300 flex items-center gap-2 text-caption disabled:cursor-not-allowed disabled:opacity-50">
-            <span className="bg-gaia-500 relative inline-block h-[17px] w-[30px] shrink-0 rounded-full">
+            <span className="bg-eros-500 relative inline-block h-[17px] w-[30px] shrink-0 rounded-full">
               <span className="bg-nyx-100 absolute top-0.5 right-0.5 h-[13px] w-[13px] rounded-full" />
             </span>
             Show logged time
@@ -278,13 +278,15 @@ export default function ForgePage() {
 
       <div className="max-w-prose text-caption leading-relaxed">
         <p className="text-nyx-200 mb-3 font-semibold tracking-wide uppercase">
-          Why the toggle is Gaia
+          Why the toggle is Eros
         </p>
         <p className="text-nyx-400">
-          A switch is a state the user directly controls, not a status
-          value — so it stays out of the status/priority palette entirely.
-          Gaia reads as settled and enabled without colliding with any
-          existing meaning elsewhere in the app; off stays neutral Nyx.
+          Matched to the checkbox&rsquo;s own rule (<code className="text-eros-400">
+            accent-eros-500
+          </code>{' '}
+          on check, plain otherwise): a binary control colors only its
+          &ldquo;on&rdquo; state, in Eros, and stays neutral Nyx off.
+          Same rule, same color, across every binary control in the app.
         </p>
       </div>
     </Chamber>
