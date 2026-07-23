@@ -262,7 +262,7 @@ export function IconAddButton({
       aria-label={label}
       title={label}
       className={clsx(
-        'bg-violet-400 text-ink-900 hover:bg-violet-300 active:bg-violet-500 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors',
+        'bg-hypnos-400 text-nyx-900 hover:bg-hypnos-300 active:bg-hypnos-500 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors',
         className
       )}
       {...props}
@@ -308,7 +308,7 @@ export function TagSuggestion({ children, onClick }: TagSuggestionProps) {
     <button
       type="button"
       onClick={onClick}
-      className="border-ink-600 text-ink-500 hover:border-ink-500 hover:text-ink-300 inline-flex items-center gap-0.5 rounded-full border border-dashed px-2 py-0.5 text-xs"
+      className="border-nyx-600 text-nyx-500 hover:border-nyx-500 hover:text-nyx-300 inline-flex items-center gap-0.5 rounded-full border border-dashed px-2 py-0.5 text-xs"
     >
       <Plus size={10} />
       {children}
@@ -340,8 +340,8 @@ export function TimeToggle({
       className={clsx(
         'flex shrink-0 items-center gap-0.5 rounded border px-1 text-[10px] transition-colors',
         active
-          ? 'border-copper-500 text-copper-400 bg-copper-500/10'
-          : 'border-ink-700 text-ink-500 hover:text-ink-300',
+          ? 'border-eros-500 text-eros-400 bg-eros-500/10'
+          : 'border-nyx-700 text-nyx-500 hover:text-nyx-300',
         className
       )}
     >
@@ -611,7 +611,7 @@ export function ScheduledBadge({ scheduled }: { scheduled?: boolean }) {
   return (
     <span
       title="Já agendada"
-      className="text-sage-500 inline-flex shrink-0 items-center"
+      className="text-gaia-500 inline-flex shrink-0 items-center"
     >
       <CalendarClock size={12} />
     </span>

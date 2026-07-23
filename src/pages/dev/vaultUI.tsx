@@ -7,7 +7,7 @@ import KhaoticText from '../../components/common/KhaoticText';
 // Shared chrome for the Khaos Vault (/dev/vortex/*) — deliberately outside
 // AppShell (no sidebar, no chat, no nav bar). The only wayfinding is a
 // corner placard (logo + roman-numeral nav) and one subtle exit mark.
-// Kept in sync by hand with VaultIndexPage's own CHAMBERS list -- six
+// Kept in sync by hand with VaultIndexPage's own CHAMBERS list -- seven
 // fixed items, low churn, not worth a shared-import refactor yet.
 const CHAMBER_NAV = [
   { index: 'I', name: 'The Pantheon', to: '/dev/vortex/pantheon' },
@@ -16,6 +16,7 @@ const CHAMBER_NAV = [
   { index: 'IV', name: 'The Forge', to: '/dev/vortex/forge' },
   { index: 'V', name: 'The Sigils', to: '/dev/vortex/sigils' },
   { index: 'VI', name: 'The Threshold', to: '/dev/vortex/threshold' },
+  { index: 'VII', name: 'The Emblem', to: '/dev/vortex/emblem' },
 ];
 
 export function MuseumFrame({
