@@ -17,11 +17,11 @@ const BEND_H = 14;
 const ROW_GAP = 2;
 
 const LANE_COLORS = [
-  'var(--color-teal-400)',
-  'var(--color-copper-400)',
-  'var(--color-violet-400)',
-  'var(--color-sage-500)',
-  'var(--color-rust-500)',
+  'var(--color-pontus-400)',
+  'var(--color-eros-400)',
+  'var(--color-hypnos-400)',
+  'var(--color-gaia-500)',
+  'var(--color-tartarus-500)',
 ];
 
 const laneColor = (colorIndex: number) =>
