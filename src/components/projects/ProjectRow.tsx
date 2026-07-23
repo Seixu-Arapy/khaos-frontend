@@ -16,7 +16,9 @@ interface ProjectRowProps {
 // into its own flex-wrap group -- same md: breakpoint that stacks the two
 // groups on mobile (name always readable) and lines them up on one row
 // once there's room, matching how TaskRow already handles the same
-// too-many-badges problem.
+// too-many-badges problem. border-y (transparent) matches TaskRow's own
+// border-transparent on all sides -- without it this row would render
+// 2px shorter than TaskRow, since only the left edge had a border here.
 export default function ProjectRow({
   project,
   fieldName,
@@ -30,7 +32,7 @@ export default function ProjectRow({
     <button
       onClick={() => navigate(`/projects/${project.id}`)}
       style={{ borderLeftColor: fieldColor }}
-      className="group hover:bg-nyx-900 flex w-full flex-col gap-0.5 rounded-md border-l-2 py-1.5 pr-2 pl-2.5 text-left md:flex-row md:items-center md:gap-1.5"
+      className="group hover:bg-nyx-900 flex w-full flex-col gap-0.5 rounded-md border-y border-l-2 border-transparent py-1.5 pr-2 pl-2.5 text-left md:flex-row md:items-center md:gap-1.5"
     >
       <span className="flex min-w-0 items-center gap-1.5 md:flex-1">
         <FieldBadge fieldName={fieldName} size="xs" />

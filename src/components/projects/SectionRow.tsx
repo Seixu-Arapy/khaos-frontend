@@ -16,7 +16,9 @@ interface SectionRowProps {
 // count, though, since a section has nothing of its own to count. Same
 // md: stack-then-align breakpoint as ProjectRow/TaskRow, so the
 // project>section breadcrumb name stays readable on mobile instead of
-// getting squeezed to nothing by the badges.
+// getting squeezed to nothing by the badges. border-y (transparent)
+// matches TaskRow's own border-transparent on all sides, so this row
+// renders at the exact same height as TaskRow.
 export default function SectionRow({
   section,
   projectName,
@@ -29,7 +31,7 @@ export default function SectionRow({
     <button
       onClick={onClick}
       style={{ borderLeftColor: fieldColor }}
-      className="group hover:bg-nyx-900 flex w-full flex-col gap-0.5 rounded-md border-l-2 py-1.5 pr-2 pl-2.5 text-left md:flex-row md:items-center md:gap-1.5"
+      className="group hover:bg-nyx-900 flex w-full flex-col gap-0.5 rounded-md border-y border-l-2 border-transparent py-1.5 pr-2 pl-2.5 text-left md:flex-row md:items-center md:gap-1.5"
     >
       <span className="flex min-w-0 items-center gap-1.5 md:flex-1">
         <FieldBadge fieldName={fieldName} size="xs" />

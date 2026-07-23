@@ -355,6 +355,16 @@ export default function SigilsPage() {
                   />
                 </div>
               </Swatch>
+              <Swatch label="full, mobile (390px, every field populated)">
+                <div className="border-nyx-700 w-[390px] rounded-md border p-2">
+                  <ProjectRow
+                    project={SAMPLE_PROJECT_FULL}
+                    fieldName="Design"
+                    sectionCount={12}
+                    taskCount={148}
+                  />
+                </div>
+              </Swatch>
             </Section>
           </div>
           <div>
@@ -392,6 +402,15 @@ export default function SigilsPage() {
                   />
                 </div>
               </Swatch>
+              <Swatch label="full, mobile (390px, every field populated)">
+                <div className="border-nyx-700 w-[390px] rounded-md border p-2">
+                  <SectionRow
+                    section={SAMPLE_SECTION_FULL}
+                    projectName="Roadmap Q3"
+                    fieldName="Design"
+                  />
+                </div>
+              </Swatch>
             </Section>
           </div>
           <div>
@@ -416,6 +435,11 @@ export default function SigilsPage() {
               <Swatch label="status + name + priority/target/due, project on its own line">
                 <div className="w-[560px]">
                   <TaskRow task={SAMPLE_TASK} onOpen={() => {}} projectName="Roadmap Q3" projectField="Design" />
+                </div>
+              </Swatch>
+              <Swatch label="full, mobile (390px, every field populated)">
+                <div className="border-nyx-700 w-[390px] rounded-md border p-2">
+                  <TaskRow task={SAMPLE_TASK_FULL} onOpen={() => {}} projectName="Roadmap Q3" projectField="Design" />
                 </div>
               </Swatch>
             </Section>
@@ -791,43 +815,6 @@ export default function SigilsPage() {
         </p>
       </div>
 
-      <div className="border-nyx-700 border-t pt-10">
-        <h2 className="font-serif text-nyx-100 mb-3 text-2xl">
-          Full row, mobile stress test
-        </h2>
-        <p className="text-nyx-400 mb-6 max-w-prose text-caption leading-relaxed">
-          Every field populated at once, on a 375px frame — not a realistic
-          record, a check that <code className="text-eros-400">ProjectRow</code>
-          , <code className="text-eros-400">SectionRow</code>, and{' '}
-          <code className="text-eros-400">TaskRow</code> hold together when
-          nothing is empty and the name itself is long.
-        </p>
-        <div className="flex flex-col gap-4">
-          <div className="border-nyx-700 w-[375px] rounded-md border p-2">
-            <ProjectRow
-              project={SAMPLE_PROJECT_FULL}
-              fieldName="Design"
-              sectionCount={12}
-              taskCount={148}
-            />
-          </div>
-          <div className="border-nyx-700 w-[375px] rounded-md border p-2">
-            <SectionRow
-              section={SAMPLE_SECTION_FULL}
-              projectName="Roadmap Q3"
-              fieldName="Design"
-            />
-          </div>
-          <div className="border-nyx-700 w-[375px] rounded-md border p-2">
-            <TaskRow
-              task={SAMPLE_TASK_FULL}
-              onOpen={() => {}}
-              projectName="Roadmap Q3"
-              projectField="Design"
-            />
-          </div>
-        </div>
-      </div>
     </Chamber>
   );
 }
