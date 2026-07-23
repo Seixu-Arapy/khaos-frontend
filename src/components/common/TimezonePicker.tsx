@@ -48,7 +48,7 @@ export default function TimezonePicker() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="border-nyx-700 text-nyx-400 hover:border-nyx-500 hover:text-nyx-200 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-caption transition-colors"
+        className="border-nyx-700 text-nyx-400 hover:border-nyx-500 hover:text-nyx-200 flex items-center gap-1.5 rounded-full border px-2 py-1 text-caption transition-colors"
         title="Change timezone"
       >
         <Globe size={12} />

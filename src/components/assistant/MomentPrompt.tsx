@@ -130,7 +130,7 @@ export default function ChatMomentPrompt({
   }
 
   return (
-    <div className="my-2 flex gap-2.5 transition-all duration-300">
+    <div className="my-2 flex gap-2 transition-all duration-300">
       <div
         className={clsx(
           'flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors duration-300',
@@ -146,7 +146,7 @@ export default function ChatMomentPrompt({
 
       <div
         className={clsx(
-          'w-full max-w-[85%] rounded-lg border p-3.5 text-body leading-relaxed shadow-md transition-all duration-300',
+          'w-full max-w-[85%] rounded-lg border p-4 text-body leading-relaxed shadow-md transition-all duration-300',
           isSaved && 'text-nyx-300 border-emerald-500/20 bg-emerald-950/10',
           hasError && 'border-rose-500/30 bg-rose-950/20 text-rose-300',
           (isPending || isSaving) && 'bg-nyx-800 border-nyx-700 text-nyx-200'
@@ -166,7 +166,7 @@ export default function ChatMomentPrompt({
           )}
         </div>
 
-        <div className="mb-2.5 flex flex-wrap gap-1.5">
+        <div className="mb-2 flex flex-wrap gap-1.5">
           {changes.map((change) => (
             <ChangeChip key={change.label} change={change} />
           ))}
@@ -193,7 +193,7 @@ export default function ChatMomentPrompt({
               onKeyDown={handleKeyDown}
               placeholder="Why did you make this modification?"
               disabled={isSaving}
-              className="border-nyx-700 bg-nyx-900 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 w-full resize-none rounded-md border px-2.5 py-2 text-caption leading-relaxed focus:outline-hidden disabled:opacity-60"
+              className="border-nyx-700 bg-nyx-900 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 w-full resize-none rounded-md border px-2 py-2 text-caption leading-relaxed focus:outline-hidden disabled:opacity-60"
             />
             {hasError && (
               <p className="text-caption font-medium text-rose-400">

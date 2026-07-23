@@ -146,7 +146,7 @@ export default function TasksPage() {
               key={v.id}
               onClick={() => setView(v.id)}
               className={clsx(
-                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-caption font-medium transition-colors',
+                'flex items-center gap-1.5 rounded-md px-2 py-1.5 text-caption font-medium transition-colors',
                 view === v.id
                   ? 'bg-nyx-700 text-nyx-100'
                   : 'text-nyx-500 hover:text-nyx-200'

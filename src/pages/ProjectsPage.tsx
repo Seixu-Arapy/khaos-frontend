@@ -110,7 +110,7 @@ export default function ProjectsPage() {
           if (!fieldProjects.length) return null;
           return (
             <div key={field.id}>
-              <h2 className="text-nyx-500 mb-2.5 text-caption font-semibold tracking-wide uppercase">
+              <h2 className="text-nyx-500 mb-2 text-caption font-semibold tracking-wide uppercase">
                 {field.name}
               </h2>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -129,7 +129,7 @@ export default function ProjectsPage() {
 
         {Boolean(unassigned.length) && (
           <div>
-            <h2 className="text-nyx-500 mb-2.5 text-caption font-semibold tracking-wide uppercase">
+            <h2 className="text-nyx-500 mb-2 text-caption font-semibold tracking-wide uppercase">
               Unsorted
             </h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

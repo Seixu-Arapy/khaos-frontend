@@ -265,7 +265,7 @@ export function Button({
     <button
       className={clsx(
         'inline-flex items-center justify-center gap-1.5 rounded font-medium transition-colors disabled:pointer-events-none disabled:opacity-50',
-        size === 'sm' ? 'px-2.5 py-1.5 text-caption' : 'px-3.5 py-2 text-body',
+        size === 'sm' ? 'px-2 py-1.5 text-caption' : 'px-4 py-2 text-body',
         variant === 'default' &&
           'bg-eros-500 text-nyx-900 hover:bg-eros-400',
         variant === 'secondary' && 'bg-nyx-700 text-nyx-100 hover:bg-nyx-600',
@@ -311,7 +311,7 @@ export function Select({ className, children, ...props }: SelectProps) {
   return (
     <select
       className={clsx(
-        'border-nyx-600 bg-nyx-800 text-nyx-100 rounded border px-2.5 py-1.5 text-body',
+        'border-nyx-600 bg-nyx-800 text-nyx-100 rounded border px-2 py-1.5 text-body',
         'focus:border-eros-400 focus:outline-none',
         className
       )}
@@ -388,7 +388,7 @@ export function Modal({
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="border-nyx-700 flex items-center justify-between border-b px-5 py-3.5">
+        <div className="border-nyx-700 flex items-center justify-between border-b px-5 py-4">
           <h2 className="font-display text-nyx-100 min-w-0 flex-1 text-display">
             {title}
           </h2>
@@ -398,7 +398,7 @@ export function Modal({
         </div>
         <div className="max-h-[70vh] overflow-y-auto px-5 py-4">{children}</div>
         {footer && (
-          <div className="border-nyx-700 flex justify-end gap-2 border-t px-5 py-3.5">
+          <div className="border-nyx-700 flex justify-end gap-2 border-t px-5 py-4">
             {footer}
           </div>
         )}
@@ -533,7 +533,7 @@ export function FieldBadge({ fieldName, size = 'sm' }: FieldBadgeProps) {
     <span
       title={fieldName}
       className={clsx(
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-caption font-medium tracking-wide uppercase',
+        'inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-caption font-medium tracking-wide uppercase',
         meta.classes.border,
         meta.classes.bg,
         meta.classes.text

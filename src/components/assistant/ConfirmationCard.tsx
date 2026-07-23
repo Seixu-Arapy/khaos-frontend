@@ -21,8 +21,8 @@ export default function ConfirmationCard({
     Boolean(preview.entityType) && preview.entities.length > 0;
 
   return (
-    <div className="border-eros-500/40 bg-nyx-800 ml-9 max-w-[85%] rounded-lg border p-3.5">
-      <div className="text-eros-400 mb-2.5 flex items-center gap-1.5 text-caption font-semibold tracking-wide uppercase">
+    <div className="border-eros-500/40 bg-nyx-800 ml-9 max-w-[85%] rounded-lg border p-4">
+      <div className="text-eros-400 mb-2 flex items-center gap-1.5 text-caption font-semibold tracking-wide uppercase">
         <ShieldAlert size={13} />
         Confirm before running
       </div>

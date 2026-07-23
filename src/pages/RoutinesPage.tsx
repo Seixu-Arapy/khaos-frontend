@@ -316,7 +316,7 @@ export default function RoutinesPage() {
         </div>
       )}
 
-      <div className="border-nyx-700 bg-nyx-800/40 mt-6 rounded-lg border px-4 py-3.5">
+      <div className="border-nyx-700 bg-nyx-800/40 mt-6 rounded-lg border px-4 py-4">
         <p className="text-nyx-300 text-body">
           Tell the assistant{' '}
           <span className="text-eros-400 font-mono">"plan my week"</span> and

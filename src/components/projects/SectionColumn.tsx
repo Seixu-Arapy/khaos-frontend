@@ -53,7 +53,7 @@ export default function SectionColumn({
 
   return (
     <div className="border-nyx-700 bg-nyx-800/40 rounded-lg border">
-      <div className="border-nyx-700 flex items-center gap-2 border-b px-3 py-2.5">
+      <div className="border-nyx-700 flex items-center gap-2 border-b px-3 py-2">
         <span
           {...dragHandleProps}
           className="text-nyx-600 hover:text-nyx-300 cursor-grab active:cursor-grabbing"

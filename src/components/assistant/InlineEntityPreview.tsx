@@ -18,7 +18,7 @@ export function InlineEntityPreview({
   const due = (data.due as string | null) ?? null;
 
   return (
-    <div className="border-nyx-700 bg-nyx-900 flex min-w-0 flex-1 items-center gap-1.5 rounded-md border px-2.5 py-1.5">
+    <div className="border-nyx-700 bg-nyx-900 flex min-w-0 flex-1 items-center gap-1.5 rounded-md border px-2 py-1.5">
       <StatusBadge status={status} />
       <span className="text-nyx-100 min-w-0 flex-1 truncate text-body">
         {name}

@@ -283,7 +283,7 @@ export default function ProjectDetailPage() {
 
       <form
         onSubmit={addSection}
-        className="border-nyx-700 mt-3 flex items-center gap-2 rounded-lg border border-dashed px-3 py-2.5"
+        className="border-nyx-700 mt-3 flex items-center gap-2 rounded-lg border border-dashed px-3 py-2"
       >
         <Plus size={14} className="text-nyx-600" />
         <input

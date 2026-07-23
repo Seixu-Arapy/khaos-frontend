@@ -353,7 +353,7 @@ export default function CalendarView({
                   setDaysToShow(n);
                   setAnchor(defaultAnchorFor(n));
                 }}
-                className={`px-2.5 py-1 sm:px-2 sm:py-0.5 ${
+                className={`px-2 py-1 sm:px-2 sm:py-0.5 ${
                   daysToShow === n
                     ? 'bg-nyx-700 text-nyx-100'
                     : 'text-nyx-400 hover:bg-nyx-800'

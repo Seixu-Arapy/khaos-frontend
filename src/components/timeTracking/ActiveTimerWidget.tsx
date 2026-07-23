@@ -37,7 +37,7 @@ export default function ActiveTimerWidget() {
   return (
     <button
       onClick={() => task && navigate(`/tasks?taskId=${task.id}`)}
-      className="group border-eros-500/40 bg-eros-500/10 hover:bg-eros-500/15 flex items-center gap-2.5 rounded-full border py-1.5 pr-1.5 pl-3 text-caption transition-colors"
+      className="group border-eros-500/40 bg-eros-500/10 hover:bg-eros-500/15 flex items-center gap-2 rounded-full border py-1.5 pr-1.5 pl-3 text-caption transition-colors"
       title="Go to running task"
     >
       <span className="bg-eros-500 h-1.5 w-1.5 animate-pulse rounded-full" />

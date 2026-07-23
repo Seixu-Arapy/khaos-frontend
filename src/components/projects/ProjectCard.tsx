@@ -23,7 +23,7 @@ export default function ProjectCard({
   return (
     <button
       onClick={() => navigate(`/projects/${project.id}`)}
-      className="border-nyx-700 bg-nyx-800/40 hover:border-nyx-600 hover:bg-nyx-800 flex flex-col gap-2.5 rounded-lg border p-4 text-left transition-colors"
+      className="border-nyx-700 bg-nyx-800/40 hover:border-nyx-600 hover:bg-nyx-800 flex flex-col gap-2 rounded-lg border p-4 text-left transition-colors"
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-nyx-100 font-medium">{project.name}</h3>

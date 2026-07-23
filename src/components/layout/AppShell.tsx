@@ -59,7 +59,7 @@ const SIDEBAR_NAV: NavItem[] = [
 
 function sidebarLinkClass({ isActive }: NavLinkRenderProps): string {
   return clsx(
-    'flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-body font-medium transition-colors',
+    'flex items-center gap-2 rounded-md px-2 py-1.5 text-body font-medium transition-colors',
     isActive
       ? 'bg-eros-500/15 text-eros-400'
       : 'text-nyx-300 hover:bg-nyx-800 hover:text-nyx-100'
@@ -170,7 +170,7 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
 
       <button
         onClick={() => setPaletteOpen(true)}
-        className="border-nyx-700 text-nyx-500 hover:border-nyx-600 hover:text-nyx-300 mx-3 mb-3 flex items-center justify-between rounded-md border px-2.5 py-1.5 text-caption"
+        className="border-nyx-700 text-nyx-500 hover:border-nyx-600 hover:text-nyx-300 mx-3 mb-3 flex items-center justify-between rounded-md border px-2 py-1.5 text-caption"
       >
         <span className="flex items-center gap-1.5">
           <Command size={12} /> Quick navigate
@@ -254,7 +254,7 @@ export default function AppShell() {
       {/* ── Main content + persistent chat ──────────────────── */}
       <div className="flex min-w-0 flex-1 overflow-hidden">
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="border-nyx-700 flex shrink-0 items-center gap-2 border-b px-3 py-2.5 md:px-5 md:py-3">
+          <header className="border-nyx-700 flex shrink-0 items-center gap-2 border-b px-3 py-2 md:px-5 md:py-3">
             <button
               onClick={() => setDrawerOpen(true)}
               className="text-nyx-400 hover:bg-nyx-800 flex h-8 w-8 shrink-0 items-center justify-center rounded md:hidden"

@@ -35,7 +35,7 @@ function MessageContent({ text }: { text: string }) {
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user';
   return (
-    <div className={clsx('flex gap-2.5', isUser && 'flex-row-reverse')}>
+    <div className={clsx('flex gap-2', isUser && 'flex-row-reverse')}>
       {isUser ? (
         <div className="bg-nyx-700 text-nyx-200 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
           <User size={14} />
@@ -50,7 +50,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       )}
       <div
         className={clsx(
-          'max-w-[85%] rounded-lg px-3.5 py-2.5 text-body leading-relaxed',
+          'max-w-[85%] rounded-lg px-4 py-2 text-body leading-relaxed',
           isUser ? 'bg-nyx-700 text-nyx-100' : 'bg-nyx-800 text-nyx-200',
           message.isError &&
             'text-tartarus-400 border-tartarus-500/40 bg-tartarus-500/10 border'
@@ -253,7 +253,7 @@ export default function ChatPanel({
           onKeyDown={handleKeyDown}
           placeholder="Ask Khaos… (⌘+Enter to send)"
           disabled={isSending}
-          className="border-nyx-700 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 flex-1 resize-none rounded-2xl border px-4 py-2.5 text-body leading-normal focus:outline-hidden disabled:opacity-60"
+          className="border-nyx-700 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 flex-1 resize-none rounded-2xl border px-4 py-2 text-body leading-normal focus:outline-hidden disabled:opacity-60"
         />
         <button
           type="submit"

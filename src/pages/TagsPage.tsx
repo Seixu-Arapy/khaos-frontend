@@ -52,7 +52,7 @@ export default function TagsPage() {
           return (
             <div
               key={tag.id}
-              className="flex items-center justify-between px-3.5 py-2.5"
+              className="flex items-center justify-between px-4 py-2"
             >
               <span className="text-nyx-100 text-body">{tag.name}</span>
               <div className="flex items-center gap-3">

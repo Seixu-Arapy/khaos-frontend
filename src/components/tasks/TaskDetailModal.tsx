@@ -132,7 +132,7 @@ interface SectionProps {
 
 function Section({ title, children, action }: SectionProps) {
   return (
-    <div className="border-nyx-700 border-t pt-3.5 first:border-0 first:pt-0">
+    <div className="border-nyx-700 border-t pt-4 first:border-0 first:pt-0">
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-nyx-500 text-caption font-semibold tracking-wide uppercase">
           {title}
@@ -674,7 +674,7 @@ export default function TaskDetailModal({
             </div>
 
             {seqPicker && (
-              <div className="border-nyx-700 bg-nyx-900 rounded-md border p-2.5">
+              <div className="border-nyx-700 bg-nyx-900 rounded-md border p-2">
                 <input
                   autoFocus
                   value={seqPicker.search}
@@ -682,7 +682,7 @@ export default function TaskDetailModal({
                     setSeqPicker({ ...seqPicker, search: e.target.value })
                   }
                   placeholder="Buscar tarefa…"
-                  className="border-nyx-600 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 mb-2 w-full rounded border px-2.5 py-1.5 text-caption focus:outline-hidden"
+                  className="border-nyx-600 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 mb-2 w-full rounded border px-2 py-1.5 text-caption focus:outline-hidden"
                 />
                 {seqError && (
                   <p className="text-tartarus-500 mb-1.5 text-caption">{seqError}</p>
@@ -870,7 +870,7 @@ export default function TaskDetailModal({
             {moments.map((moment) => (
               <div
                 key={moment.id}
-                className="group bg-nyx-900 text-nyx-300 rounded px-2.5 py-2 text-body"
+                className="group bg-nyx-900 text-nyx-300 rounded px-2 py-2 text-body"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex min-w-0 flex-1 items-start gap-1.5">
@@ -924,7 +924,7 @@ export default function TaskDetailModal({
           </form>
         </Section>
 
-        <div className="border-nyx-700 flex justify-end border-t pt-3.5">
+        <div className="border-nyx-700 flex justify-end border-t pt-4">
           <button
             onClick={() => remove.mutate(task.id, { onSuccess: onClose })}
             className="text-nyx-500 hover:text-nyx-300 flex items-center gap-1 text-caption"

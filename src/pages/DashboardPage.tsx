@@ -155,7 +155,7 @@ export default function DashboardPage() {
               return (
                 <div
                   key={ev.id}
-                  className="flex items-center gap-3 px-3.5 py-2.5"
+                  className="flex items-center gap-3 px-4 py-2"
                 >
                   <span className="text-nyx-400 w-20 shrink-0 font-mono text-caption">
                     {ev.start.toLocaleTimeString(undefined, {

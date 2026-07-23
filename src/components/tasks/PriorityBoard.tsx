@@ -32,7 +32,7 @@ function Card({ task, projectInfo, onOpen }: CardProps) {
       {...listeners}
       {...attributes}
       onClick={() => !isDragging && onOpen(task)}
-      className="border-nyx-700 bg-nyx-800 text-nyx-100 shadow-card cursor-grab rounded-md border p-2.5 text-body active:cursor-grabbing"
+      className="border-nyx-700 bg-nyx-800 text-nyx-100 shadow-card cursor-grab rounded-md border p-2 text-body active:cursor-grabbing"
     >
       <p className="mb-1.5 leading-snug">{task.name}</p>
       <div className="flex items-center justify-between gap-2">
