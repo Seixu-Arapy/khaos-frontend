@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { STATUS_META, PRIORITY_META, PRIORITIES } from '../../lib/constants';
-import { formatDueCompact, isOverdue, minutesToHuman } from '../../lib/dateUtils';
+import { formatDueCompact, formatTimeOnly, isOverdue, minutesToHuman } from '../../lib/dateUtils';
 import { parseRange } from '../../lib/range';
 import { getFieldMeta } from '../../lib/fieldsConfig';
 import type { Status, Priority } from '../../lib/types';
@@ -589,6 +589,14 @@ interface DueBadgeProps {
   status?: Status | null;
 }
 
+// A due/target moment carries a real time only when it's not exactly
+// midnight -- same convention DueEditor/TargetEditor already use to
+// decide whether their own TimeToggle starts active.
+function hasExplicitTime(dateInput: string | Date): boolean {
+  const d = new Date(dateInput);
+  return d.getHours() !== 0 || d.getMinutes() !== 0;
+}
+
 // Plain icon + text, deliberately no border or background — that absence of
 // chrome is what keeps the copper-colored default from reading as a
 // clickable Add button, which owns the bordered-pill look everywhere else.
@@ -610,6 +618,9 @@ export function DueBadge({ due, status }: DueBadgeProps) {
         <span className="font-bold">{parts.day}</span>
         <span>{parts.month}</span>
       </span>
+      {hasExplicitTime(due) && (
+        <span className="opacity-70">{formatTimeOnly(due)}</span>
+      )}
     </span>
   );
 }
@@ -619,8 +630,9 @@ interface TargetBadgeProps {
 }
 
 // Compact display of the `target` planning window — start (bold day +
-// month, same convention as DueBadge) through end, or an arrow with no
-// second date when the target is open-ended.
+// month, same convention as DueBadge) through end. No arrow at all for a
+// single-day target (nothing to point to) -- was rendering unconditionally
+// before, a real bug, not a design choice.
 export function TargetBadge({ target }: TargetBadgeProps) {
   if (!target) return null;
   const { start, end } = parseRange(target);
@@ -636,12 +648,20 @@ export function TargetBadge({ target }: TargetBadgeProps) {
         <span className="font-bold">{startParts.day}</span>
         {startParts.month}
       </span>
-      <span className="text-nyx-600">→</span>
+      {hasExplicitTime(start) && (
+        <span className="opacity-70">{formatTimeOnly(start)}</span>
+      )}
       {endParts && (
-        <span>
-          <span className="font-bold">{endParts.day}</span>
-          {endParts.month}
-        </span>
+        <>
+          <span className="text-nyx-600">→</span>
+          <span>
+            <span className="font-bold">{endParts.day}</span>
+            {endParts.month}
+          </span>
+          {end && hasExplicitTime(end) && (
+            <span className="opacity-70">{formatTimeOnly(end)}</span>
+          )}
+        </>
       )}
     </span>
   );
