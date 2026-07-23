@@ -101,6 +101,7 @@ export async function runTurn(
         system: SYSTEM_BLOCKS,
         tools: TOOL_DEFINITIONS,
         messages: currentMessages,
+        output_config: { effort: 'medium' },
       });
     } catch (err) {
       currentMessages.push({

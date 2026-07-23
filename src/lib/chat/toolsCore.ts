@@ -131,6 +131,18 @@ const looseFiltersSchema = {
   },
 };
 
+// Backs the moment_note SYSTEM_INSTRUCTION already tells the model to fill
+// in ("whenever you use a tool to modify an entity's status, priority, due
+// date, or estimate, you must... provide it in the 'reason' parameter") —
+// that instruction predates this property actually existing on the schema,
+// so it was silently a no-op until now. See the backfillReason() executor
+// below for how it reaches the resulting moment row.
+const reasonSchema = {
+  type: 'string',
+  description:
+    "Why this change is happening, in your own words — required whenever you're changing status, priority, due date, or estimate on tasks, sections, projects, or routines. Extract it from the conversation rather than inventing one. Attached to the moment this write logs, authored as 'assistant' rather than 'user' so it's clear the note is a stated reason, not a guess.",
+};
+
 // Grouped by category rather than one flat list — read/query and
 // write/mutation today, joined by an oversight category from Phase 4 on.
 // A flat list that made sense at six tools stops making sense at twenty.
@@ -199,6 +211,7 @@ export const WRITE_TOOL_DEFINITIONS: Anthropic.Tool[] = [
           description: 'Column/value pairs to insert.',
           additionalProperties: true,
         },
+        reason: reasonSchema,
       },
       required: ['table', 'values'],
       additionalProperties: false,
@@ -217,6 +230,7 @@ export const WRITE_TOOL_DEFINITIONS: Anthropic.Tool[] = [
           additionalProperties: true,
         },
         filters: looseFiltersSchema,
+        reason: reasonSchema,
       },
       required: ['table', 'values', 'filters'],
       additionalProperties: false,
@@ -398,6 +412,52 @@ function coerceInt(raw: unknown, fallback: number): number {
   return fallback;
 }
 
+// Mirrors moment_entity_column() in schema.sql — only these four tables have
+// entity triggers that log moments. Tables without an entry here (fields,
+// events, task_items, task_logs, moments itself, the tag/sequence tables)
+// either don't get moments at all or aren't reachable through this generic
+// path, so a reason has nothing to attach to.
+const MOMENT_ENTITY_COLUMN: Partial<Record<AllowedTable, string>> = {
+  tasks: 'task_id',
+  sections: 'section_id',
+  projects: 'project_id',
+  routines: 'routine_id',
+};
+
+// The insert/update trigger already logged a moment with moment_note null
+// and authored_by='user' by the time this runs (Postgres AFTER triggers fire
+// synchronously, before the client sees the response) — this attaches the
+// reason the model gave to whichever of those moments resulted from *this*
+// call. Scoped by affected row id, a `since` timestamp captured just before
+// the write, and moment_note still being null, so it can't reach a moment
+// from an unrelated request or overwrite a note someone already gave.
+// Best-effort: a failed backfill shouldn't undo a write that already
+// succeeded, so errors are swallowed here rather than thrown.
+async function backfillReason(
+  db: SupabaseClient,
+  table: AllowedTable,
+  rows: unknown,
+  reason: unknown,
+  since: string
+): Promise<void> {
+  if (typeof reason !== 'string' || !reason.trim()) return;
+  const entityColumn = MOMENT_ENTITY_COLUMN[table];
+  if (!entityColumn) return;
+
+  const ids = (Array.isArray(rows) ? rows : [])
+    .map((r) => (r as { id?: unknown }).id)
+    .filter((id): id is string => typeof id === 'string');
+  if (!ids.length) return;
+
+  const { error } = await db
+    .from('moments')
+    .update({ moment_note: reason, authored_by: 'assistant' })
+    .in(entityColumn, ids)
+    .gte('created_at', since)
+    .is('moment_note', null);
+  if (error) console.error('backfillReason failed', error.message);
+}
+
 export async function executeTool(
   deps: ToolDeps,
   rawName: string,
@@ -431,20 +491,24 @@ export async function executeTool(
     case 'insert_row': {
       const a = args as any;
       assertAllowedTable(a.table);
+      const since = new Date().toISOString();
       const { data, error } = await db
         .from(a.table)
         .insert(coerceValues(a) as never)
         .select();
       if (error) throw new Error(error.message);
+      await backfillReason(db, a.table, data, a.reason, since);
       return { inserted: cleanPayload(data ?? []) };
     }
     case 'update_rows': {
       const a = args as any;
       assertAllowedTable(a.table);
+      const since = new Date().toISOString();
       let q = db.from(a.table).update(coerceValues(a) as never);
       q = applyFilters(q, coerceFilters(a.filters));
       const { data, error } = await q.select();
       if (error) throw new Error(error.message);
+      await backfillReason(db, a.table, data, a.reason, since);
       return { updated: cleanPayload(data ?? []), count: data?.length ?? 0 };
     }
     case 'delete_rows': {
