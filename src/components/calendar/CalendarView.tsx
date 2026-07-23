@@ -179,17 +179,20 @@ export default function CalendarView({
       days.map((d) => [format(d, 'yyyy-MM-dd'), []])
     );
     const tz = getTimezone();
-    const dayKey = (d: string) =>
-      new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(d));
+    const dayKey = (d: string) => {
+      const date = new Date(d);
+      if (isNaN(date.getTime())) return null;
+      return new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(date);
+    };
     for (const t of tasks) {
       if (!t.due || !OPEN_STATUSES.includes(t.status)) continue;
       const key = dayKey(t.due);
-      if (map.has(key)) map.get(key)!.push({ type: 'task', id: t.id, name: t.name });
+      if (key && map.has(key)) map.get(key)!.push({ type: 'task', id: t.id, name: t.name });
     }
     for (const p of projects) {
       if (!p.due || !OPEN_STATUSES.includes(p.status)) continue;
       const key = dayKey(p.due);
-      if (map.has(key))
+      if (key && map.has(key))
         map.get(key)!.push({ type: 'project', id: p.id, name: p.name });
     }
     return map;
