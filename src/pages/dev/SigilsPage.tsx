@@ -262,13 +262,14 @@ export default function SigilsPage() {
               shaped). Recently redesigned with collapse/expand and
               up/down reordering. Simpler than Project&rsquo;s chip/row
               pair — a section is never read on its own, always alongside
-              its project, so one breadcrumb-shaped mark covers it: the
-              section&rsquo;s own icon and name, then its parent project
-              (the same <code className="text-eros-400">ProjectChip</code>{' '}
-              from above).
+              its project, so one breadcrumb-shaped mark covers it: its
+              parent project first (the same{' '}
+              <code className="text-eros-400">ProjectChip</code> from
+              above, carrying the field color), then the section&rsquo;s
+              own plain name.
             </dd>
             <Section title="Section chip">
-              <Swatch label="icon + name > project">
+              <Swatch label="project > name">
                 <SectionChip
                   name="Design Review"
                   projectName="Roadmap Q3"
