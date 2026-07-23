@@ -346,26 +346,26 @@ export default function ChorusPage() {
               its natural habitat rather than on empty ink. */}
           <div className="border-ink-700 bg-ink-800/40 min-w-0 flex-1 rounded-lg border p-6">
             <Annotated token="text-label">
-              <p className="text-ink-500 font-mono text-[10px] font-semibold tracking-wide uppercase">
+              <p className="text-ink-500 font-mono text-label font-semibold tracking-wide uppercase">
                 court of eros · tonight
               </p>
             </Annotated>
 
             <Annotated token="text-display-lg" className="mt-1">
-              <h3 className="font-display text-ink-100 text-2xl font-bold">
+              <h3 className="font-display text-ink-100 text-display-lg font-bold">
                 Pontus&rsquo;s tide report
               </h3>
             </Annotated>
 
             <Annotated token="text-caption" className="mt-1">
-              <p className="text-ink-500 text-xs">
+              <p className="text-ink-500 text-caption">
                 last seen in Aether, 2m ago · 3 embers drifting
               </p>
             </Annotated>
 
             <div className="border-ink-700 mt-5 border-t pt-5">
               <Annotated token="text-display">
-                <h4 className="font-display text-ink-200 text-lg font-semibold">
+                <h4 className="font-display text-ink-200 text-display font-semibold">
                   Tasks for tonight
                 </h4>
               </Annotated>
@@ -374,14 +374,14 @@ export default function ChorusPage() {
                 <Annotated token="text-body">
                   <div className="flex items-center gap-2.5">
                     <span className="border-ink-600 h-3.5 w-3.5 shrink-0 rounded-full border" />
-                    <p className="text-ink-100 text-sm font-medium">
+                    <p className="text-ink-100 text-body font-medium">
                       Chart Nyx&rsquo;s darkest shade before dawn
                     </p>
                   </div>
                 </Annotated>
 
                 <Annotated token="text-caption">
-                  <p className="text-ink-500 pl-6 text-xs">
+                  <p className="text-ink-500 pl-6 text-caption">
                     due before first light · 1h 45m logged
                   </p>
                 </Annotated>
@@ -389,14 +389,14 @@ export default function ChorusPage() {
                 <Annotated token="text-body">
                   <div className="flex items-center gap-2.5">
                     <span className="border-ink-600 h-3.5 w-3.5 shrink-0 rounded-full border" />
-                    <p className="text-ink-100 text-sm font-medium">
+                    <p className="text-ink-100 text-body font-medium">
                       Count Gaia&rsquo;s finished seasons
                     </p>
                   </div>
                 </Annotated>
 
                 <Annotated token="text-label">
-                  <span className="bg-sage-500/10 text-sage-500 ml-6 inline-flex w-fit items-center rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wide uppercase">
+                  <span className="bg-sage-500/10 text-sage-500 ml-6 inline-flex w-fit items-center rounded-full px-2 py-0.5 font-mono text-label font-semibold tracking-wide uppercase">
                     marked as done
                   </span>
                 </Annotated>
