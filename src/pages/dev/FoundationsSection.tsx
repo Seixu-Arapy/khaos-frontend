@@ -93,7 +93,7 @@ const RADIUS_RULES: UsageRule[] = [
     swatchClass: 'rounded-2xl',
     value: 'Tailwind default, 16px -- no app override',
     rule: 'The softest, most enclosing surfaces -- reserved for things that feel like they’re expanding to hold you, not just holding content.',
-    usedIn: 'the chat composer, the mobile chat drawer’s top corners, TargetEditor’s small-screen layout',
+    usedIn: 'the mobile chat drawer’s top corners, TargetEditor’s small-screen layout',
     deity: 'Aether',
     color: '#e7e9e6',
   },

@@ -112,11 +112,12 @@ export default function ForgePage() {
         </Swatch>
         <Swatch label="textarea">
           {/* From the chat composer -- same field styling as TextInput,
-              rounded-2xl instead of rounded, resize-none. */}
+              resize-none. Was rounded-2xl, an outlier next to every
+              other input's rounded; matched to rounded instead. */}
           <textarea
             rows={2}
             placeholder="Ask Khaos…"
-            className="border-nyx-600 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 w-56 resize-none rounded-2xl border px-4 py-2 text-body leading-normal focus:outline-none"
+            className="border-nyx-600 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 w-56 resize-none rounded border px-4 py-2 text-body leading-normal focus:outline-none"
           />
         </Swatch>
         <Swatch label="search (icon + pill)">
@@ -202,12 +203,13 @@ export default function ForgePage() {
           {/* IconAddButton, from TaskDetailModal's "Add previous/next
               task" -- icon-only because the adjacent field label
               ("Previous tasks") already says what's being added, with
-              no spare width for a second label. */}
+              no spare width for a second label. Ghost by default, same
+              language as IconButton, just smaller (inline, dense row). */}
           <button
             type="button"
             aria-label="Add previous task"
             title="Add previous task"
-            className="bg-nyx-700 text-nyx-300 hover:bg-nyx-600 active:bg-nyx-500 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors"
+            className="text-nyx-500 hover:bg-nyx-700 hover:text-nyx-100 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors"
           >
             <Plus size={10} />
           </button>

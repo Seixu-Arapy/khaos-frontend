@@ -262,12 +262,14 @@ export function IconAddButton({
       aria-label={label}
       title={label}
       className={clsx(
-        // Was bg-hypnos-400 -- an arbitrary color with no established
-        // meaning here (Hypnos means "waiting" in STATUS_META; this
-        // isn't that). Add controls default to neutral Nyx everywhere
-        // else in the app, so this one now matches instead of standing
-        // out for no reason.
-        'bg-nyx-700 text-nyx-300 hover:bg-nyx-600 active:bg-nyx-500 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors',
+        // Ghost by default, same language as IconButton (transparent
+        // until hover) instead of its old always-filled bg-hypnos-400 --
+        // Hypnos had no established meaning here, and the always-on fill
+        // made this the one icon button in the app that didn't match
+        // IconButton's own treatment. Smaller footprint (h-4/w-4 vs
+        // IconButton's h-8/w-8) stays, since this one lives inline in
+        // dense rows, not standalone.
+        'text-nyx-500 hover:bg-nyx-700 hover:text-nyx-100 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors',
         className
       )}
       {...props}

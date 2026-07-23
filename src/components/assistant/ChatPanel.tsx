@@ -231,7 +231,7 @@ export default function ChatPanel({
           onKeyDown={handleKeyDown}
           placeholder="Ask Khaos… (⌘+Enter to send)"
           disabled={isSending}
-          className="border-nyx-700 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 flex-1 resize-none rounded-2xl border px-4 py-2 text-body leading-normal focus:outline-hidden disabled:opacity-60"
+          className="border-nyx-700 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 flex-1 resize-none rounded border px-4 py-2 text-body leading-normal focus:outline-hidden disabled:opacity-60"
         />
         <button
           type="submit"
