@@ -29,8 +29,6 @@ import ChatPanel from '../assistant/ChatPanel';
 import KhaosIcon from '../common/KhaosIcon'; // Certifique-se de que o caminho relativo está correto
 import { StatusBadge, ProjectChip } from '../common/ui';
 import { useProcessingContext } from '../../lib/processingContext';
-import { useMomentDetector } from '../../hooks/useMomentDetector';
-import { useMomentPrompts } from '../../lib/momentPromptsContext';
 import { useChatActivity } from '../../lib/chat/chatActivityContext';
 
 interface NavItem {
@@ -190,10 +188,8 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
 export default function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatSheetOpen, setChatSheetOpen] = useState(false);
-  useMomentDetector();
-  const { pendingCount: pendingMomentPrompts } = useMomentPrompts();
   const { hasUnseenOpener, markOpenerSeen } = useChatActivity();
-  const hasChatActivity = pendingMomentPrompts > 0 || hasUnseenOpener;
+  const hasChatActivity = hasUnseenOpener;
   const { isAssistantProcessing } = useProcessingContext();
   const isFetching = useIsFetching();
   const isMutating = useIsMutating();

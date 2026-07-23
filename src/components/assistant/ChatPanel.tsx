@@ -7,8 +7,6 @@ import { parseMessageSegments } from '../../lib/chat/entityRefs';
 import { EntityChip } from './EntityChip';
 import ConfirmationCard from './ConfirmationCard';
 import KhaosIcon from '../common/KhaosIcon';
-import MomentPrompt from './MomentPrompt';
-import { useMomentPrompts } from '../../lib/momentPromptsContext';
 import ChaoticText from '../common/ChaoticText';
 
 const MAX_TEXTAREA_LINES = 5;
@@ -106,14 +104,12 @@ export default function ChatPanel({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { activeEntity, clearActiveEntity } = useActiveEntity();
 
-  const { prompts: momentPrompts, saveNote, skipNote } = useMomentPrompts();
-
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
       behavior: 'smooth',
     });
-  }, [messages, pending, momentPrompts]);
+  }, [messages, pending]);
 
   // Grow/shrink the textarea as the person types, capped at MAX_TEXTAREA_LINES.
   useEffect(() => {
@@ -201,7 +197,7 @@ export default function ChatPanel({
         ref={scrollRef}
         className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4"
       >
-        {!messages.length && !momentPrompts.length && (
+        {!messages.length && (
           <div className="text-ink-600 flex h-full flex-col items-center justify-center gap-2 text-center">
             <KhaosIcon size="h-10 w-10" bgColor="bg-transparent" spin={true} />
             <p className="text-sm">
@@ -212,19 +208,6 @@ export default function ChatPanel({
         )}
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
-        ))}
-
-        {momentPrompts.map((prompt) => (
-          <MomentPrompt
-            key={prompt.id}
-            entityName={prompt.entityName}
-            changes={prompt.changes}
-            status={prompt.status}
-            savedNote={prompt.savedNote}
-            authoredBy={prompt.authoredBy}
-            onSave={(note) => saveNote(prompt.id, note)}
-            onSkip={() => skipNote(prompt.id)}
-          />
         ))}
 
         {pending && (
