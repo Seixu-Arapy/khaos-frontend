@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bug, Plus, X } from 'lucide-react';
+import { Bug, Plus, Search, X } from 'lucide-react';
 import { Chamber, Section, Swatch } from './vaultUI';
 import { Button, IconButton, Select, TextInput } from '../../components/common/ui';
 
@@ -90,6 +90,49 @@ export default function ForgePage() {
             className="border-nyx-600 bg-nyx-800 accent-eros-500 h-4 w-4 rounded disabled:cursor-not-allowed disabled:opacity-50"
           />
         </Swatch>
+        <Swatch label="date">
+          {/* From TaskDetailModal's due-date field, un-stripped -- the
+              real usage overrides border/bg/padding to sit inline in a
+              pill, but the base control is still TextInput. */}
+          <div className="w-40">
+            <TextInput type="date" defaultValue="2026-08-01" />
+          </div>
+        </Swatch>
+        <Swatch label="number">
+          {/* From the Estimate field's minutes input. */}
+          <div className="w-20">
+            <TextInput type="number" min="0" defaultValue="90" />
+          </div>
+        </Swatch>
+        <Swatch label="password">
+          {/* From PasswordGate -- otherwise identical to a text input. */}
+          <div className="w-40">
+            <TextInput type="password" defaultValue="••••••••" />
+          </div>
+        </Swatch>
+        <Swatch label="textarea">
+          {/* From the chat composer -- same field styling as TextInput,
+              rounded-2xl instead of rounded, resize-none. */}
+          <textarea
+            rows={2}
+            placeholder="Ask Khaos…"
+            className="border-nyx-600 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 w-56 resize-none rounded-2xl border px-4 py-2 text-body leading-normal focus:outline-none"
+          />
+        </Swatch>
+        <Swatch label="search (icon + pill)">
+          {/* From QuickAddBar -- leading icon, fully rounded, no visible
+              chevron/affordance since it's a free-text field, not a picker. */}
+          <div className="relative w-56">
+            <Search
+              size={15}
+              className="text-nyx-500 pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
+            />
+            <input
+              placeholder="Quick add…"
+              className="border-nyx-600 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 w-full rounded-full border py-2 pr-3 pl-9 text-body focus:outline-none"
+            />
+          </div>
+        </Swatch>
       </Section>
 
       <Section title="Labels">
@@ -98,6 +141,28 @@ export default function ForgePage() {
           <label className="text-nyx-500 mb-1 block text-caption font-medium">
             Estimate
           </label>
+        </Swatch>
+      </Section>
+
+      <Section title="Divider">
+        {/* Not a real component today -- border-nyx-700 + border-t/border-b
+            on a plain div, repeated across TaskDetailModal, AppShell,
+            KanbanBoard/PriorityBoard, Modal, and CommandPalette to
+            separate rows/sections. Shown here as the shared idiom it
+            already is, not as something new. */}
+        <Swatch label="section divider">
+          <div className="w-56">
+            <div className="border-nyx-700 border-t pt-3.5">
+              <span className="text-nyx-500 text-caption">Next section…</span>
+            </div>
+          </div>
+        </Swatch>
+        <Swatch label="row divider">
+          <div className="w-56">
+            <div className="border-nyx-700 border-b pb-2">
+              <span className="text-nyx-300 text-body">Row above</span>
+            </div>
+          </div>
         </Swatch>
       </Section>
 

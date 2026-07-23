@@ -408,21 +408,33 @@ export function IconButton({
 type SelectProps = SelectHTMLAttributes<HTMLSelectElement>;
 
 export function Select({ className, children, ...props }: SelectProps) {
+  // className (e.g. consumers passing "w-full") lands on the wrapper, not
+  // the <select> itself -- the select is always w-full *of the wrapper*,
+  // so callers control overall width the same way they did before this
+  // became a two-element component.
   return (
-    <select
-      className={clsx(
-        // Same px-3/py-2 as TextInput -- they used to differ (px-2/py-1.5
-        // here vs px-3/py-2 there), which made the two controls render at
-        // different heights side by side.
-        'border-nyx-600 bg-nyx-800 text-nyx-100 rounded border px-3 py-2 text-body',
-        'focus:border-eros-400 focus:outline-none',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </select>
+    <div className={clsx('relative inline-block', className)}>
+      <select
+        className={clsx(
+          // Same px-3/py-2 as TextInput -- they used to differ (px-2/py-1.5
+          // here vs px-3/py-2 there), which made the two controls render at
+          // different heights side by side.
+          // appearance-none + the ChevronDown below replace the browser's
+          // native arrow, which used to sit flush against the border with
+          // no breathing room -- pr-8 leaves room for the icon plus a gap.
+          'border-nyx-600 bg-nyx-800 text-nyx-100 w-full appearance-none rounded border px-3 py-2 pr-8 text-body',
+          'focus:border-eros-400 focus:outline-none',
+          'disabled:cursor-not-allowed disabled:opacity-50'
+        )}
+        {...props}
+      >
+        {children}
+      </select>
+      <ChevronDown
+        size={14}
+        className="text-nyx-500 pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
+      />
+    </div>
   );
 }
 
