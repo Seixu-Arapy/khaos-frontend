@@ -16,9 +16,10 @@ import {
 import { ChangeBadge } from '../../components/assistant/ChangeBadge';
 import ProjectRow from '../../components/projects/ProjectRow';
 import SectionChip from '../../components/projects/SectionChip';
+import SectionRow from '../../components/projects/SectionRow';
 import { STATUSES, PRIORITIES } from '../../lib/constants';
 import { FIELDS_CONFIG, FIELD_EMOJI } from '../../lib/fieldsConfig';
-import type { Status, Priority, Project } from '../../lib/types';
+import type { Status, Priority, Project, Section as SectionRecord } from '../../lib/types';
 
 const SAMPLE_CHANGES = [
   { field: 'status' as const, label: 'Status', from: 'todo', to: 'in_progress' },
@@ -35,6 +36,18 @@ const SAMPLE_PROJECT: Project = {
   due: '2026-09-30',
   target: '["2026-07-01 00:00:00+00","2026-09-30 00:00:00+00")',
   field_id: null,
+  doc_reference: null,
+  deleted_at: null,
+};
+
+const SAMPLE_SECTION: SectionRecord = {
+  id: 'sample',
+  name: 'Design Review',
+  status: 'todo',
+  priority: 'medium',
+  due: '2026-08-15',
+  target: null,
+  project_id: null,
   doc_reference: null,
   deleted_at: null,
 };
@@ -260,13 +273,16 @@ export default function SigilsPage() {
             <dd className="text-nyx-400 mb-3">
               A named grouping of tasks inside one project (kanban-column
               shaped). Recently redesigned with collapse/expand and
-              up/down reordering. Simpler than Project&rsquo;s chip/row
-              pair — a section is never read on its own, always alongside
-              its project, so one breadcrumb-shaped mark covers it: its
-              parent project first (the same{' '}
+              up/down reordering. Same chip/row pair as Project, one
+              level down — the chip is a breadcrumb (parent project
+              first, the same{' '}
               <code className="text-eros-400">ProjectChip</code> from
-              above, carrying the field color), then the section&rsquo;s
-              own plain name.
+              above carrying the field color, then the section&rsquo;s
+              own plain name), and the row is{' '}
+              <code className="text-eros-400">ProjectRow</code>&rsquo;s
+              own shape with the name swapped for that same breadcrumb
+              and no section/task count, since a section has nothing of
+              its own to count.
             </dd>
             <Section title="Section chip">
               <Swatch label="project > name">
@@ -275,6 +291,17 @@ export default function SigilsPage() {
                   projectName="Roadmap Q3"
                   projectField="Design"
                 />
+              </Swatch>
+            </Section>
+            <Section title="Section row">
+              <Swatch label="status + project > name + priority/target/due">
+                <div className="w-[560px]">
+                  <SectionRow
+                    section={SAMPLE_SECTION}
+                    projectName="Roadmap Q3"
+                    fieldName="Design"
+                  />
+                </div>
               </Swatch>
             </Section>
           </div>
