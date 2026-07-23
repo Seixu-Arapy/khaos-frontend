@@ -13,7 +13,10 @@ interface SectionRowProps {
 // The row-form sibling to SectionChip's breadcrumb, same shape as
 // ProjectRow (status + name + priority/target/due) since a section is
 // really a project-shaped container one level down -- no section/task
-// count, though, since a section has nothing of its own to count.
+// count, though, since a section has nothing of its own to count. Same
+// md: stack-then-align breakpoint as ProjectRow/TaskRow, so the
+// project>section breadcrumb name stays readable on mobile instead of
+// getting squeezed to nothing by the badges.
 export default function SectionRow({
   section,
   projectName,
@@ -26,20 +29,24 @@ export default function SectionRow({
     <button
       onClick={onClick}
       style={{ borderLeftColor: fieldColor }}
-      className="group hover:bg-nyx-900 flex w-full items-center gap-1.5 rounded-md border-l-2 py-1.5 pr-2 pl-2.5 text-left"
+      className="group hover:bg-nyx-900 flex w-full flex-col gap-0.5 rounded-md border-l-2 py-1.5 pr-2 pl-2.5 text-left md:flex-row md:items-center md:gap-1.5"
     >
-      <FieldBadge fieldName={fieldName} size="xs" />
-      <StatusBadge status={section.status} />
-      <span className="text-nyx-500 shrink-0 truncate text-body">
-        {projectName}
+      <span className="flex min-w-0 items-center gap-1.5 md:flex-1">
+        <FieldBadge fieldName={fieldName} size="xs" />
+        <StatusBadge status={section.status} />
+        <span className="text-nyx-500 shrink-0 truncate text-body">
+          {projectName}
+        </span>
+        <ChevronRight size={12} className="text-nyx-700 shrink-0" />
+        <span className="text-nyx-100 min-w-0 flex-1 truncate text-body">
+          {section.name}
+        </span>
       </span>
-      <ChevronRight size={12} className="text-nyx-700 shrink-0" />
-      <span className="text-nyx-100 min-w-0 flex-1 truncate text-body">
-        {section.name}
+      <span className="flex shrink-0 flex-wrap items-center gap-1">
+        <PriorityBadge priority={section.priority} />
+        <TargetBadge target={section.target as string | null} />
+        <DueBadge due={section.due} status={section.status} />
       </span>
-      <PriorityBadge priority={section.priority} />
-      <TargetBadge target={section.target as string | null} />
-      <DueBadge due={section.due} status={section.status} />
     </button>
   );
 }
