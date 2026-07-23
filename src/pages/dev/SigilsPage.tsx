@@ -331,8 +331,8 @@ export default function SigilsPage() {
             <dt className="text-nyx-200 font-semibold">Project</dt>
             <dd className="text-nyx-400 mb-3">
               The container tasks belong to — the level users actually
-              organize around. Both marks below put the icon on the left,
-              and keep the project&rsquo;s own name in plain Nyx-grey —{' '}
+              organize around. Both marks below put the icon on the left
+              and render the name bold, but never colored on its own —{' '}
               <b className="text-nyx-200">confirmed deliberate:</b> a
               project is always colored by its field, never its own
               separate color. The row also carries the field color as a
