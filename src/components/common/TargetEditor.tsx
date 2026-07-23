@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Plus, Target, X } from 'lucide-react';
 import clsx from 'clsx';
 import { TextInput, TimeToggle } from './ui';
@@ -87,10 +87,16 @@ export default function TargetEditor({
   const [showStartTime, setShowStartTime] = useState(() => startValues.hasTime);
   const [showEndTime, setShowEndTime] = useState(() => endValues.hasTime);
 
-  useEffect(() => {
+  // Resets forceShowEnd/error whenever `value` changes from outside (e.g.
+  // switching between tasks) -- adjusted during render rather than in a
+  // useEffect, per React's own guidance for resetting state on a prop
+  // change, so this doesn't trigger an extra cascading render.
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
     setForceShowEnd(false);
     setError(null);
-  }, [value]);
+  }
 
   const showEndInput = Boolean(end) || forceShowEnd;
 
@@ -161,12 +167,17 @@ export default function TargetEditor({
           and rotated between them (see max-[350px]: variants below). */}
       <div
         className={clsx(
-          'border-nyx-600 text-nyx-400 flex w-fit flex-wrap items-center gap-1.5 rounded-full border py-1 pr-2 pl-3 font-mono text-caption',
-          'max-[350px]:grid max-[350px]:grid-cols-[auto_1fr] max-[350px]:items-center max-[350px]:gap-x-2 max-[350px]:gap-y-1 max-[350px]:rounded-2xl max-[350px]:px-3.5 max-[350px]:py-2.5'
+          // h-8.5 matches DueEditor's pill height -- was py-1 (no fixed
+          // height), which read shorter than the app's other inputs.
+          'border-nyx-600 text-nyx-400 flex h-8.5 w-fit flex-wrap items-center gap-1.5 rounded-full border pr-2 pl-3 font-mono',
+          'max-[350px]:grid max-[350px]:grid-cols-[auto_1fr] max-[350px]:items-center max-[350px]:gap-x-2 max-[350px]:gap-y-1 max-[350px]:h-auto max-[350px]:rounded-2xl max-[350px]:px-3.5 max-[350px]:py-2.5'
         )}
       >
+        {/* Icon and input text both bumped to match the default input's
+            own size (15px icon, text-body) -- was 13px/text-caption,
+            smaller than every other input in the app. */}
         <Target
-          size={13}
+          size={15}
           className="shrink-0 max-[350px]:col-start-1 max-[350px]:row-span-3 max-[350px]:self-center"
         />
 
@@ -201,7 +212,7 @@ export default function TargetEditor({
                 showEndTime
               );
             }}
-            className="text-nyx-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
+            className="text-nyx-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-body!"
           />
           {showStartTime && startValues.date && (
             <TextInput
@@ -218,7 +229,7 @@ export default function TargetEditor({
                   showEndTime
                 );
               }}
-              className="text-nyx-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
+              className="text-nyx-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-body!"
             />
           )}
         </span>
@@ -270,7 +281,7 @@ export default function TargetEditor({
                     showEndTime
                   );
                 }}
-                className="text-nyx-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
+                className="text-nyx-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-body!"
               />
               {showEndTime && endValues.date && (
                 <TextInput
@@ -287,7 +298,7 @@ export default function TargetEditor({
                       true
                     );
                   }}
-                  className="text-nyx-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
+                  className="text-nyx-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-body!"
                 />
               )}
               <button

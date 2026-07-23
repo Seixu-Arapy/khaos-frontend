@@ -718,9 +718,17 @@ export default function SigilsPage() {
           <Swatch label="badge, range + time">
             <TargetBadge target='["2026-07-01 09:00:00+00","2026-07-15 18:00:00+00")' />
           </Swatch>
+        </Section>
+
+        {/* Each input variant on its own line -- packed into one nowrap
+            row like the badges above, they were hard to compare at a
+            glance and easy to scroll past. */}
+        <Section title="Target input, simple">
           <Swatch label="input, simple">
             <TargetEditor value={targetSimple} onChange={setTargetSimple} hideClear />
           </Swatch>
+        </Section>
+        <Section title="Target input, simple + time">
           <Swatch label="input, simple + time">
             <TargetEditor
               value={targetSimpleTime}
@@ -728,9 +736,13 @@ export default function SigilsPage() {
               hideClear
             />
           </Swatch>
+        </Section>
+        <Section title="Target input, range">
           <Swatch label="input, range">
             <TargetEditor value={targetRange} onChange={setTargetRange} hideClear />
           </Swatch>
+        </Section>
+        <Section title="Target input, range + time">
           <Swatch label="input, range + time">
             <TargetEditor
               value={targetRangeTime}
@@ -738,6 +750,8 @@ export default function SigilsPage() {
               hideClear
             />
           </Swatch>
+        </Section>
+        <Section title="Target input, past target suggested">
           <Swatch label="input, past target suggested">
             {/* Same dashed-outline language as TagSuggestion -- proposes a
                 quick-pick value rather than an already-set one. A past
