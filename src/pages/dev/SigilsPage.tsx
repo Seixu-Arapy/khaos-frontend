@@ -14,9 +14,10 @@ import {
   Tag,
 } from '../../components/common/ui';
 import { ChangeBadge } from '../../components/assistant/ChangeBadge';
+import ProjectRow from '../../components/projects/ProjectRow';
 import { STATUSES, PRIORITIES } from '../../lib/constants';
 import { FIELDS_CONFIG, FIELD_EMOJI } from '../../lib/fieldsConfig';
-import type { Status, Priority } from '../../lib/types';
+import type { Status, Priority, Project } from '../../lib/types';
 
 const SAMPLE_CHANGES = [
   { field: 'status' as const, label: 'Status', from: 'todo', to: 'in_progress' },
@@ -24,6 +25,18 @@ const SAMPLE_CHANGES = [
   { field: 'due' as const, label: 'Due', from: null, to: '2026-07-20' },
   { field: 'estimate' as const, label: 'Estimate', from: null, to: '120' },
 ];
+
+const SAMPLE_PROJECT: Project = {
+  id: 'sample',
+  name: 'Roadmap Q3',
+  status: 'in_progress',
+  priority: 'high',
+  due: '2026-09-30',
+  target: '["2026-07-01 00:00:00+00","2026-09-30 00:00:00+00")',
+  field_id: null,
+  doc_reference: null,
+  deleted_at: null,
+};
 
 export default function SigilsPage() {
   const [status, setStatus] = useState<Status>('in_progress');
@@ -132,24 +145,17 @@ export default function SigilsPage() {
               The top-level life-domain a project (and by extension its
               tasks) belongs to — Design, Costura, Programação, etc. It
               carries the strongest, most saturated color signal of any
-              entity (all 11, below) because it&rsquo;s the highest
-              grouping level in the app; every other color system
+              entity (all 11, in the table below) because it&rsquo;s the
+              highest grouping level in the app; every other color system
               (status, priority) is deliberately more restrained by
               comparison.
             </dd>
-            <div className="flex flex-wrap gap-2">
-              {fieldNames.map((name) => (
-                <FieldBadge key={name} fieldName={name} size="md" />
-              ))}
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-nyx-600 text-label font-light">
-                e.g. a project in Design:
-              </span>
+            <div className="flex items-center gap-2">
+              <span className="text-nyx-600">e.g. a project in Design:</span>
               <ProjectChip name="Roadmap Q3" fieldName="Design" />
             </div>
 
-            <p className="text-nyx-200 mb-2 mt-6 text-label font-semibold tracking-wide uppercase">
+            <p className="text-nyx-200 mb-2 mt-6 font-semibold tracking-wide uppercase">
               Field, everywhere it needs to render
             </p>
             <p className="text-nyx-400 mb-3 text-caption leading-relaxed">
@@ -423,6 +429,24 @@ export default function SigilsPage() {
           header row and Routine&rsquo;s list row are their own expanded
           chips too, same reasoning as the task row.
         </p>
+
+        <p className="text-nyx-200 mb-3 mt-8 text-caption font-semibold tracking-wide uppercase">
+          Project: chip and row
+        </p>
+        <Section title="Project chip">
+          <Swatch label="icon + name">
+            <ProjectChip name="Roadmap Q3" fieldName="Design" />
+          </Swatch>
+        </Section>
+        <Section title="Project row">
+          <Swatch label="status + name + priority/target/due + counts">
+            <ProjectRow
+              project={SAMPLE_PROJECT}
+              sectionCount={3}
+              taskCount={12}
+            />
+          </Swatch>
+        </Section>
       </div>
     </Chamber>
   );
