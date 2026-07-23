@@ -136,31 +136,40 @@ export default function ForgePage() {
       </Section>
 
       <Section title="Labels">
-        {/* From every field label in TaskDetailModal (Due, Target, Tags). */}
+        {/* From every field label in TaskDetailModal (Due, Target, Tags,
+            Previous/Next tasks, Time logged, Moments) -- all-caps,
+            tracking-wide, semibold. Was font-medium/no-caps here before,
+            which didn't match a single real usage. */}
         <Swatch label="field label">
-          <label className="text-nyx-500 mb-1 block text-caption font-medium">
+          <label className="text-nyx-500 mb-1 block text-caption font-semibold tracking-wide uppercase">
             Estimate
           </label>
         </Swatch>
       </Section>
 
       <Section title="Divider">
-        {/* Not a real component today -- border-nyx-700 + border-t/border-b
-            on a plain div, repeated across TaskDetailModal, AppShell,
-            KanbanBoard/PriorityBoard, Modal, and CommandPalette to
-            separate rows/sections. Shown here as the shared idiom it
-            already is, not as something new. */}
-        <Swatch label="section divider">
+        {/* Not a real component today -- border-nyx-700 on a plain div,
+            repeated across TaskDetailModal/AppShell/boards/Modal/
+            CommandPalette. border-t and border-b aren't interchangeable
+            picks for the same job -- checked real usage: border-t always
+            separates stacked sibling sections *within* scrolling content
+            (TaskDetailModal's field groups, applied to the top of each
+            block after the first -- first:border-0 avoids a stray line
+            before the first one). border-b always underlines a *fixed
+            header bar* sitting above scrollable content (AppShell's top
+            bar, Modal's header, CommandPalette's search row, TaskList's
+            column header) -- never used between sibling sections. */}
+        <Swatch label="section divider (border-t)">
           <div className="w-56">
             <div className="border-nyx-700 border-t pt-3.5">
               <span className="text-nyx-500 text-caption">Next section…</span>
             </div>
           </div>
         </Swatch>
-        <Swatch label="row divider">
+        <Swatch label="header divider (border-b)">
           <div className="w-56">
             <div className="border-nyx-700 border-b pb-2">
-              <span className="text-nyx-300 text-body">Row above</span>
+              <span className="text-nyx-300 text-body">Fixed header</span>
             </div>
           </div>
         </Swatch>
@@ -189,6 +198,20 @@ export default function ForgePage() {
             <span className="text-nyx-500 text-body">Add a checklist item…</span>
           </div>
         </Swatch>
+        <Swatch label="add (icon-only)">
+          {/* IconAddButton, from TaskDetailModal's "Add previous/next
+              task" -- genuinely icon-only, no visible label (aria-label
+              only). This DOES exist, contradicting an earlier claim on
+              this page that no icon-only add pattern exists anywhere. */}
+          <button
+            type="button"
+            aria-label="Add previous task"
+            title="Add previous task"
+            className="bg-hypnos-400 text-nyx-900 hover:bg-hypnos-300 active:bg-hypnos-500 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors"
+          >
+            <Plus size={10} />
+          </button>
+        </Swatch>
         <Swatch label="remove / close (×)">
           {/* From checklist item rows and chip removal -- bare icon,
               hover reveals danger. Hover class must live on the icon
@@ -205,10 +228,14 @@ export default function ForgePage() {
           Why add/remove stay this muted
         </p>
         <p className="text-nyx-400 mb-1.5">
-          Every real &ldquo;add&rdquo; in the app carries a text label — there
-          is no icon-only add pattern anywhere today. Icon-only is reserved
-          for <em>remove</em>, where the trash/× glyph is unambiguous and a
-          label would just add noise.
+          <em>Correction from an earlier pass:</em> icon-only add does
+          exist — <code className="text-eros-400">IconAddButton</code>{' '}
+          (Previous/Next tasks). It works there because the field label
+          right next to it (&ldquo;Previous tasks&rdquo;) already says what&rsquo;s
+          being added, and the row has no spare width for a second
+          label. The checklist and add-time patterns keep their own text
+          because they don&rsquo;t sit next to a labeled context the
+          same way.
         </p>
         <p className="text-nyx-400">
           Add stays Nyx-grey rather than Eros so Eros keeps meaning one
@@ -256,14 +283,22 @@ export default function ForgePage() {
         <p className="text-nyx-200 mb-3 font-semibold tracking-wide uppercase">
           Why the toggle is Pontus
         </p>
+        <p className="text-nyx-400 mb-1.5">
+          <em>Correction from an earlier pass:</em> &ldquo;only one toggle
+          in the app&rdquo; was too narrow — <code className="text-eros-400">TimeToggle</code>{' '}
+          (Due&rsquo;s and Target&rsquo;s add/remove-time control, shown in
+          Inputs above) is also a binary on/off toggle, just button-shaped
+          instead of switch-shaped. The claim below is specifically about
+          the <em>switch</em> (track + sliding thumb) pattern, which really
+          is still one-of-one.
+        </p>
         <p className="text-nyx-400">
-          Not a deliberate REN choice — there is only one toggle in the app
-          today (CalendarView&rsquo;s &ldquo;show logged time&rdquo;), and it
-          inherited Pontus mechanically from the pre-rename teal. It reads
-          fine (Pontus already means &ldquo;active/current&rdquo; elsewhere,
-          e.g. the in-review status), but it hasn&rsquo;t been tested
-          against a second toggle yet. Worth revisiting once a second one
-          exists to confirm the pattern rather than one sample.
+          Not a deliberate REN choice — the switch inherited Pontus
+          mechanically from the pre-rename teal. It reads fine (Pontus
+          already means &ldquo;active/current&rdquo; elsewhere, e.g. the
+          in-review status), but it hasn&rsquo;t been tested against a
+          second switch yet. Worth revisiting once a second one exists to
+          confirm the pattern rather than one sample.
         </p>
       </div>
     </Chamber>
