@@ -143,7 +143,7 @@ export default function ChatPanel({
       <div className="border-nyx-700 flex shrink-0 items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <h2 className="font-display text-nyx-100 text-body font-semibold">
-            <KhaoticText text="KallKhaos" />
+            <KhaoticText text="@KhaosFacitBot" />
           </h2>
         </div>
         <div className="flex items-center gap-3">
