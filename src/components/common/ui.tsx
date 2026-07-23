@@ -88,7 +88,7 @@ export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
   return (
     <span
       title={meta.label}
-      className="inline-flex items-center gap-0.5 rounded-full font-mono font-medium tracking-wider uppercase"
+      className="inline-flex items-center gap-0.5 rounded-full py-0.5 pr-2 pl-0.5 font-mono font-medium tracking-wider uppercase"
       style={{
         fontSize: size === 'sm' ? 11 : 13,
         marginRight: size === 'sm' ? 4 : 6,
@@ -96,9 +96,7 @@ export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
       }}
     >
       <StatusIcon status={status} size={iconSize} />
-      <span className="pr-1" style={{ color: meta.iconColor }}>
-        {meta.acronym}
-      </span>
+      <span style={{ color: meta.iconColor }}>{meta.acronym}</span>
     </span>
   );
 }
@@ -152,11 +150,7 @@ const STATUS_ROWS: Status[][] = [
 // scannable at a glance.
 export function StatusPicker({ value, onChange }: StatusPickerProps) {
   return (
-    <div
-      className="flex flex-col gap-1"
-      role="radiogroup"
-      aria-label="Status"
-    >
+    <div role="radiogroup" aria-label="Status" className="inline-flex flex-col">
       {STATUS_ROWS.map((row, i) => (
         <div key={i} className="flex">
           {row.map((s, j) => {
@@ -172,12 +166,16 @@ export function StatusPicker({ value, onChange }: StatusPickerProps) {
                 onClick={() => onChange(s)}
                 style={{
                   backgroundColor: meta.circleBg,
-                  boxShadow: active ? `0 0 0 1.5px ${meta.iconColor}` : 'none',
+                  border: `1.5px solid ${active ? meta.iconColor : 'transparent'}`,
                 }}
                 className={clsx(
-                  'inline-flex items-center gap-1 py-0.5 pr-2 pl-0.5 transition-all',
-                  j === 0 && 'rounded-l-full',
-                  j === row.length - 1 && 'rounded-r-full',
+                  'inline-flex items-center gap-0.5 py-px pr-2 pl-px transition-all',
+                  i === 0 && j === 0 && 'rounded-tl-full',
+                  i === 0 && j === row.length - 1 && 'rounded-tr-full',
+                  i === STATUS_ROWS.length - 1 && j === 0 && 'rounded-bl-full',
+                  i === STATUS_ROWS.length - 1 &&
+                    j === row.length - 1 &&
+                    'rounded-br-full',
                   active ? 'opacity-100' : 'opacity-45 hover:opacity-75'
                 )}
               >

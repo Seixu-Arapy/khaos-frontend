@@ -450,10 +450,13 @@ export default function SigilsPage() {
           </Swatch>
         </Section>
 
-        <Section title="Tags &amp; change badges">
+        <Section title="Tags">
           <Swatch label="tag">
             <Tag onRemove={() => {}}>design</Tag>
           </Swatch>
+        </Section>
+
+        <Section title="Change badges">
           {SAMPLE_CHANGES.map((c) => (
             <Swatch key={c.field} label={c.field}>
               <ChangeBadge change={c} />
