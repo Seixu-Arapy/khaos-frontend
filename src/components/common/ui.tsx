@@ -311,8 +311,12 @@ export function Select({ className, children, ...props }: SelectProps) {
   return (
     <select
       className={clsx(
-        'border-nyx-600 bg-nyx-800 text-nyx-100 rounded border px-2 py-1.5 text-body',
+        // Same px-3/py-2 as TextInput -- they used to differ (px-2/py-1.5
+        // here vs px-3/py-2 there), which made the two controls render at
+        // different heights side by side.
+        'border-nyx-600 bg-nyx-800 text-nyx-100 rounded border px-3 py-2 text-body',
         'focus:border-eros-400 focus:outline-none',
+        'disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
       {...props}
@@ -330,6 +334,7 @@ export function TextInput({ className, ...props }: TextInputProps) {
       className={clsx(
         'border-nyx-600 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 w-full rounded border px-3 py-2 text-body',
         'focus:border-eros-400 focus:outline-none',
+        'disabled:cursor-not-allowed disabled:opacity-50',
         className
       )}
       {...props}

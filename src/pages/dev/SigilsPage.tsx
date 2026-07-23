@@ -32,7 +32,7 @@ export default function SigilsPage() {
 
   return (
     <Chamber
-      index="IV"
+      index="V"
       name="The Sigils"
       tagline="Status, priority, fields, dates, tags — marks that carry meaning"
     >

@@ -13,8 +13,8 @@ const CHAMBER_NAV = [
   { index: 'I', name: 'The Pantheon', to: '/dev/vortex/pantheon' },
   { index: 'II', name: 'The Chorus', to: '/dev/vortex/chorus' },
   { index: 'III', name: 'The Wellspring', to: '/dev/vortex/wellspring' },
-  { index: 'IV', name: 'The Sigils', to: '/dev/vortex/sigils' },
-  { index: 'V', name: 'The Forge', to: '/dev/vortex/forge' },
+  { index: 'IV', name: 'The Forge', to: '/dev/vortex/forge' },
+  { index: 'V', name: 'The Sigils', to: '/dev/vortex/sigils' },
   { index: 'VI', name: 'The Threshold', to: '/dev/vortex/threshold' },
 ];
 

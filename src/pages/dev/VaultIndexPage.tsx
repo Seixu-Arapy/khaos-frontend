@@ -43,18 +43,18 @@ const CHAMBERS: ChamberEntry[] = [
     contains: 'Radii · Shadows · Spacing',
   },
   {
-    to: '/dev/vortex/sigils',
-    index: 'IV',
-    name: 'The Sigils',
-    tagline: 'Marks that carry meaning',
-    contains: 'Status · Priority · Fields · Dates · Tags',
-  },
-  {
     to: '/dev/vortex/forge',
-    index: 'V',
+    index: 'IV',
     name: 'The Forge',
     tagline: 'Tools built for the hand',
     contains: 'Buttons · Inputs · Selects',
+  },
+  {
+    to: '/dev/vortex/sigils',
+    index: 'V',
+    name: 'The Sigils',
+    tagline: 'Marks that carry meaning',
+    contains: 'Status · Priority · Fields · Dates · Tags',
   },
   {
     to: '/dev/vortex/threshold',
