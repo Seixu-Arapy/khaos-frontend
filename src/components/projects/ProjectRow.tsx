@@ -19,6 +19,10 @@ interface ProjectRowProps {
 // too-many-badges problem. border-y (transparent) matches TaskRow's own
 // border-transparent on all sides -- without it this row would render
 // 2px shorter than TaskRow, since only the left edge had a border here.
+// border-r closes the frame on the right, neutral Nyx (not field-colored
+// like the left spine -- only one edge should carry identity). Padding
+// is symmetric px-2 (SPC "element" rung) -- was pl-2.5, a half-step off
+// the spacing ladder.
 export default function ProjectRow({
   project,
   fieldName,
@@ -32,7 +36,7 @@ export default function ProjectRow({
     <button
       onClick={() => navigate(`/projects/${project.id}`)}
       style={{ borderLeftColor: fieldColor }}
-      className="group hover:bg-nyx-900 flex w-full flex-col gap-0.5 rounded-md border-y border-l-2 border-transparent py-1.5 pr-2 pl-2.5 text-left md:flex-row md:items-center md:gap-1.5"
+      className="group hover:bg-nyx-900 border-nyx-700 flex w-full flex-col gap-0.5 rounded-md border-y border-r border-l-2 py-1.5 px-2 text-left md:flex-row md:items-center md:gap-1.5"
     >
       <span className="flex min-w-0 items-center gap-1.5 md:flex-1">
         <FieldBadge fieldName={fieldName} size="xs" />
