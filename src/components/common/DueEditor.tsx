@@ -76,8 +76,12 @@ export default function DueEditor({
         value={values.date}
         disabled={disabled}
         onChange={(e) => commit(e.target.value, values.time, showTime)}
+        // w-[11ch]: 10ch clipped the last digit at text-body size (the
+        // native date control reserves a little internal chrome even
+        // with the calendar icon hidden) -- 12ch fit clean but left the
+        // middot visibly off-center. 11ch is the balance.
         className={clsx(
-          'due-input w-[12ch]! shrink-0 border-0! bg-transparent! p-0! text-center text-body!',
+          'due-input w-[11ch]! shrink-0 border-0! bg-transparent! p-0! text-center text-body!',
           overdue ? 'text-tartarus-400!' : 'text-eros-400!'
         )}
       />

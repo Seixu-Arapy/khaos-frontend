@@ -748,8 +748,11 @@ export default function TaskDetailModal({
                 onChange={(e) => {
                   handleDueChange(e.target.value, dueValues.time);
                 }}
+                // w-[10ch] hugs the date text itself -- w-[12ch] left
+                // leftover box padding on the date side only, pushing the
+                // middot off-center between date and time.
                 className={clsx(
-                  'due-input w-[12ch]! shrink-0 border-0! bg-transparent! p-0! text-center text-body!',
+                  'due-input w-[11ch]! shrink-0 border-0! bg-transparent! p-0! text-center text-body!',
                   isOverdue(task.due, task.status)
                     ? 'text-tartarus-400!'
                     : 'text-eros-400!'
