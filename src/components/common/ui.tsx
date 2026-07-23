@@ -88,7 +88,7 @@ export function StatusBadge({ status, size = 'sm' }: StatusBadgeProps) {
   return (
     <span
       title={meta.label}
-      className="inline-flex items-center gap-0.5 rounded-full py-0.5 pr-2 pl-0.5 font-mono font-medium tracking-wider uppercase"
+      className="inline-flex items-center gap-px rounded-full py-0.5 pr-2 pl-0.5 font-mono font-medium tracking-wider uppercase"
       style={{
         fontSize: size === 'sm' ? 11 : 13,
         marginRight: size === 'sm' ? 4 : 6,
@@ -287,14 +287,18 @@ interface TagProps {
   onRemove?: () => void;
 }
 
+// Not a pill -- every other column badge (status, priority, field) already
+// claims that shape, and a freeform many-per-task label doesn't need to
+// compete with them for it. rounded-sm + a solid ("lined") border + mono
+// type reads closer to a hashtag/label than another rounded chip.
 export function Tag({ children, onRemove }: TagProps) {
   return (
-    <span className="border-pontus-500/40 text-pontus-400 inline-flex items-center gap-1 rounded-full border border-dashed bg-pontus-500/10 px-2 py-0.5 text-caption font-medium">
-      {children}
+    <span className="border-pontus-500/40 text-pontus-400 inline-flex items-center gap-1 rounded-sm border bg-pontus-500/10 px-1.5 py-0.5 font-mono text-caption">
+      #{children}
       {onRemove && (
         <button
           onClick={onRemove}
-          className="rounded-full hover:bg-pontus-500/20"
+          className="hover:bg-pontus-500/20 rounded-sm"
           aria-label="Remove tag"
         >
           <X size={11} />
@@ -309,20 +313,49 @@ interface TagSuggestionProps {
   onClick: () => void;
 }
 
-// Dashed outline, muted — visually distinct from an applied Tag pill so a
-// suggestion never looks like it's already attached. Always rendered next
-// to the current tags (not hidden behind opening a picker) — one click to
-// add.
+// Dotted outline, muted — visually distinct from an applied Tag's solid
+// ("lined") border so a suggestion never looks like it's already attached.
+// Same rounded-sm/mono shape as Tag, not the pill language everything else
+// already uses. Always rendered next to the current tags (not hidden
+// behind opening a picker) — one click to add.
 export function TagSuggestion({ children, onClick }: TagSuggestionProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="border-nyx-600 text-nyx-500 hover:border-nyx-500 hover:text-nyx-300 inline-flex items-center gap-0.5 rounded-full border border-dashed px-2 py-0.5 text-xs"
+      className="border-nyx-600 text-nyx-500 hover:border-nyx-500 hover:text-nyx-300 inline-flex items-center gap-0.5 rounded-sm border border-dotted px-1.5 py-0.5 font-mono text-caption"
     >
       <Plus size={10} />
       {children}
     </button>
+  );
+}
+
+interface MomentTagChipProps {
+  children: ReactNode;
+  onRemove?: () => void;
+}
+
+// The other tag type -- moment_tags, a small curated vocabulary (each row
+// has synonyms) for tagging moments/notes, not the freeform many-per-task
+// work_tags Tag renders. Same rounded-sm/mono/lined-border shape as Tag so
+// they read as siblings, but Hypnos instead of Pontus (a fixed vocabulary
+// is closer kin to Field's curated set than to a freeform label) is the
+// one signal that tells the two apart at a glance.
+export function MomentTagChip({ children, onRemove }: MomentTagChipProps) {
+  return (
+    <span className="border-hypnos-500/40 text-hypnos-400 inline-flex items-center gap-1 rounded-sm border bg-hypnos-500/10 px-1.5 py-0.5 font-mono text-caption">
+      ~{children}
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          className="hover:bg-hypnos-500/20 rounded-sm"
+          aria-label="Remove moment tag"
+        >
+          <X size={11} />
+        </button>
+      )}
+    </span>
   );
 }
 

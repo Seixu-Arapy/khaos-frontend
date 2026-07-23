@@ -14,6 +14,7 @@ import {
   TaskProgressBar,
   Tag,
   TagSuggestion,
+  MomentTagChip,
 } from '../../components/common/ui';
 import { ChangeBadge } from '../../components/assistant/ChangeBadge';
 import ProjectRow from '../../components/projects/ProjectRow';
@@ -413,7 +414,17 @@ export default function SigilsPage() {
               the tag says — text is what differentiates them, not color.
               Reasonable inference: this avoids needing to store or
               assign a color per tag (there could be dozens), unlike
-              Field&rsquo;s fixed, small, curated set.
+              Field&rsquo;s fixed, small, curated set. Not a pill shape
+              like every other badge here — <code className="text-eros-400">rounded-sm</code>
+              , a solid (&ldquo;lined&rdquo;) border, and mono type read
+              closer to a hashtag label. A second, distinct tag type
+              exists on moments/notes — <code className="text-eros-400">
+                moment_tags
+              </code>{' '}
+              is a small curated vocabulary (each row has synonyms), not
+              a freeform label, so it renders as{' '}
+              <code className="text-eros-400">MomentTagChip</code>: same
+              shape, Hypnos instead of Pontus.
             </dd>
           </div>
           <div>
@@ -650,8 +661,14 @@ export default function SigilsPage() {
         </Section>
 
         <Section title="Tags" nowrap>
-          <Swatch label="tag">
+          <Swatch label="work tag">
             <Tag onRemove={() => {}}>design</Tag>
+          </Swatch>
+          <Swatch label="moment tag">
+            <MomentTagChip onRemove={() => {}}>breakthrough</MomentTagChip>
+          </Swatch>
+          <Swatch label="suggestion">
+            <TagSuggestion onClick={() => {}}>urgent</TagSuggestion>
           </Swatch>
         </Section>
 
