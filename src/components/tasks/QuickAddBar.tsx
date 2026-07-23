@@ -67,13 +67,13 @@ export default function QuickAddBar() {
       <form onSubmit={handleSubmit} className="relative max-w-xl flex-1">
         <Sparkles
           size={15}
-          className="text-ink-500 pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
+          className="text-nyx-500 pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
         />
         <input
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
           placeholder="Quick add: Finish report tomorrow 3pm #ProjectX !high"
-          className="border-ink-700 bg-ink-800 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 w-full rounded-full border py-2 pr-3 pl-9 text-sm focus:outline-hidden"
+          className="border-nyx-700 bg-nyx-800 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 w-full rounded-full border py-2 pr-3 pl-9 text-body focus:outline-hidden"
         />
       </form>
 
@@ -100,7 +100,7 @@ export default function QuickAddBar() {
         {draft && (
           <div className="space-y-3">
             <div>
-              <label className="text-ink-400 mb-1 block text-xs font-medium">
+              <label className="text-nyx-400 mb-1 block text-caption font-medium">
                 Name
               </label>
               <TextInput
@@ -111,7 +111,7 @@ export default function QuickAddBar() {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label className="text-ink-400 mb-1 block text-xs font-medium">
+                <label className="text-nyx-400 mb-1 block text-caption font-medium">
                   Project
                 </label>
                 <Select
@@ -140,7 +140,7 @@ export default function QuickAddBar() {
                 </Select>
               </div>
               <div>
-                <label className="text-ink-400 mb-1 block text-xs font-medium">
+                <label className="text-nyx-400 mb-1 block text-caption font-medium">
                   Section
                 </label>
                 <Select
@@ -166,7 +166,7 @@ export default function QuickAddBar() {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label className="text-ink-400 mb-1 block text-xs font-medium">
+                <label className="text-nyx-400 mb-1 block text-caption font-medium">
                   Priority
                 </label>
                 <Select
@@ -186,7 +186,7 @@ export default function QuickAddBar() {
                 </Select>
               </div>
               <div>
-                <label className="text-ink-400 mb-1 block text-xs font-medium">
+                <label className="text-nyx-400 mb-1 block text-caption font-medium">
                   Due
                 </label>
                 <TextInput
@@ -202,7 +202,7 @@ export default function QuickAddBar() {
               </div>
             </div>
             {!sectionsForProject.length && draft.projectId && (
-              <p className="text-rust-500 text-xs">
+              <p className="text-tartarus-500 text-caption">
                 This project has no sections yet — add one first.
               </p>
             )}

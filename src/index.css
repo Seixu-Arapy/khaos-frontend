@@ -5,56 +5,86 @@
 @import '@fontsource-variable/roboto-slab/wght.css';
 
 /* ── Design tokens ─────────────────────────────────────────────────────── */
-@theme {
+/* `static` so every token is emitted as a CSS variable even before any
+   class uses it — the dev Foundations gallery reads them at runtime, and
+   tree-shaken tokens would otherwise read as empty/missing there. */
+@theme static {
   /* Colors */
-  --color-ink-900: #161b22;
-  --color-ink-800: #1f2530;
-  --color-ink-700: #2b3340;
-  --color-ink-600: #3d4759;
-  --color-ink-500: #5b6577;
-  --color-ink-400: #828da0;
-  --color-ink-300: #aeb6c4;
-  --color-ink-200: #d2d7e0;
-  --color-ink-100: #e9ecf1;
+  --color-nyx-900: #161b22;
+  --color-nyx-800: #1f2530;
+  --color-nyx-700: #2b3340;
+  --color-nyx-600: #3d4759;
+  --color-nyx-500: #7a8599;
+  --color-nyx-400: #828da0;
+  --color-nyx-300: #aeb6c4;
+  --color-nyx-200: #d2d7e0;
+  --color-nyx-100: #e9ecf1;
 
-  --color-fog-50: #fafaf8;
-  --color-fog-100: #f1f2f0;
-  --color-fog-200: #e7e9e6;
+  --color-aether-50: #fafaf8;
+  --color-aether-100: #f1f2f0;
+  --color-aether-200: #e7e9e6;
 
-  --color-copper: #c0793d;
-  --color-copper-50: #fbf1e7;
-  --color-copper-100: #f5e1c8;
-  --color-copper-400: #d08f4e;
-  --color-copper-500: #c0793d;
-  --color-copper-600: #a6612c;
+  --color-eros: #c0793d;
+  --color-eros-50: #fbf1e7;
+  --color-eros-100: #f5e1c8;
+  --color-eros-400: #d08f4e;
+  --color-eros-500: #c0793d;
+  --color-eros-600: #a6612c;
 
-  --color-teal: #3a7d7a;
-  --color-teal-50: #eaf3f2;
-  --color-teal-400: #4d928e;
-  --color-teal-500: #3a7d7a;
-  --color-teal-600: #2c615f;
+  --color-pontus: #3a7d7a;
+  --color-pontus-50: #eaf3f2;
+  --color-pontus-400: #4d928e;
+  --color-pontus-500: #3a7d7a;
+  --color-pontus-600: #2c615f;
 
-  --color-sage: #5b8c5a;
-  --color-sage-50: #eef4ed;
-  --color-sage-500: #5b8c5a;
-  --color-sage-600: #477047;
+  --color-gaia: #5b8c5a;
+  --color-gaia-50: #eef4ed;
+  --color-gaia-500: #5b8c5a;
+  --color-gaia-600: #477047;
 
-  --color-rust: #b5483d;
-  --color-rust-50: #fbeae8;
-  --color-rust-500: #b5483d;
-  --color-rust-600: #963830;
+  --color-tartarus: #b43c5a;
+  --color-tartarus-50: #fbeff2;
+  /* 300 is the warning step: same Tartarus hue, lighter -- caution is
+     a milder dose of danger, not a separate (amber) hue. An amber at
+     ~45deg would sit ~18deg from copper/Eros and recreate the exact
+     colorblind collision the rust hue-shift already fixed. 7.0:1 with
+     nyx-900 text; a full 2.3x luminance step above tartarus-500. */
+  --color-tartarus-300: #dc8fa5;
+  --color-tartarus-500: #b43c5a;
+  --color-tartarus-600: #97304a;
 
-  --color-violet: #7a5fa0;
-  --color-violet-50: #efeaf7;
-  --color-violet-400: #9478b8;
-  --color-violet-500: #7a5fa0;
-  --color-violet-600: #634b81;
+  --color-hypnos: #7a5fa0;
+  --color-hypnos-50: #efeaf7;
+  --color-hypnos-400: #9478b8;
+  --color-hypnos-500: #7a5fa0;
+  --color-hypnos-600: #634b81;
 
   /* Fonts */
+  /* --font-body used to be Inter Variable -- dropped per FNT: side by
+     side at 12/14px the two read as near-identical neo-grotesque sans
+     faces, and Flex's own variable axes already cover the distinction
+     (display leans wider/bolder, body stays at normal weight/width --
+     no font-stretch-condensed here, that read as too tight for real
+     body copy in the live test). One less package, one less font. */
   --font-display: 'Roboto Flex Variable', system-ui, sans-serif;
-  --font-serif: 'Roboto Serif', Georgia, serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Roboto Slab Variable', Georgia, serif;
+  --font-body: 'Roboto Flex Variable', system-ui, sans-serif;
   --font-mono: 'Roboto Mono Variable', monospace;
+
+  /* Type scale — The Chorus (see /dev/vortex/chorus). Five named steps
+     formalized from the app's real ad-hoc sizes; line-heights match the
+     Tailwind defaults of the classes they replace (xs/sm/lg/2xl) so the
+     WIR sweep is pixel-neutral. */
+  --text-label: 10px;
+  --text-label--line-height: 1.4;
+  --text-caption: 12px;
+  --text-caption--line-height: calc(1 / 0.75);
+  --text-body: 14px;
+  --text-body--line-height: calc(1.25 / 0.875);
+  --text-display: 18px;
+  --text-display--line-height: calc(1.75 / 1.125);
+  --text-display-lg: 24px;
+  --text-display-lg--line-height: calc(2 / 1.5);
 
   /* Shadows */
   --shadow-card:
@@ -62,7 +92,9 @@
   --shadow-panel: 0 4px 16px rgba(22, 27, 34, 0.08);
 
   /* Radii */
-  --radius-sm: 4px;
+  /* No --radius-sm override: it matched Tailwind's own built-in
+     --radius-sm (4px) exactly, so the app now just uses Tailwind's
+     default rounded-sm directly instead of maintaining a duplicate. */
   --radius: 6px;
   --radius-lg: 10px;
 }
@@ -74,8 +106,8 @@
   }
 
   body {
-    background-color: var(--color-ink-900);
-    color: var(--color-ink-100);
+    background-color: var(--color-nyx-900);
+    color: var(--color-nyx-100);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
   }
@@ -83,14 +115,14 @@
   ::selection {
     background-color: color-mix(
       in srgb,
-      var(--color-copper-500) 30%,
+      var(--color-eros-500) 30%,
       transparent
     );
-    color: var(--color-ink-100);
+    color: var(--color-nyx-100);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-copper-400);
+    outline: 2px solid var(--color-eros-400);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -103,12 +135,12 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-ink-600);
+    background: var(--color-nyx-600);
     border-radius: 99px;
-    border: 2px solid var(--color-ink-900);
+    border: 2px solid var(--color-nyx-900);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-ink-500);
+    background: var(--color-nyx-500);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -133,10 +165,81 @@
   .log-rail-gap {
     background-image: repeating-linear-gradient(
       135deg,
-      var(--color-ink-400) 0,
-      var(--color-ink-400) 1.5px,
+      var(--color-nyx-400) 0,
+      var(--color-nyx-400) 1.5px,
       transparent 1.5px,
       transparent 4px
     );
+  }
+
+  /* Slow drifting backdrop for the Vortex hero -- nyx-700 (the logo's
+     color) bleeding into nyx-900 (the page background), panned instead
+     of static so it reads as alive without calling attention to itself. */
+  .vortex-gradient {
+    background-image: radial-gradient(
+      circle,
+      var(--color-nyx-700) 0%,
+      var(--color-nyx-900) 65%
+    );
+    background-size: 200% 200%;
+    animation: vortex-drift 12s ease-in-out infinite;
+  }
+
+  @keyframes vortex-drift {
+    0%,
+    100% {
+      background-position: 30% 30%;
+    }
+    50% {
+      background-position: 70% 70%;
+    }
+  }
+
+  /* Same two colors (logo nyx-700 / background nyx-900) as one moving
+     gradient band sweeping across the *whole* text run, not a separate
+     gradient cycling per character. background-image doesn't inherit,
+     so each character span still needs its own copy of the gradient +
+     background-clip: text -- but they all share one fixed-px
+     background-size and a shared, animated --shimmer-offset (registered
+     below so it interpolates smoothly), each shifted by its own static
+     --shimmer-char-offset. The net effect is one continuous band: at
+     any instant different characters show different points along the
+     same gradient, and that whole pattern slides together. */
+  @property --shimmer-offset {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  .vortex-text-gradient-wrap {
+    animation: vortex-text-shimmer-offset 6s ease-in-out infinite;
+  }
+
+  .vortex-text-gradient-char {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-nyx-700),
+      var(--color-nyx-900),
+      var(--color-nyx-700),
+      var(--color-nyx-700)
+    );
+    background-size: 400px 100%;
+    background-repeat: repeat-x;
+    background-position-x: calc(
+      var(--shimmer-offset) - var(--shimmer-char-offset, 0px)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  @keyframes vortex-text-shimmer-offset {
+    0%,
+    100% {
+      --shimmer-offset: 0px;
+    }
+    50% {
+      --shimmer-offset: -400px;
+    }
   }
 }

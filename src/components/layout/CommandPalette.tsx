@@ -97,18 +97,18 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
       onClick={onClose}
     >
       <div
-        className="border-ink-700 bg-ink-800 shadow-panel w-full max-w-lg overflow-hidden rounded-lg border"
+        className="border-nyx-700 bg-nyx-800 shadow-panel w-full max-w-lg overflow-hidden rounded-lg border"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="border-ink-700 flex items-center gap-2 border-b px-4 py-3">
-          <Search size={16} className="text-ink-500" />
+        <div className="border-nyx-700 flex items-center gap-2 border-b px-4 py-3">
+          <Search size={16} className="text-nyx-500" />
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Escape' && onClose()}
             placeholder="Jump to a project or task…"
-            className="text-ink-100 placeholder:text-ink-500 flex-1 bg-transparent text-sm focus:outline-hidden"
+            className="text-nyx-100 placeholder:text-nyx-500 flex-1 bg-transparent text-body focus:outline-hidden"
           />
         </div>
         <div className="max-h-80 overflow-y-auto py-1.5">
@@ -116,14 +116,14 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             <button
               key={`${item.type}-${item.id}`}
               onClick={() => go(item)}
-              className="text-ink-200 hover:bg-ink-700 flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-sm"
+              className="text-nyx-200 hover:bg-nyx-700 flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-body"
             >
               <span className="flex min-w-0 flex-col items-start gap-0.5">
                 {item.type === 'project' ? (
                   <ProjectChip
                     name={item.label}
                     fieldName={item.fieldName}
-                    className="text-ink-200 text-sm"
+                    className="text-nyx-200 text-body"
                   />
                 ) : (
                   <>
@@ -138,7 +138,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 )}
               </span>
               <span className="flex shrink-0 items-center gap-2">
-                <span className="text-ink-600 text-xs tracking-wide uppercase">
+                <span className="text-nyx-600 text-caption tracking-wide uppercase">
                   {item.type}
                 </span>
                 <StatusBadge status={item.status} />
@@ -146,7 +146,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             </button>
           ))}
           {!results.length && (
-            <p className="text-ink-600 px-4 py-6 text-center text-sm">
+            <p className="text-nyx-600 px-4 py-6 text-center text-body">
               Nothing found
             </p>
           )}

@@ -100,18 +100,18 @@ export default function SectionColumn({
   }
 
   return (
-    <div className="border-ink-700 bg-ink-800/40 rounded-lg border">
-      <div className="border-ink-700 space-y-2 border-b px-3 py-2.5">
+    <div className="border-nyx-700 bg-nyx-800/40 rounded-lg border">
+      <div className="border-nyx-700 space-y-2 border-b px-3 py-2.5">
         <div className="flex items-center gap-2">
           <span
             {...dragHandleProps}
-            className="text-ink-600 hover:text-ink-300 cursor-grab active:cursor-grabbing"
+            className="text-nyx-600 hover:text-nyx-300 cursor-grab active:cursor-grabbing"
           >
             <GripVertical size={14} />
           </span>
           <button
             onClick={() => setCollapsed((c) => !c)}
-            className="text-ink-500 hover:text-ink-200 flex shrink-0 items-center"
+            className="text-nyx-500 hover:text-nyx-200 flex shrink-0 items-center"
             title={collapsed ? 'Expand section' : 'Collapse section'}
           >
             {collapsed ? (
@@ -128,10 +128,10 @@ export default function SectionColumn({
                 patch: { name: e.target.value },
               })
             }
-            className="text-ink-100 min-w-0 flex-1 bg-transparent text-sm font-medium focus:outline-none"
+            className="text-nyx-100 min-w-0 flex-1 bg-transparent text-body font-medium focus:outline-none"
           />
           {collapsed && (
-            <span className="text-ink-600 shrink-0 font-mono text-xs">
+            <span className="text-nyx-600 shrink-0 font-mono text-caption">
               {orderedTasks.length}
             </span>
           )}
@@ -140,7 +140,7 @@ export default function SectionColumn({
               onClick={onMoveUp}
               disabled={!canMoveUp}
               title="Move section up"
-              className="text-ink-500 hover:text-ink-200 disabled:pointer-events-none disabled:opacity-30"
+              className="text-nyx-500 hover:text-nyx-200 disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronUp size={15} />
             </button>
@@ -148,7 +148,7 @@ export default function SectionColumn({
               onClick={onMoveDown}
               disabled={!canMoveDown}
               title="Move section down"
-              className="text-ink-500 hover:text-ink-200 disabled:pointer-events-none disabled:opacity-30"
+              className="text-nyx-500 hover:text-nyx-200 disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronDown size={15} />
             </button>
@@ -156,18 +156,18 @@ export default function SectionColumn({
           <div className="relative shrink-0">
             <button
               onClick={() => setMenuOpen((o) => !o)}
-              className="text-ink-500 hover:text-ink-200"
+              className="text-nyx-500 hover:text-nyx-200"
             >
               <MoreVertical size={15} />
             </button>
             {menuOpen && (
-              <div className="border-ink-700 bg-ink-800 shadow-panel absolute right-0 z-10 mt-1 w-44 rounded-md border py-1">
+              <div className="border-nyx-700 bg-nyx-800 shadow-panel absolute right-0 z-10 mt-1 w-44 rounded-md border py-1">
                 <button
                   onClick={() => {
                     removeSection.mutate(section.id);
                     setMenuOpen(false);
                   }}
-                  className="text-ink-400 hover:bg-ink-700 flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-xs"
+                  className="text-nyx-400 hover:bg-nyx-700 flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-caption"
                 >
                   <Trash2 size={12} /> Remove section
                 </button>
@@ -183,14 +183,14 @@ export default function SectionColumn({
         ) : (
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className="text-ink-600 hover:text-ink-300 flex shrink-0 items-center"
+              className="text-nyx-600 hover:text-nyx-300 flex shrink-0 items-center"
               title="Tasks below follow their sequence order first; outside a sequence they're ordered by target start date, then due date — tasks with neither go last."
             >
               <Info size={13} />
             </span>
             <button
               onClick={() => setTargetOpen((o) => !o)}
-              className="text-ink-500 hover:text-ink-200 flex shrink-0 items-center"
+              className="text-nyx-500 hover:text-nyx-200 flex shrink-0 items-center"
               title={targetOpen ? 'Hide target editor' : 'Edit target'}
             >
               {section.target ? (
@@ -215,7 +215,7 @@ export default function SectionColumn({
         )}
 
         {targetOpen && !collapsed && (
-          <div className="border-ink-700 bg-ink-900/50 rounded-md border p-2.5">
+          <div className="border-nyx-700 bg-nyx-900/50 rounded-md border p-2.5">
             <TargetEditor
               value={section.target as string | null}
               due={section.due}
@@ -262,12 +262,12 @@ export default function SectionColumn({
             onSubmit={addTask}
             className="mt-1 flex items-center gap-1.5 px-2 py-1"
           >
-            <Plus size={13} className="text-ink-600" />
+            <Plus size={13} className="text-nyx-600" />
             <input
               value={newTaskName}
               onChange={(e) => setNewTaskName(e.target.value)}
               placeholder="Add a task…"
-              className="text-ink-300 placeholder:text-ink-600 flex-1 bg-transparent py-0.5 text-sm focus:outline-none"
+              className="text-nyx-300 placeholder:text-nyx-600 flex-1 bg-transparent py-0.5 text-body focus:outline-none"
             />
           </form>
         </div>

@@ -21,14 +21,14 @@ export default function ConfirmationCard({
     Boolean(preview.entityType) && preview.entities.length > 0;
 
   return (
-    <div className="border-copper-500/40 bg-ink-800 ml-9 max-w-[85%] rounded-lg border p-3.5">
-      <div className="text-copper-400 mb-2.5 flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+    <div className="border-eros-500/40 bg-nyx-800 ml-9 max-w-[85%] rounded-lg border p-4">
+      <div className="text-eros-400 mb-2 flex items-center gap-1.5 text-caption font-semibold tracking-wide uppercase">
         <ShieldAlert size={13} />
         Confirm before running
       </div>
 
       {preview.kind === 'generic' && (
-        <p className="text-ink-300 mb-3 font-mono text-xs leading-relaxed">
+        <p className="text-nyx-300 mb-3 font-mono text-caption leading-relaxed">
           {preview.summaryText}
         </p>
       )}
@@ -38,10 +38,10 @@ export default function ConfirmationCard({
           {preview.entities.map((entity, i) => (
             <div key={i} className="flex items-center gap-2">
               {isDelete && (
-                <Trash2 size={12} className="text-rust-500 shrink-0" />
+                <Trash2 size={12} className="text-tartarus-500 shrink-0" />
               )}
               {isInsert && (
-                <Plus size={12} className="text-sage-500 shrink-0" />
+                <Plus size={12} className="text-gaia-500 shrink-0" />
               )}
               <InlineEntityPreview
                 entityType={preview.entityType!}
@@ -61,7 +61,7 @@ export default function ConfirmationCard({
       )}
 
       {!preview.entityType && preview.kind !== 'generic' && (
-        <p className="text-ink-500 mb-3 text-xs">
+        <p className="text-nyx-500 mb-3 text-caption">
           {actionName.replace(/_/g, ' ')} on an entity outside tasks/projects.
         </p>
       )}

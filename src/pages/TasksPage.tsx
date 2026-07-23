@@ -139,17 +139,17 @@ export default function TasksPage() {
   return (
     <div className="px-6 py-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-ink-100 text-2xl">All tasks</h1>
-        <div className="border-ink-700 flex items-center gap-1 rounded-lg border p-0.5">
+        <h1 className="font-display text-nyx-100 text-display-lg">All tasks</h1>
+        <div className="border-nyx-700 flex items-center gap-1 rounded-lg border p-0.5">
           {VIEWS.map((v) => (
             <button
               key={v.id}
               onClick={() => setView(v.id)}
               className={clsx(
-                'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors',
+                'flex items-center gap-1.5 rounded-md px-2 py-1.5 text-caption font-medium transition-colors',
                 view === v.id
-                  ? 'bg-ink-700 text-ink-100'
-                  : 'text-ink-500 hover:text-ink-200'
+                  ? 'bg-nyx-700 text-nyx-100'
+                  : 'text-nyx-500 hover:text-nyx-200'
               )}
             >
               <v.icon size={13} /> {v.label}
@@ -216,7 +216,7 @@ export default function TasksPage() {
             ))}
           </Select>
         )}
-        <span className="text-ink-600 ml-auto text-xs">
+        <span className="text-nyx-600 ml-auto text-caption">
           {filtered.length} tasks
         </span>
       </div>

@@ -161,7 +161,7 @@ export default function TargetEditor({
           and rotated between them (see max-[350px]: variants below). */}
       <div
         className={clsx(
-          'border-ink-600 text-ink-400 flex w-fit flex-wrap items-center gap-1.5 rounded-full border py-1 pr-2 pl-3 font-mono text-xs',
+          'border-nyx-600 text-nyx-400 flex w-fit flex-wrap items-center gap-1.5 rounded-full border py-1 pr-2 pl-3 font-mono text-caption',
           'max-[350px]:grid max-[350px]:grid-cols-[auto_1fr] max-[350px]:items-center max-[350px]:gap-x-2 max-[350px]:gap-y-1 max-[350px]:rounded-2xl max-[350px]:px-3.5 max-[350px]:py-2.5'
         )}
       >
@@ -201,7 +201,7 @@ export default function TargetEditor({
                 showEndTime
               );
             }}
-            className="text-ink-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
+            className="text-nyx-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
           />
           {showStartTime && startValues.date && (
             <TextInput
@@ -218,7 +218,7 @@ export default function TargetEditor({
                   showEndTime
                 );
               }}
-              className="text-ink-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
+              className="text-nyx-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
             />
           )}
         </span>
@@ -228,7 +228,7 @@ export default function TargetEditor({
             whose end target is 23:59 of that day — there is no open-ended
             target, so no ∞ glyph. */}
         {showEndInput && (
-          <span className="text-ink-600 shrink-0 max-[350px]:col-start-2 max-[350px]:row-start-2 max-[350px]:justify-self-center max-[350px]:rotate-90">
+          <span className="text-nyx-600 shrink-0 max-[350px]:col-start-2 max-[350px]:row-start-2 max-[350px]:justify-self-center max-[350px]:rotate-90">
             →
           </span>
         )}
@@ -270,7 +270,7 @@ export default function TargetEditor({
                     showEndTime
                   );
                 }}
-                className="text-ink-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
+                className="text-nyx-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
               />
               {showEndTime && endValues.date && (
                 <TextInput
@@ -287,7 +287,7 @@ export default function TargetEditor({
                       true
                     );
                   }}
-                  className="text-ink-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-xs!"
+                  className="text-nyx-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
                 />
               )}
               <button
@@ -295,7 +295,7 @@ export default function TargetEditor({
                 disabled={disabled}
                 onClick={handleRemoveEnd}
                 title="Remove end date (single day)"
-                className="text-ink-500 hover:text-rust-500 order-3 flex shrink-0 items-center max-[350px]:order-none"
+                className="text-nyx-500 hover:text-tartarus-500 order-3 flex shrink-0 items-center max-[350px]:order-none"
               >
                 <X size={12} />
               </button>
@@ -307,7 +307,7 @@ export default function TargetEditor({
                 disabled={disabled}
                 onClick={handleAddEnd}
                 title="Add end date"
-                className="text-ink-500 hover:text-ink-300 flex shrink-0 items-center gap-0.5"
+                className="text-nyx-500 hover:text-nyx-300 flex shrink-0 items-center gap-0.5"
               >
                 <Plus size={12} />
                 <span>end</span>
@@ -322,14 +322,14 @@ export default function TargetEditor({
             disabled={disabled}
             onClick={handleClear}
             title="Clear target"
-            className="text-ink-500 hover:text-rust-500 ml-1 flex shrink-0 items-center max-[350px]:col-start-2 max-[350px]:row-start-3 max-[350px]:ml-auto"
+            className="text-nyx-500 hover:text-tartarus-500 ml-1 flex shrink-0 items-center max-[350px]:col-start-2 max-[350px]:row-start-3 max-[350px]:ml-auto"
           >
             <X size={12} />
           </button>
         )}
       </div>
 
-      {error && <p className="text-rust-500 text-xs font-medium">{error}</p>}
+      {error && <p className="text-tartarus-500 text-caption font-medium">{error}</p>}
     </div>
   );
 }

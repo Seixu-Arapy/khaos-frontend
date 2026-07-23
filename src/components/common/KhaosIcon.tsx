@@ -5,9 +5,9 @@ interface KhaosIconProps {
   size?: string;
   /** Asterisk character size (Tailwind text classes, e.g., 'text-lg', 'text-2xl') */
   fontSize?: string;
-  /** Color of the asterisk character (e.g., 'text-copper-400') */
+  /** Color of the asterisk character (e.g., 'text-eros-400') */
   color?: string;
-  /** Background color of the circle (e.g., 'bg-ink-700', 'bg-copper-500/15') */
+  /** Background color of the circle (e.g., 'bg-nyx-700', 'bg-eros-500/15') */
   bgColor?: string;
   /** Determines whether the icon should rotate continuously */
   spin?: boolean;
@@ -18,7 +18,7 @@ interface KhaosIconProps {
 export default function KhaosIcon({
   size = 'h-7 w-7',
   fontSize = 'text-xl',
-  color = 'text-copper-400',
+  color = 'text-eros-400',
   bgColor = 'bg-transparent',
   spin = false,
   className = '',

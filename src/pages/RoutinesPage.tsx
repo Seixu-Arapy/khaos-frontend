@@ -108,7 +108,7 @@ function RoutineModal({ initial, onClose, onSave, saving }: RoutineModalProps) {
     >
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="text-ink-400 mb-1 block text-xs font-medium">
+          <label className="text-nyx-400 mb-1 block text-caption font-medium">
             Name
           </label>
           <TextInput
@@ -121,7 +121,7 @@ function RoutineModal({ initial, onClose, onSave, saving }: RoutineModalProps) {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="text-ink-400 mb-1 block text-xs font-medium">
+            <label className="text-nyx-400 mb-1 block text-caption font-medium">
               Frequency
             </label>
             <Select
@@ -137,7 +137,7 @@ function RoutineModal({ initial, onClose, onSave, saving }: RoutineModalProps) {
             </Select>
           </div>
           <div>
-            <label className="text-ink-400 mb-1 block text-xs font-medium">
+            <label className="text-nyx-400 mb-1 block text-caption font-medium">
               Preferred time
             </label>
             <Select
@@ -156,7 +156,7 @@ function RoutineModal({ initial, onClose, onSave, saving }: RoutineModalProps) {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="text-ink-400 mb-1 block text-xs font-medium">
+            <label className="text-nyx-400 mb-1 block text-caption font-medium">
               Estimate (min)
             </label>
             <TextInput
@@ -168,7 +168,7 @@ function RoutineModal({ initial, onClose, onSave, saving }: RoutineModalProps) {
             />
           </div>
           <div>
-            <label className="text-ink-400 mb-1 block text-xs font-medium">
+            <label className="text-nyx-400 mb-1 block text-caption font-medium">
               Field (optional)
             </label>
             <Select
@@ -187,25 +187,25 @@ function RoutineModal({ initial, onClose, onSave, saving }: RoutineModalProps) {
         </div>
 
         <div>
-          <label className="text-ink-400 mb-1 block text-xs font-medium">
+          <label className="text-nyx-400 mb-1 block text-caption font-medium">
             Scheduling notes{' '}
-            <span className="text-ink-600">(the AI reads this)</span>
+            <span className="text-nyx-600">(the AI reads this)</span>
           </label>
           <textarea
             value={form.constraints}
             onChange={(e) => set('constraints', e.target.value)}
             placeholder="e.g. Can be done while at the gym — laundry room is in the same building area"
             rows={3}
-            className="border-ink-600 bg-ink-900 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 w-full resize-none rounded border px-3 py-2 text-sm focus:outline-none"
+            className="border-nyx-600 bg-nyx-900 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 w-full resize-none rounded border px-3 py-2 text-body focus:outline-none"
           />
         </div>
 
-        <label className="text-ink-300 flex items-center gap-2 text-sm">
+        <label className="text-nyx-300 flex items-center gap-2 text-body">
           <input
             type="checkbox"
             checked={form.active}
             onChange={(e) => set('active', e.target.checked)}
-            className="border-ink-600 bg-ink-800 accent-copper-500 h-4 w-4 rounded"
+            className="border-nyx-600 bg-nyx-800 accent-eros-500 h-4 w-4 rounded"
           />
           Active (included in AI planning)
         </label>
@@ -216,7 +216,7 @@ function RoutineModal({ initial, onClose, onSave, saving }: RoutineModalProps) {
 
 function FrequencyLabel({ value }: { value: string }) {
   return (
-    <span className="text-copper-400 font-mono text-xs">
+    <span className="text-eros-400 font-mono text-caption">
       {FREQUENCY_OPTIONS.find((o) => o.value === value)?.label ?? value}
     </span>
   );
@@ -224,7 +224,7 @@ function FrequencyLabel({ value }: { value: string }) {
 
 function TimeLabel({ value }: { value: string | null }) {
   return (
-    <span className="text-ink-400 text-xs">
+    <span className="text-nyx-400 text-caption">
       {TIME_OPTIONS.find((o) => o.value === value)?.label ?? value}
     </span>
   );
@@ -261,15 +261,15 @@ export default function RoutinesPage() {
     <div className="mx-auto max-w-2xl px-6 py-5">
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-ink-100 text-2xl">Routines</h1>
-          <p className="text-ink-500 mt-0.5 text-sm">Ordo ab chao</p>
+          <h1 className="font-display text-nyx-100 text-display-lg">Routines</h1>
+          <p className="text-nyx-500 mt-0.5 text-body">Ordo ab chao</p>
         </div>
         <Button onClick={() => setModalOpen(true)}>
           <Plus size={14} /> New routine
         </Button>
       </div>
 
-      {isLoading && <p className="text-ink-600 text-sm">Loading…</p>}
+      {isLoading && <p className="text-nyx-600 text-body">Loading…</p>}
 
       {!isLoading && !routines.length && (
         <EmptyState
@@ -297,7 +297,7 @@ export default function RoutinesPage() {
 
       {Boolean(inactive.length) && (
         <div className="mt-6">
-          <p className="text-ink-600 mb-2 text-xs font-semibold tracking-wide uppercase">
+          <p className="text-nyx-600 mb-2 text-caption font-semibold tracking-wide uppercase">
             Inactive
           </p>
           <div className="space-y-2 opacity-50">
@@ -316,10 +316,10 @@ export default function RoutinesPage() {
         </div>
       )}
 
-      <div className="border-ink-700 bg-ink-800/40 mt-6 rounded-lg border px-4 py-3.5">
-        <p className="text-ink-300 text-sm">
+      <div className="border-nyx-700 bg-nyx-800/40 mt-6 rounded-lg border px-4 py-4">
+        <p className="text-nyx-300 text-body">
           Tell the assistant{' '}
-          <span className="text-copper-400 font-mono">"plan my week"</span> and
+          <span className="text-eros-400 font-mono">"plan my week"</span> and
           it will schedule all active routines around your fixed events.
         </p>
       </div>
@@ -352,20 +352,20 @@ interface RoutineCardProps {
 
 function RoutineCard({ routine, onEdit, onDelete, onToggle }: RoutineCardProps) {
   return (
-    <div className="border-ink-700 bg-ink-800/40 flex items-start gap-3 rounded-lg border px-4 py-3">
+    <div className="border-nyx-700 bg-nyx-800/40 flex items-start gap-3 rounded-lg border px-4 py-3">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-ink-100 font-medium">{routine.name}</span>
+          <span className="text-nyx-100 font-medium">{routine.name}</span>
           <FrequencyLabel value={routine.frequency} />
           <TimeLabel value={routine.preferred_time} />
           {routine.estimate && (
-            <span className="text-ink-500 font-mono text-xs">
+            <span className="text-nyx-500 font-mono text-caption">
               {routine.estimate}min
             </span>
           )}
         </div>
         {routine.constraints && (
-          <p className="text-ink-500 mt-1 text-xs leading-relaxed">
+          <p className="text-nyx-500 mt-1 text-caption leading-relaxed">
             {routine.constraints}
           </p>
         )}
@@ -374,22 +374,22 @@ function RoutineCard({ routine, onEdit, onDelete, onToggle }: RoutineCardProps) 
         <button
           onClick={onToggle}
           title={routine.active ? 'Deactivate' : 'Activate'}
-          className="text-ink-500 hover:bg-ink-700 hover:text-ink-200 flex h-7 w-7 items-center justify-center rounded"
+          className="text-nyx-500 hover:bg-nyx-700 hover:text-nyx-200 flex h-7 w-7 items-center justify-center rounded"
         >
           <CheckCircle
             size={14}
-            className={routine.active ? 'text-sage-500' : ''}
+            className={routine.active ? 'text-gaia-500' : ''}
           />
         </button>
         <button
           onClick={onEdit}
-          className="text-ink-500 hover:bg-ink-700 hover:text-ink-200 flex h-7 w-7 items-center justify-center rounded"
+          className="text-nyx-500 hover:bg-nyx-700 hover:text-nyx-200 flex h-7 w-7 items-center justify-center rounded"
         >
           <Pencil size={14} />
         </button>
         <button
           onClick={onDelete}
-          className="text-ink-500 hover:bg-ink-700 hover:text-rust-500 flex h-7 w-7 items-center justify-center rounded"
+          className="text-nyx-500 hover:bg-nyx-700 hover:text-tartarus-500 flex h-7 w-7 items-center justify-center rounded"
         >
           <Trash2 size={14} />
         </button>

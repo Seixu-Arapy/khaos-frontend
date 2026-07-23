@@ -32,7 +32,7 @@ function Card({ task, projectInfo, onOpen }: CardProps) {
       {...listeners}
       {...attributes}
       onClick={() => !isDragging && onOpen(task)}
-      className="border-ink-700 bg-ink-800 text-ink-100 shadow-card cursor-grab rounded-md border p-2.5 text-sm active:cursor-grabbing"
+      className="border-nyx-700 bg-nyx-800 text-nyx-100 shadow-card cursor-grab rounded-md border p-2 text-body active:cursor-grabbing"
     >
       <p className="mb-1.5 leading-snug">{task.name}</p>
       <div className="flex items-center justify-between gap-2">
@@ -62,16 +62,16 @@ function Column({ priority, tasks, projectInfoById, onOpen }: ColumnProps) {
   return (
     <div
       ref={setNodeRef}
-      className={`flex w-64 shrink-0 flex-col rounded-lg border ${isOver ? 'border-copper-400' : 'border-ink-700'} bg-ink-900`}
+      className={`flex w-64 shrink-0 flex-col rounded-lg border ${isOver ? 'border-eros-400' : 'border-nyx-700'} bg-nyx-900`}
     >
-      <div className="border-ink-700 flex items-center gap-1.5 border-b px-3 py-2">
+      <div className="border-nyx-700 flex items-center gap-1.5 border-b px-3 py-2">
         <span
-          className="text-xs font-semibold tracking-wide uppercase"
+          className="text-caption font-semibold tracking-wide uppercase"
           style={{ color: meta.iconColor }}
         >
           {meta.label}
         </span>
-        <span className="text-ink-600 ml-auto text-xs">{tasks.length}</span>
+        <span className="text-nyx-600 ml-auto text-caption">{tasks.length}</span>
       </div>
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-2">
         {tasks.map((task) => (

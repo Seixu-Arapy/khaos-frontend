@@ -87,10 +87,10 @@ export const FIELDS_CONFIG: Record<string, FieldMeta> = {
     icon: GraduationCap,
     color: 'teal',
     classes: {
-      border: 'border-teal-500/20',
-      bg: 'bg-teal-500/10',
-      text: 'text-teal-400',
-      muted: 'text-teal-400/60',
+      border: 'border-pontus-500/20',
+      bg: 'bg-pontus-500/10',
+      text: 'text-pontus-400',
+      muted: 'text-pontus-400/60',
     },
   },
   Imagem: {
@@ -141,10 +141,10 @@ export const DEFAULT_FIELD_META: FieldMeta = {
   icon: Folder,
   color: 'ink',
   classes: {
-    border: 'border-ink-600/40',
-    bg: 'bg-ink-700/40',
-    text: 'text-ink-300',
-    muted: 'text-ink-400/60',
+    border: 'border-nyx-600/40',
+    bg: 'bg-nyx-700/40',
+    text: 'text-nyx-300',
+    muted: 'text-nyx-400/60',
   },
 };
 

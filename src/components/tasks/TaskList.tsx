@@ -52,28 +52,28 @@ export default function TaskList({
   }
 
   return (
-    <div className="border-ink-700 overflow-hidden rounded-lg border">
-      <div className="border-ink-700 bg-ink-800 text-ink-500 flex items-center gap-2 border-b px-3 py-2 text-xs">
+    <div className="border-nyx-700 overflow-hidden rounded-lg border">
+      <div className="border-nyx-700 bg-nyx-800 text-nyx-500 flex items-center gap-2 border-b px-3 py-2 text-caption">
         <button
           onClick={() => setSortKey('due')}
-          className="hover:text-ink-200 flex items-center gap-1"
+          className="hover:text-nyx-200 flex items-center gap-1"
         >
           Sort by due <ArrowUpDown size={11} />
         </button>
         <button
           onClick={() => setSortKey('priority')}
-          className="hover:text-ink-200 flex items-center gap-1"
+          className="hover:text-nyx-200 flex items-center gap-1"
         >
           Priority <ArrowUpDown size={11} />
         </button>
         <button
           onClick={() => setSortKey('name')}
-          className="hover:text-ink-200 flex items-center gap-1"
+          className="hover:text-nyx-200 flex items-center gap-1"
         >
           Name <ArrowUpDown size={11} />
         </button>
       </div>
-      <div className="divide-ink-700 divide-y p-1">
+      <div className="divide-nyx-700 divide-y p-1">
         {sorted.map((task) => {
           const info = projectInfoById.get(task.id);
           return (

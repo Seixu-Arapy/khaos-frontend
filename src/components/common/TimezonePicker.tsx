@@ -48,12 +48,12 @@ export default function TimezonePicker() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="border-ink-700 text-ink-400 hover:border-ink-500 hover:text-ink-200 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors"
+        className="border-nyx-700 text-nyx-400 hover:border-nyx-500 hover:text-nyx-200 flex items-center gap-1.5 rounded-full border px-2 py-1 text-caption transition-colors"
         title="Change timezone"
       >
         <Globe size={12} />
         <span className="hidden sm:inline">{cityLabel}</span>
-        <span className="text-ink-600">{offsetLabel}</span>
+        <span className="text-nyx-600">{offsetLabel}</span>
       </button>
 
       <Modal
@@ -80,36 +80,36 @@ export default function TimezonePicker() {
           </>
         }
       >
-        <p className="text-ink-400 mb-3 text-sm">
+        <p className="text-nyx-400 mb-3 text-body">
           All dates and times will be shown in this timezone.{' '}
-          <span className="text-ink-200">{current}</span>
+          <span className="text-nyx-200">{current}</span>
         </p>
         <input
           autoFocus
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search timezones…"
-          className="border-ink-600 bg-ink-900 text-ink-100 placeholder:text-ink-500 focus:border-copper-400 mb-2 w-full rounded border px-3 py-2 text-sm focus:outline-hidden"
+          className="border-nyx-600 bg-nyx-900 text-nyx-100 placeholder:text-nyx-500 focus:border-eros-400 mb-2 w-full rounded border px-3 py-2 text-body focus:outline-hidden"
         />
-        <div className="border-ink-700 max-h-72 overflow-y-auto rounded border">
+        <div className="border-nyx-700 max-h-72 overflow-y-auto rounded border">
           {filtered.map((tz) => (
             <button
               key={tz}
               onClick={() => setSelected(tz)}
-              className={`hover:bg-ink-700 flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors ${
+              className={`hover:bg-nyx-700 flex w-full items-center justify-between px-3 py-2 text-left text-body transition-colors ${
                 selected === tz
-                  ? 'bg-copper-500/10 text-copper-400'
-                  : 'text-ink-200'
+                  ? 'bg-eros-500/10 text-eros-400'
+                  : 'text-nyx-200'
               }`}
             >
               <span>{tz.replace(/_/g, ' ')}</span>
               {selected === tz && (
-                <span className="text-copper-500 text-xs">✓</span>
+                <span className="text-eros-500 text-caption">✓</span>
               )}
             </button>
           ))}
           {!filtered.length && (
-            <p className="text-ink-600 px-3 py-4 text-sm">No results</p>
+            <p className="text-nyx-600 px-3 py-4 text-body">No results</p>
           )}
         </div>
       </Modal>
