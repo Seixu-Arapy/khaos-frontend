@@ -493,7 +493,13 @@ export default function SigilsPage() {
               </Swatch>
               <Swatch label="scheduled">
                 <div className="w-72">
-                  <InlineEventPreview event={SAMPLE_EVENT_SCHEDULED} taskName="Redesign the empty states" projectName="Roadmap Q3" projectField="Design" />
+                  <InlineEventPreview
+                    event={SAMPLE_EVENT_SCHEDULED}
+                    taskName="Redesign the empty states"
+                    projectName="Roadmap Q3"
+                    projectField="Design"
+                    progress={{ loggedMinutes: 90, estimateMinutes: 120, pct: 75, level: 'ok' }}
+                  />
                 </div>
               </Swatch>
               <Swatch label="routine">
