@@ -15,6 +15,7 @@ import {
 } from '../../components/common/ui';
 import { ChangeBadge } from '../../components/assistant/ChangeBadge';
 import ProjectRow from '../../components/projects/ProjectRow';
+import SectionChip from '../../components/projects/SectionChip';
 import { STATUSES, PRIORITIES } from '../../lib/constants';
 import { FIELDS_CONFIG, FIELD_EMOJI } from '../../lib/fieldsConfig';
 import type { Status, Priority, Project } from '../../lib/types';
@@ -84,8 +85,15 @@ export default function SigilsPage() {
         </p>
 
         <Section title="Entities with a chip or badge">
-          <Swatch label="project — chip">
+          <Swatch label="project — chip + row">
             <ProjectChip name="Roadmap Q3" fieldName={sampleField} />
+          </Swatch>
+          <Swatch label="section — breadcrumb chip">
+            <SectionChip
+              name="Design Review"
+              projectName="Roadmap Q3"
+              projectField={sampleField}
+            />
           </Swatch>
           <Swatch label="tag (work_tags) — chip">
             <Tag onRemove={() => {}}>design</Tag>
@@ -106,11 +114,6 @@ export default function SigilsPage() {
           <Swatch label="task">
             <span className="text-nyx-600 border-nyx-700 rounded border border-dashed px-2 py-1 text-caption italic">
               full row only (TaskRow) / rich card in chat
-            </span>
-          </Swatch>
-          <Swatch label="section">
-            <span className="text-nyx-600 border-nyx-700 rounded border border-dashed px-2 py-1 text-caption italic">
-              header row only (SectionColumn)
             </span>
           </Swatch>
           <Swatch label="event">
@@ -204,15 +207,33 @@ export default function SigilsPage() {
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Project</dt>
-            <dd className="text-nyx-400">
+            <dd className="text-nyx-400 mb-3">
               The container tasks belong to — the level users actually
-              organize around. <code className="text-eros-400">ProjectChip</code>{' '}
-              keeps the project&rsquo;s own name in plain Nyx-grey and lets
-              only its <code className="text-eros-400">FieldBadge</code>{' '}
-              icon carry color — <b className="text-nyx-200">confirmed
-              deliberate:</b> a project is always colored by its field,
-              never its own separate color.
+              organize around. Both marks below put the icon on the left,
+              and keep the project&rsquo;s own name in plain Nyx-grey —{' '}
+              <b className="text-nyx-200">confirmed deliberate:</b> a
+              project is always colored by its field, never its own
+              separate color. The row also carries the field color as a
+              left-edge accent, so it reads as the same entity as the
+              chip at a glance even without the icon.
             </dd>
+            <Section title="Project chip">
+              <Swatch label="icon + name">
+                <ProjectChip name="Roadmap Q3" fieldName="Design" />
+              </Swatch>
+            </Section>
+            <Section title="Project row">
+              <Swatch label="icon + status + name + priority/target/due + counts">
+                <div className="w-[560px]">
+                  <ProjectRow
+                    project={SAMPLE_PROJECT}
+                    fieldName="Design"
+                    sectionCount={3}
+                    taskCount={12}
+                  />
+                </div>
+              </Swatch>
+            </Section>
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Tag (work_tags)</dt>
@@ -236,13 +257,25 @@ export default function SigilsPage() {
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Section</dt>
-            <dd className="text-nyx-400">
+            <dd className="text-nyx-400 mb-3">
               A named grouping of tasks inside one project (kanban-column
               shaped). Recently redesigned with collapse/expand and
-              up/down reordering. <em>Question:</em> does it need a
-              standalone mark outside its own column context, or is it
-              only ever meaningful in place?
+              up/down reordering. Simpler than Project&rsquo;s chip/row
+              pair — a section is never read on its own, always alongside
+              its project, so one breadcrumb-shaped mark covers it: the
+              section&rsquo;s own icon and name, then its parent project
+              (the same <code className="text-eros-400">ProjectChip</code>{' '}
+              from above).
             </dd>
+            <Section title="Section chip">
+              <Swatch label="icon + name > project">
+                <SectionChip
+                  name="Design Review"
+                  projectName="Roadmap Q3"
+                  projectField="Design"
+                />
+              </Swatch>
+            </Section>
           </div>
           <div>
             <dt className="text-nyx-200 font-semibold">Event</dt>
@@ -429,24 +462,6 @@ export default function SigilsPage() {
           header row and Routine&rsquo;s list row are their own expanded
           chips too, same reasoning as the task row.
         </p>
-
-        <p className="text-nyx-200 mb-3 mt-8 text-caption font-semibold tracking-wide uppercase">
-          Project: chip and row
-        </p>
-        <Section title="Project chip">
-          <Swatch label="icon + name">
-            <ProjectChip name="Roadmap Q3" fieldName="Design" />
-          </Swatch>
-        </Section>
-        <Section title="Project row">
-          <Swatch label="status + name + priority/target/due + counts">
-            <ProjectRow
-              project={SAMPLE_PROJECT}
-              sectionCount={3}
-              taskCount={12}
-            />
-          </Swatch>
-        </Section>
       </div>
     </Chamber>
   );

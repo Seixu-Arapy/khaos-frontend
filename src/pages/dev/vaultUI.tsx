@@ -43,12 +43,13 @@ export function MuseumFrame({
           to="/dev/vortex"
           className="text-nyx-700 hover:text-nyx-300 flex items-center gap-2 font-mono text-[10px] tracking-[0.35em] uppercase transition-colors duration-300"
         >
+          {/* Gave up chasing the spin here -- swapped to Tailwind's
+              built-in animate-ping instead of the custom rotation. */}
           <KhaosIcon
             size="h-7 w-7"
             fontSize="text-2xl"
             color="text-nyx-400"
-            spin
-            className="animate-pulse"
+            className="animate-ping"
           />
           khaos vortex
         </Link>
