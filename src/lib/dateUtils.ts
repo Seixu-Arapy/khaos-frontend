@@ -41,6 +41,7 @@ export function formatDueCompact(
   if (!dateInput) return null;
   const tz = getTimezone();
   const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return null;
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
     day: '2-digit',

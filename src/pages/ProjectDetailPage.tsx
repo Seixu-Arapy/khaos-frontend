@@ -1,12 +1,24 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Plus, Trash2, ExternalLink, FolderKanban } from 'lucide-react';
 import {
+  Plus,
+  Trash2,
+  ExternalLink,
+  FolderKanban,
+  CornerUpLeft,
+  CornerDownRight,
+} from 'lucide-react';
+import {
+  closestCenter,
   DndContext,
+  DragOverlay,
   PointerSensor,
+  pointerWithin,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -17,6 +29,7 @@ import {
   useProjects,
   useSections,
   useTasks,
+  useTasksSequence,
   useSectionsSequence,
   useOrderedSectionIds,
   useProjectMutations,
@@ -28,13 +41,22 @@ import { Select, TextInput, EmptyState } from '../components/common/ui';
 import SectionColumn, {
   SortableSectionWrapper,
 } from '../components/projects/SectionColumn';
+import type {
+  LinkDir,
+  LinkDragData,
+  LinkingState,
+} from '../components/projects/sequenceLinking';
+import { useSequenceMutations } from '../hooks/useSequence';
+import { topoChronoOrder, wouldCreateCycle } from '../lib/sequenceGraph';
 import TaskDetailModal from '../components/tasks/TaskDetailModal';
 import TargetEditor from '../components/common/TargetEditor';
 import { useSyncActiveEntity } from '../lib/activeEntityContext';
 import type { Id, Priority, Section, Status, Task } from '../lib/types';
 
-// Ordem cronológica dentro de uma seção: target.start primeiro, senão due,
-// senão vai para o final (precisa "se encaixar" — mesmo critério do Gantt).
+// Critério cronológico dentro de uma seção: target.start primeiro, senão
+// due, senão vai para o final. É o desempate da ordem topológica — a
+// sequência (tasks_sequence) manda primeiro, datas decidem entre tarefas
+// disponíveis ao mesmo tempo (ver topoChronoOrder).
 function taskChronoKey(task: Task): number {
   const { start } = parseRange(task.target);
   if (start) return start.getTime();
@@ -48,6 +70,12 @@ interface SectionBlockProps {
   tasks: Task[];
   onOpenTask: (task: Task) => void;
   dragHandleProps?: React.HTMLAttributes<HTMLSpanElement>;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  linking: LinkingState | null;
+  onToggleLink: (taskId: Id, dir: LinkDir) => void;
 }
 
 function SectionBlock({
@@ -56,12 +84,18 @@ function SectionBlock({
   tasks,
   onOpenTask,
   dragHandleProps,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
+  linking,
+  onToggleLink,
 }: SectionBlockProps) {
+  const { data: seqEdges = [] } = useTasksSequence();
   const orderedTasks = useMemo(() => {
-    return tasks
-      .filter((t) => t.section_id === sectionId)
-      .sort((a, b) => taskChronoKey(a) - taskChronoKey(b));
-  }, [tasks, sectionId]);
+    const sectionTasks = tasks.filter((t) => t.section_id === sectionId);
+    return topoChronoOrder(sectionTasks, seqEdges, taskChronoKey);
+  }, [tasks, sectionId, seqEdges]);
 
   return (
     <SectionColumn
@@ -69,9 +103,31 @@ function SectionBlock({
       orderedTasks={orderedTasks}
       onOpenTask={onOpenTask}
       dragHandleProps={dragHandleProps}
+      onMoveUp={onMoveUp}
+      onMoveDown={onMoveDown}
+      canMoveUp={canMoveUp}
+      canMoveDown={canMoveDown}
+      linking={linking}
+      onToggleLink={onToggleLink}
     />
   );
 }
+
+// Um único DndContext cobre dois tipos de arrasto: reordenar seções
+// (sortable) e ligar tarefas em sequência (alças prev/next). A colisão
+// filtra os droppables pelo tipo do arrasto ativo para um não interferir
+// no outro.
+const collisionDetection: CollisionDetection = (args) => {
+  const isLink =
+    (args.active.data.current as LinkDragData | undefined)?.type === 'link';
+  const droppableContainers = args.droppableContainers.filter((c) =>
+    isLink ? c.data.current?.type === 'task' : c.data.current?.type !== 'task'
+  );
+  return (isLink ? pointerWithin : closestCenter)({
+    ...args,
+    droppableContainers,
+  });
+};
 
 export default function ProjectDetailPage() {
   const { id: projectId } = useParams();
@@ -91,6 +147,32 @@ export default function ProjectDetailPage() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
   );
+
+  const { data: seqEdges = [] } = useTasksSequence();
+  const sequenceMutations = useSequenceMutations();
+  // Modo "tocar-tocar": armado pela alça prev/next; o próximo toque numa
+  // tarefa cria a ligação (em vez de abrir o modal).
+  const [linking, setLinking] = useState<LinkingState | null>(null);
+  // Alça sendo arrastada agora — usado só para o DragOverlay.
+  const [activeLinkDrag, setActiveLinkDrag] = useState<LinkingState | null>(
+    null
+  );
+  const [linkNotice, setLinkNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!linkNotice) return;
+    const t = setTimeout(() => setLinkNotice(null), 3500);
+    return () => clearTimeout(t);
+  }, [linkNotice]);
+
+  useEffect(() => {
+    if (!linking) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLinking(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [linking]);
 
   const project = projects.find((p) => p.id === projectId);
   useSyncActiveEntity('project', project?.id, project?.name);
@@ -129,6 +211,65 @@ export default function ProjectDetailPage() {
     });
   }
 
+  // targetId vira previous/next de sourceId conforme a alça arrastada.
+  function createLink(sourceId: Id, dir: LinkDir, targetId: Id) {
+    const previousId = dir === 'prev' ? targetId : sourceId;
+    const nextId = dir === 'prev' ? sourceId : targetId;
+    if (
+      seqEdges.some(
+        (edge) =>
+          edge.task_previous === previousId && edge.task_next === nextId
+      )
+    ) {
+      setLinkNotice('Essas tarefas já estão ligadas nessa ordem.');
+      return;
+    }
+    if (wouldCreateCycle(seqEdges, previousId, nextId)) {
+      setLinkNotice('Isso criaria uma sequência circular.');
+      return;
+    }
+    sequenceMutations.add.mutate({ previousId, nextId });
+  }
+
+  function toggleLink(taskId: Id, dir: LinkDir) {
+    setLinking((current) =>
+      current && current.taskId === taskId && current.dir === dir
+        ? null
+        : { taskId, dir }
+    );
+  }
+
+  function handleDragStart(e: DragStartEvent) {
+    const data = e.active.data.current as LinkDragData | undefined;
+    if (data?.type === 'link') {
+      setLinking(null);
+      setActiveLinkDrag({ taskId: data.taskId, dir: data.dir });
+    }
+  }
+
+  function handleDragEnd(e: DragEndEvent) {
+    const data = e.active.data.current as LinkDragData | undefined;
+    if (data?.type === 'link') {
+      setActiveLinkDrag(null);
+      const targetId = e.over?.data.current?.taskId as Id | undefined;
+      if (targetId && targetId !== data.taskId) {
+        createLink(data.taskId, data.dir, targetId);
+      }
+      return;
+    }
+    handleSectionDragEnd(e);
+  }
+
+  // Drag-and-drop is fiddly on touch — plain up/down moves cover the same
+  // sections_sequence linked-list reorder without needing a precise drag.
+  function moveSectionBy(index: number, delta: number) {
+    const newIndex = index + delta;
+    if (newIndex < 0 || newIndex >= orderedSectionIds.length) return;
+    reorderSections.mutate({
+      orderedIds: arrayMove(orderedSectionIds, index, newIndex),
+    });
+  }
+
   function addSection(e: React.FormEvent) {
     e.preventDefault();
     if (!newSectionName.trim()) return;
@@ -141,6 +282,13 @@ export default function ProjectDetailPage() {
   }
 
   function openTask_(task: Task) {
+    if (linking) {
+      if (task.id !== linking.taskId) {
+        createLink(linking.taskId, linking.dir, task.id);
+      }
+      setLinking(null);
+      return;
+    }
     setSearchParams({ taskId: String(task.id) });
   }
   function closeTask() {
@@ -246,13 +394,19 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      <DndContext sensors={sensors} onDragEnd={handleSectionDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={collisionDetection}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveLinkDrag(null)}
+      >
         <SortableContext
           items={orderedSectionIds}
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-3">
-            {orderedSectionIds.map((sectionId) => {
+            {orderedSectionIds.map((sectionId, index) => {
               const section = sectionsById.get(sectionId);
               if (!section) return null;
               return (
@@ -264,6 +418,12 @@ export default function ProjectDetailPage() {
                       tasks={tasks}
                       onOpenTask={openTask_}
                       dragHandleProps={dragHandleProps}
+                      onMoveUp={() => moveSectionBy(index, -1)}
+                      onMoveDown={() => moveSectionBy(index, 1)}
+                      canMoveUp={index > 0}
+                      canMoveDown={index < orderedSectionIds.length - 1}
+                      linking={linking}
+                      onToggleLink={toggleLink}
                     />
                   )}
                 </SortableSectionWrapper>
@@ -271,6 +431,21 @@ export default function ProjectDetailPage() {
             })}
           </div>
         </SortableContext>
+
+        <DragOverlay dropAnimation={null}>
+          {activeLinkDrag && (
+            <span className="border-ink-600 bg-ink-800 text-ink-200 shadow-panel flex w-max items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
+              {activeLinkDrag.dir === 'prev' ? (
+                <CornerUpLeft size={12} className="text-teal-400" />
+              ) : (
+                <CornerDownRight size={12} className="text-teal-400" />
+              )}
+              {activeLinkDrag.dir === 'prev'
+                ? 'Solte na tarefa que vem antes'
+                : 'Solte na tarefa que vem depois'}
+            </span>
+          )}
+        </DragOverlay>
       </DndContext>
 
       {!orderedSectionIds.length && (
@@ -293,6 +468,38 @@ export default function ProjectDetailPage() {
           className="text-nyx-300 placeholder:text-nyx-600 flex-1 bg-transparent text-body focus:outline-none"
         />
       </form>
+
+      {(linking || linkNotice) && (
+        <div className="fixed bottom-4 left-1/2 z-20 -translate-x-1/2 px-4">
+          <div className="border-ink-600 bg-ink-800 shadow-panel flex items-center gap-2.5 rounded-full border px-3.5 py-2 text-xs">
+            {linkNotice ? (
+              <span className="text-rust-500">{linkNotice}</span>
+            ) : (
+              <>
+                {linking!.dir === 'prev' ? (
+                  <CornerUpLeft size={12} className="shrink-0 text-teal-400" />
+                ) : (
+                  <CornerDownRight
+                    size={12}
+                    className="shrink-0 text-teal-400"
+                  />
+                )}
+                <span className="text-ink-200">
+                  Toque na tarefa que vem{' '}
+                  {linking!.dir === 'prev' ? 'antes' : 'depois'} de “
+                  {tasks.find((t) => t.id === linking!.taskId)?.name}”
+                </span>
+                <button
+                  onClick={() => setLinking(null)}
+                  className="text-ink-500 hover:text-ink-200 shrink-0"
+                >
+                  cancelar
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {openTask && (
         <TaskDetailModal

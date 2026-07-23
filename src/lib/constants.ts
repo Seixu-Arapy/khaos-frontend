@@ -15,7 +15,7 @@ export const STATUSES: Status[] = [
 ];
 
 // public.priority
-export const PRIORITIES: Priority[] = ['urgent', 'high', 'medium', 'low'];
+export const PRIORITIES: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
 // public.event_types
 export const EVENT_TYPES: EventType[] = ['scheduled', 'fixed', 'routine'];

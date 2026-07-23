@@ -23,15 +23,13 @@ import {
   Target,
   Flag,
   DraftingCompass,
+  Plus,
+  Clock,
+  CalendarClock,
   type LucideIcon,
 } from 'lucide-react';
 import clsx from 'clsx';
-import {
-  STATUS_META,
-  PRIORITY_META,
-  STATUSES,
-  PRIORITIES,
-} from '../../lib/constants';
+import { STATUS_META, PRIORITY_META, PRIORITIES } from '../../lib/constants';
 import { formatDueCompact, isOverdue, minutesToHuman } from '../../lib/dateUtils';
 import { parseRange } from '../../lib/range';
 import { getFieldMeta } from '../../lib/fieldsConfig';
@@ -138,6 +136,15 @@ interface StatusPickerProps {
   onChange: (status: Status) => void;
 }
 
+// Two fixed rows instead of natural width-based wrapping: line 1 is the
+// active flow (planning through done), line 2 is everything "stopped"
+// (in review, paused, cancelled, waiting) — a stable grouping regardless
+// of container width, not just wherever wrapping happens to land.
+const STATUS_ROWS: Status[][] = [
+  ['planning', 'todo', 'in_progress', 'done'],
+  ['in_review', 'paused', 'cancelled', 'waiting'],
+];
+
 // Radio-style status selector, styled straight off StatusBadge — same
 // icon-in-circle + acronym, same circleBg. No visible "Status" caption above
 // it; the icon + acronym already reads as the label everywhere else in the
@@ -146,40 +153,44 @@ interface StatusPickerProps {
 export function StatusPicker({ value, onChange }: StatusPickerProps) {
   return (
     <div
-      className="flex flex-wrap gap-1"
+      className="flex flex-col gap-1"
       role="radiogroup"
       aria-label="Status"
     >
-      {STATUSES.map((s) => {
-        const meta = STATUS_META[s];
-        const active = s === value;
-        return (
-          <button
-            key={s}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            title={meta.label}
-            onClick={() => onChange(s)}
-            style={{
-              backgroundColor: meta.circleBg,
-              boxShadow: active ? `0 0 0 1.5px ${meta.iconColor}` : 'none',
-            }}
-            className={clsx(
-              'inline-flex items-center gap-1 rounded-full py-0.5 pr-2 pl-0.5 transition-all',
-              active ? 'opacity-100' : 'opacity-45 hover:opacity-75'
-            )}
-          >
-            <StatusIcon status={s} size={18} />
-            <span
-              className="font-mono text-label font-semibold tracking-wider uppercase"
-              style={{ color: meta.iconColor }}
-            >
-              {meta.acronym}
-            </span>
-          </button>
-        );
-      })}
+      {STATUS_ROWS.map((row, i) => (
+        <div key={i} className="flex flex-wrap gap-1">
+          {row.map((s) => {
+            const meta = STATUS_META[s];
+            const active = s === value;
+            return (
+              <button
+                key={s}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                title={meta.label}
+                onClick={() => onChange(s)}
+                style={{
+                  backgroundColor: meta.circleBg,
+                  boxShadow: active ? `0 0 0 1.5px ${meta.iconColor}` : 'none',
+                }}
+                className={clsx(
+                  'inline-flex items-center gap-1 rounded-full py-0.5 pr-2 pl-0.5 transition-all',
+                  active ? 'opacity-100' : 'opacity-45 hover:opacity-75'
+                )}
+              >
+                <StatusIcon status={s} size={18} />
+                <span
+                  className="font-mono text-label font-semibold tracking-wider uppercase"
+                  style={{ color: meta.iconColor }}
+                >
+                  {meta.acronym}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }
@@ -228,6 +239,39 @@ export function PriorityPicker({ value, onChange }: PriorityPickerProps) {
   );
 }
 
+interface IconAddButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  label: string;
+  icon?: ReactNode;
+}
+
+// Small square plus-sign button, filled violet with a dark icon — same
+// color language as the checked time-toggle switches. The one "add this
+// thing" affordance shared by Sequence's Previous/Next columns and Tags,
+// so every add trigger next to a section label reads the same way. Also
+// reused for "clear this field" (pass icon={<X .../>}) so both actions
+// share one visual language next to a field label.
+export function IconAddButton({
+  className,
+  label,
+  icon,
+  ...props
+}: IconAddButtonProps) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      className={clsx(
+        'bg-violet-400 text-ink-900 hover:bg-violet-300 active:bg-violet-500 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded transition-colors',
+        className
+      )}
+      {...props}
+    >
+      {icon ?? <Plus size={10} />}
+    </button>
+  );
+}
+
 interface TagProps {
   children: ReactNode;
   onRemove?: () => void;
@@ -247,6 +291,62 @@ export function Tag({ children, onRemove }: TagProps) {
         </button>
       )}
     </span>
+  );
+}
+
+interface TagSuggestionProps {
+  children: ReactNode;
+  onClick: () => void;
+}
+
+// Dashed outline, muted — visually distinct from an applied Tag pill so a
+// suggestion never looks like it's already attached. Always rendered next
+// to the current tags (not hidden behind opening a picker) — one click to
+// add.
+export function TagSuggestion({ children, onClick }: TagSuggestionProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="border-ink-600 text-ink-500 hover:border-ink-500 hover:text-ink-300 inline-flex items-center gap-0.5 rounded-full border border-dashed px-2 py-0.5 text-xs"
+    >
+      <Plus size={10} />
+      {children}
+    </button>
+  );
+}
+
+interface TimeToggleProps {
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+  className?: string;
+}
+
+// Small "add/remove time" button, shared by every field that lets a date
+// grow an optional time-of-day (Due, Target's start/end).
+export function TimeToggle({
+  active,
+  disabled,
+  onClick,
+  className,
+}: TimeToggleProps) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      title={active ? 'Remove time' : 'Add time'}
+      className={clsx(
+        'flex shrink-0 items-center gap-0.5 rounded border px-1 text-[10px] transition-colors',
+        active
+          ? 'border-copper-500 text-copper-400 bg-copper-500/10'
+          : 'border-ink-700 text-ink-500 hover:text-ink-300',
+        className
+      )}
+    >
+      <Clock size={10} />
+    </button>
   );
 }
 
@@ -487,6 +587,21 @@ export function TargetBadge({ target }: TargetBadgeProps) {
           {endParts.month}
         </span>
       )}
+    </span>
+  );
+}
+
+// Indicates the task already has a future 'scheduled' event tied to it —
+// prevents scheduling it twice. Plain icon, no text, same chrome-less
+// convention as DueBadge so it doesn't compete visually with the pill badges.
+export function ScheduledBadge({ scheduled }: { scheduled?: boolean }) {
+  if (!scheduled) return null;
+  return (
+    <span
+      title="Já agendada"
+      className="text-sage-500 inline-flex shrink-0 items-center"
+    >
+      <CalendarClock size={12} />
     </span>
   );
 }

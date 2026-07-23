@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Clock, X } from 'lucide-react';
-import { TextInput } from './ui';
-import { parseRange, formatRange } from '../../lib/range';
+import { Plus, Target, X } from 'lucide-react';
+import clsx from 'clsx';
+import { TextInput, TimeToggle } from './ui';
+import { parseRange, formatRange, endOfLocalDay } from '../../lib/range';
 
 interface TargetEditorProps {
   value?: string | null;
   due?: string | null;
   onChange: (next: string | null) => void;
   disabled?: boolean;
+  // Suppresses the pill's own clear (X) button — used when the host
+  // renders a clear action next to the field's label instead (Task Detail
+  // Modal). Other callers (Section/Project) keep the pill's own button
+  // since they don't have a label row to put it in.
+  hideClear?: boolean;
 }
 
 function validate(start: Date | null, end: Date | null, due?: string | null) {
@@ -15,7 +21,15 @@ function validate(start: Date | null, end: Date | null, due?: string | null) {
   if (due) {
     const dueDate = new Date(due);
     if (start >= dueDate) return 'Start must be before the due date.';
-    if (end && end > dueDate) return 'End must be on or before the due date.';
+    // Compare the effective end target: an untimed end date lands at the end
+    // of its day (23:59), not midnight, so that's what must fit before the due.
+    if (end) {
+      const endTarget =
+        end.getHours() === 0 && end.getMinutes() === 0
+          ? endOfLocalDay(end)
+          : end;
+      if (endTarget > dueDate) return 'End must be on or before the due date.';
+    }
   }
   return null;
 }
@@ -61,6 +75,7 @@ export default function TargetEditor({
   due,
   onChange,
   disabled,
+  hideClear,
 }: TargetEditorProps) {
   const { start, end } = parseRange(value ?? null);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +89,7 @@ export default function TargetEditor({
 
   useEffect(() => {
     setForceShowEnd(false);
+    setError(null);
   }, [value]);
 
   const showEndInput = Boolean(end) || forceShowEnd;
@@ -108,21 +124,26 @@ export default function TargetEditor({
     onChange(formatRange(nextStart, nextEnd || null));
   }
 
-  function handleNoEndToggle(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.checked) {
-      setForceShowEnd(false);
-      const nextStart = buildLocalDate(
-        startValues.date,
-        startValues.time,
-        showStartTime
-      );
-      const problem = validate(nextStart, null, due);
-      setError(problem);
-      if (problem) return;
-      onChange(formatRange(nextStart, null));
-    } else {
-      setForceShowEnd(true);
-    }
+  // Reveals the end-date field so the target can span more than its start day.
+  // The end target itself is only committed once the user picks an end date;
+  // until then the target stays a single day.
+  function handleAddEnd() {
+    setForceShowEnd(true);
+  }
+
+  // Drops the end date, turning the target back into a single day (whose end
+  // target is 23:59 of that day).
+  function handleRemoveEnd() {
+    setForceShowEnd(false);
+    const nextStart = buildLocalDate(
+      startValues.date,
+      startValues.time,
+      showStartTime
+    );
+    const problem = validate(nextStart, null, due);
+    setError(problem);
+    if (problem) return;
+    onChange(formatRange(nextStart, null));
   }
 
   function handleClear() {
@@ -132,88 +153,96 @@ export default function TargetEditor({
   }
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-3">
-        {/* Start Bound Input */}
-        <div>
-          <div className="mb-1 flex items-center justify-between">
-            <span className="text-nyx-500 text-[11px] font-medium tracking-wider uppercase">
-              Start Date
-            </span>
-            {startValues.date && (
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={() => {
-                  const nextState = !showStartTime;
-                  setShowStartTime(nextState);
-                  commitRange(
-                    startValues.date,
-                    nextState ? startValues.time || '09:00' : '00:00',
-                    nextState,
-                    endValues.date,
-                    endValues.time,
-                    showEndTime
-                  );
-                }}
-                className={`flex items-center gap-0.5 rounded border px-1 text-label transition-colors ${
-                  showStartTime
-                    ? 'border-eros-500 text-eros-400 bg-eros-500/10'
-                    : 'border-nyx-700 text-nyx-500 hover:text-nyx-300'
-                }`}
-              >
-                <Clock size={10} /> {showStartTime ? 'Remove time' : 'Add time'}
-              </button>
-            )}
-          </div>
-          <div className="flex gap-1">
+    <div className="space-y-1.5">
+      {/* one bordered pill, matching TargetBadge exactly — icon on the
+          left, dates auto-sized (not stretched full width), no "Start
+          Date"/"End Date" labels. Below 350px it switches to a 2-column
+          grid: the icon spans both stacked lines, the arrow sits centered
+          and rotated between them (see max-[350px]: variants below). */}
+      <div
+        className={clsx(
+          'border-nyx-600 text-nyx-400 flex w-fit flex-wrap items-center gap-1.5 rounded-full border py-1 pr-2 pl-3 font-mono text-caption',
+          'max-[350px]:grid max-[350px]:grid-cols-[auto_1fr] max-[350px]:items-center max-[350px]:gap-x-2 max-[350px]:gap-y-1 max-[350px]:rounded-2xl max-[350px]:px-3.5 max-[350px]:py-2.5'
+        )}
+      >
+        <Target
+          size={13}
+          className="shrink-0 max-[350px]:col-start-1 max-[350px]:row-span-3 max-[350px]:self-center"
+        />
+
+        <span className="inline-flex shrink-0 items-center gap-1 max-[350px]:col-start-2 max-[350px]:row-start-1">
+          <TimeToggle
+            active={showStartTime}
+            disabled={disabled}
+            onClick={() => {
+              const nextState = !showStartTime;
+              setShowStartTime(nextState);
+              commitRange(
+                startValues.date,
+                nextState ? startValues.time || '09:00' : '00:00',
+                nextState,
+                endValues.date,
+                endValues.time,
+                showEndTime
+              );
+            }}
+          />
+          <TextInput
+            type="date"
+            value={startValues.date}
+            disabled={disabled}
+            onChange={(e) => {
+              commitRange(
+                e.target.value,
+                startValues.time,
+                showStartTime,
+                endValues.date,
+                endValues.time,
+                showEndTime
+              );
+            }}
+            className="text-nyx-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
+          />
+          {showStartTime && startValues.date && (
             <TextInput
-              type="date"
-              value={startValues.date}
+              type="time"
+              value={startValues.time || '09:00'}
               disabled={disabled}
               onChange={(e) => {
                 commitRange(
+                  startValues.date,
                   e.target.value,
-                  startValues.time,
-                  showStartTime,
+                  true,
                   endValues.date,
                   endValues.time,
                   showEndTime
                 );
               }}
-              className="w-full"
+              className="text-nyx-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
             />
-            {showStartTime && startValues.date && (
-              <TextInput
-                type="time"
-                value={startValues.time || '09:00'}
-                disabled={disabled}
-                onChange={(e) => {
-                  commitRange(
-                    startValues.date,
-                    e.target.value,
-                    true,
-                    endValues.date,
-                    endValues.time,
-                    showEndTime
-                  );
-                }}
-                className="w-20 shrink-0 text-center"
-              />
-            )}
-          </div>
-        </div>
+          )}
+        </span>
 
-        {/* End Bound Input */}
-        <div>
-          <div className="mb-1 flex items-center justify-between">
-            <span className="text-nyx-500 text-[11px] font-medium tracking-wider uppercase">
-              End Date
-            </span>
-            {showEndInput && endValues.date && (
-              <button
-                type="button"
+        {/* The arrow (and second date) only appear once the target spans more
+            than its start day. A target with just a start date is a single day
+            whose end target is 23:59 of that day — there is no open-ended
+            target, so no ∞ glyph. */}
+        {showEndInput && (
+          <span className="text-nyx-600 shrink-0 max-[350px]:col-start-2 max-[350px]:row-start-2 max-[350px]:justify-self-center max-[350px]:rotate-90">
+            →
+          </span>
+        )}
+
+        <span className="inline-flex shrink-0 items-center gap-1 max-[350px]:col-start-2 max-[350px]:row-start-3">
+          {showEndInput ? (
+            <>
+              {/* toggle bookends the pill on the single-line (desktop)
+                  layout — order-2 pushes it after the date — but goes back
+                  to the left of its date once stacked to two lines */}
+              <TimeToggle
+                active={showEndTime}
                 disabled={disabled}
+                className="order-2 max-[350px]:order-none"
                 onClick={() => {
                   const nextState = !showEndTime;
                   setShowEndTime(nextState);
@@ -226,18 +255,7 @@ export default function TargetEditor({
                     nextState
                   );
                 }}
-                className={`flex items-center gap-0.5 rounded border px-1 text-label transition-colors ${
-                  showEndTime
-                    ? 'border-eros-500 text-eros-400 bg-eros-500/10'
-                    : 'border-nyx-700 text-nyx-500 hover:text-nyx-300'
-                }`}
-              >
-                <Clock size={10} /> {showEndTime ? 'Remove time' : 'Add time'}
-              </button>
-            )}
-          </div>
-          {showEndInput ? (
-            <div className="flex gap-1">
+              />
               <TextInput
                 type="date"
                 value={endValues.date}
@@ -252,7 +270,7 @@ export default function TargetEditor({
                     showEndTime
                   );
                 }}
-                className="w-full"
+                className="text-nyx-400! w-[9.5rem]! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
               />
               {showEndTime && endValues.date && (
                 <TextInput
@@ -269,47 +287,49 @@ export default function TargetEditor({
                       true
                     );
                   }}
-                  className="w-20 shrink-0 text-center"
+                  className="text-nyx-400! w-20! shrink-0 border-0! bg-transparent! p-0! text-center text-caption!"
                 />
               )}
-            </div>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={handleRemoveEnd}
+                title="Remove end date (single day)"
+                className="text-nyx-500 hover:text-tartarus-500 order-3 flex shrink-0 items-center max-[350px]:order-none"
+              >
+                <X size={12} />
+              </button>
+            </>
           ) : (
-            <div className="border-nyx-700 text-nyx-600 flex h-[34px] items-center rounded border border-dashed px-3 text-caption italic">
-              Open-ended
-            </div>
+            startValues.date && (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={handleAddEnd}
+                title="Add end date"
+                className="text-nyx-500 hover:text-nyx-300 flex shrink-0 items-center gap-0.5"
+              >
+                <Plus size={12} />
+                <span>end</span>
+              </button>
+            )
           )}
-        </div>
-      </div>
+        </span>
 
-      <div className="flex items-center justify-between pt-0.5">
-        {startValues.date && (
-          <label className="text-nyx-500 flex items-center gap-1.5 text-caption select-none">
-            <input
-              type="checkbox"
-              checked={!showEndInput}
-              disabled={disabled}
-              onChange={handleNoEndToggle}
-              className="border-nyx-600 bg-nyx-800 checked:bg-eros-500 accent-eros-500 h-3.5 w-3.5 rounded"
-            />
-            No end date yet
-          </label>
-        )}
-
-        {(start || end) && (
+        {!hideClear && (start || end) && (
           <button
             type="button"
             disabled={disabled}
             onClick={handleClear}
-            className="text-nyx-500 hover:text-tartarus-500 ml-auto flex items-center gap-1 text-caption"
+            title="Clear target"
+            className="text-nyx-500 hover:text-tartarus-500 ml-1 flex shrink-0 items-center max-[350px]:col-start-2 max-[350px]:row-start-3 max-[350px]:ml-auto"
           >
-            <X size={12} /> Clear window
+            <X size={12} />
           </button>
         )}
       </div>
 
-      {error && (
-        <p className="text-tartarus-500 mt-1 text-caption font-medium">{error}</p>
-      )}
+      {error && <p className="text-tartarus-500 text-caption font-medium">{error}</p>}
     </div>
   );
 }

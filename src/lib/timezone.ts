@@ -55,10 +55,12 @@ function fmt(
   options: Intl.DateTimeFormatOptions,
   tz?: string
 ): string {
+  const d = new Date(date ?? NaN);
+  if (isNaN(d.getTime())) return '';
   return new Intl.DateTimeFormat('default', {
     ...options,
     timeZone: tz || getTimezone(),
-  }).format(new Date(date ?? NaN));
+  }).format(d);
 }
 
 interface FormatInTzOptions {
@@ -103,6 +105,7 @@ export function formatDate(dateInput: DateInput, tz?: string): string {
 export function formatDueInTz(dateInput: DateInput, tz?: string): string | null {
   if (!dateInput) return null;
   const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return null;
   const zone = tz || getTimezone();
 
   const todayParts = partsInTz(new Date(), zone);
@@ -135,8 +138,10 @@ export function isOverdueInTz(
 // Checks whether a date falls on today in the user's timezone
 export function isTodayInTz(dateInput: DateInput, tz?: string): boolean {
   if (!dateInput) return false;
+  const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return false;
   const zone = tz || getTimezone();
-  const a = partsInTz(new Date(dateInput), zone);
+  const a = partsInTz(d, zone);
   const b = partsInTz(new Date(), zone);
   return a.year === b.year && a.month === b.month && a.day === b.day;
 }
@@ -147,6 +152,7 @@ export function toDatetimeLocalInTz(dateInput: DateInput, tz?: string): string {
   if (!dateInput) return '';
   const zone = tz || getTimezone();
   const d = new Date(dateInput);
+  if (isNaN(d.getTime())) return '';
   const p = partsInTz(d, zone);
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${p.year}-${pad(p.month)}-${pad(p.day)}T${pad(p.hour)}:${pad(p.minute)}`;
@@ -186,6 +192,9 @@ interface TzParts {
 }
 
 function partsInTz(date: Date, tz: string): TzParts {
+  if (isNaN(date.getTime())) {
+    return { year: 1970, month: 1, day: 1, hour: 0, minute: 0, second: 0 };
+  }
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
     year: 'numeric',

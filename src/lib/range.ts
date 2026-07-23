@@ -63,6 +63,34 @@ export function isOpenRange(rangeStr: unknown): boolean {
   return Boolean(start) && !end;
 }
 
+// Following the app-wide convention (see TargetEditor.getLocalValues), a date
+// is considered to carry no explicit time when its local wall clock sits at
+// exactly midnight (00:00).
+function isUntimed(d: Date): boolean {
+  return d.getHours() === 0 && d.getMinutes() === 0;
+}
+
+// Returns a copy of `d` moved to the last moment of its local day (23:59:59.999).
+export function endOfLocalDay(d: Date): Date {
+  const out = new Date(d);
+  out.setHours(23, 59, 59, 999);
+  return out;
+}
+
+// A `target` is a planning window, and its "end target" is the moment by which
+// the work is meant to be finished. The concept:
+//   • a single date (no end bound) means "do it that day" — end target is
+//     23:59 of that day;
+//   • an end date means the end target is 23:59 of that date;
+//   • an explicit time on the relevant date is honoured as-is.
+// Every target therefore has an end target — there is no open-ended target.
+export function targetEnd(rangeStr: unknown): Date | null {
+  const { start, end } = parseRange(rangeStr);
+  const boundary = end ?? start;
+  if (!boundary || isNaN(boundary.getTime())) return null;
+  return isUntimed(boundary) ? endOfLocalDay(boundary) : boundary;
+}
+
 export function rangeDurationMinutes(
   rangeStr: unknown,
   now: Date = new Date()

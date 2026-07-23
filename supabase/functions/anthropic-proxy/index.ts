@@ -8,11 +8,26 @@
 // Deploy:            supabase functions deploy anthropic-proxy
 // Configure the key:  supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 //
-// Auth: deployed with JWT verification on (the Supabase CLI default) —
-// callers must send `Authorization: Bearer <supabase anon or user key>`,
-// the same key the extension already uses to talk to Supabase directly.
-// This isn't a new trust boundary, it's the existing one extended to cover
-// this call too.
+// Auth: verify_jwt is OFF for this function (see supabase/config.toml) —
+// the platform-level JWT gate also blocks the browser's CORS preflight
+// (OPTIONS carries no Authorization header, so the gateway would 401 it
+// before this code's own CORS headers ever get attached, which the browser
+// reports as a CORS failure rather than a clean 401). The same check is
+// done here instead: callers must send `Authorization: Bearer <supabase
+// anon key>`, matching it against the project's own anon key (auto-injected
+// as SUPABASE_ANON_KEY). This isn't a new trust boundary, it's the existing
+// one — just enforced in code instead of the gateway.
+//
+// Gotcha: SUPABASE_ANON_KEY here always reflects the project's *default*
+// publishable key. If VITE_SUPABASE_ANON_KEY (client-side) is ever set to a
+// different, secondary publishable key — Supabase's newer key system
+// allows more than one active key per project — this check fails even
+// though the client's key is otherwise perfectly valid. Keep them the same
+// key if this ever starts 401ing again for no obvious reason. (This is also
+// why simply renaming things to match Supabase's newer "publishable key"
+// terminology isn't safe on its own — the auto-injected variable Edge
+// Functions actually receive is still named SUPABASE_ANON_KEY regardless of
+// the key's own format.)
 
 const ANTHROPIC_API_BASE = 'https://api.anthropic.com';
 const FUNCTION_PATH_PREFIX = '/anthropic-proxy';
@@ -20,18 +35,53 @@ const DEFAULT_ANTHROPIC_VERSION = '2023-06-01';
 
 // Wildcard origin is deliberate: a Chrome extension's origin
 // (chrome-extension://<id>) isn't something a whitelist buys much against,
-// and every request still has to carry the Supabase anon/user key to get
-// past JWT verification before this code even runs.
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type, anthropic-version, anthropic-beta',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+// and every non-OPTIONS request still has to carry the Supabase anon/user
+// key to pass the check below.
+//
+// Allow-Headers echoes back whatever the browser's preflight says the real
+// request will send (Access-Control-Request-Headers), rather than a fixed
+// list — the Anthropic SDK attaches its own diagnostic headers
+// (x-stainless-os, x-stainless-lang, etc.) that vary by SDK version and
+// runtime, so hardcoding today's set just breaks again on the next update.
+function corsHeaders(req: Request): Record<string, string> {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers':
+      req.headers.get('access-control-request-headers') ||
+      'authorization, content-type, anthropic-version, anthropic-beta',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+}
 
 Deno.serve(async (req: Request) => {
+  const CORS_HEADERS = corsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: CORS_HEADERS });
+  }
+
+  // verify_jwt is off for this function (see supabase/config.toml) so the
+  // CORS preflight above isn't blocked by the platform gateway — this is
+  // that same gate, done here instead. See the file header for the
+  // default-vs-secondary-key gotcha if this ever 401s unexpectedly.
+  const expectedAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
+  const presentedToken = (req.headers.get('authorization') || '').replace(
+    /^Bearer\s+/i,
+    ''
+  );
+  if (!expectedAnonKey || presentedToken !== expectedAnonKey) {
+    return new Response(
+      JSON.stringify({
+        error: {
+          type: 'authentication_error',
+          message: 'Missing or invalid authorization.',
+        },
+      }),
+      {
+        status: 401,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      }
+    );
   }
 
   const apiKey = Deno.env.get('ANTHROPIC_API_KEY');

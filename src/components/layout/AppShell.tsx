@@ -29,8 +29,7 @@ import ChatPanel from '../assistant/ChatPanel';
 import KhaosIcon from '../common/KhaosIcon'; // Certifique-se de que o caminho relativo está correto
 import { StatusBadge, ProjectChip } from '../common/ui';
 import { useProcessingContext } from '../../lib/processingContext';
-import { useMomentDetector } from '../../hooks/useMomentDetector';
-import { useMomentPrompts } from '../../lib/momentPromptsContext';
+import { useChatActivity } from '../../lib/chat/chatActivityContext';
 
 interface NavItem {
   to: string;
@@ -189,8 +188,8 @@ function Sidebar({ onNavigate, onClose, spinning }: SidebarProps) {
 export default function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [chatSheetOpen, setChatSheetOpen] = useState(false);
-  useMomentDetector();
-  const { pendingCount: pendingMomentPrompts } = useMomentPrompts();
+  const { hasUnseenOpener, markOpenerSeen } = useChatActivity();
+  const hasChatActivity = hasUnseenOpener;
   const { isAssistantProcessing } = useProcessingContext();
   const isFetching = useIsFetching();
   const isMutating = useIsMutating();
@@ -300,12 +299,13 @@ export default function AppShell() {
       {/* ── Mobile floating chat bubble ──────────────────────── */}
       {!chatSheetOpen && (
         <button
-          onClick={() => setChatSheetOpen(true)}
+          onClick={() => {
+            setChatSheetOpen(true);
+            markOpenerSeen();
+          }}
           className="shadow-panel fixed right-4 bottom-20 z-30 flex items-center justify-center rounded-full lg:hidden"
           aria-label={
-            pendingMomentPrompts > 0
-              ? `Open assistant (${pendingMomentPrompts} moment${pendingMomentPrompts === 1 ? '' : 's'} waiting for a note)`
-              : 'Open assistant'
+            hasChatActivity ? 'Open assistant (waiting for you)' : 'Open assistant'
           }
         >
           <KhaosIcon
@@ -314,10 +314,8 @@ export default function AppShell() {
             color="text-nyx-900"
             spin={true}
           />
-          {pendingMomentPrompts > 0 && (
-            <span className="border-nyx-900 bg-tartarus-500 absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full border-2 px-0.5 text-label leading-none font-semibold text-white">
-              {pendingMomentPrompts}
-            </span>
+          {hasChatActivity && (
+            <span className="border-nyx-900 bg-tartarus-500 absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full border-2" />
           )}
         </button>
       )}

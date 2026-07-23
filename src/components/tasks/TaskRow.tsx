@@ -4,10 +4,12 @@ import {
   PriorityBadge,
   DueBadge,
   TargetBadge,
+  ScheduledBadge,
   ProjectChip,
 } from '../common/ui';
 import { minutesToHuman } from '../../lib/dateUtils';
 import { useSequenceCounts } from '../../hooks/useSequence';
+import { useScheduledTaskIds } from '../../hooks/useEvents';
 import type { Task } from '../../lib/types';
 
 const DIMMED: Task['status'][] = ['done', 'cancelled'];
@@ -34,6 +36,7 @@ export default function TaskRow({
   const draggable = Boolean(dragHandleProps);
   const dimmed = DIMMED.includes(task.status);
   const seqCounts = useSequenceCounts().get(task.id);
+  const scheduled = useScheduledTaskIds().has(task.id);
 
   return (
     <div
@@ -53,42 +56,47 @@ export default function TaskRow({
       <div className="min-w-0 flex-1">
         <button
           onClick={() => onOpen(task)}
-          className="flex w-full items-center gap-1 text-left"
+          className="flex w-full flex-col gap-0.5 text-left md:flex-row md:items-center md:gap-1"
         >
-          <StatusBadge status={task.status} />
-          <span
-            className={`text-nyx-100 min-w-0 flex-1 truncate text-body ${
-              task.status === 'cancelled' ? 'line-through' : ''
-            }`}
-          >
-            {task.name}
+          <span className="flex min-w-0 items-center gap-1 md:flex-1">
+            <StatusBadge status={task.status} />
+            <span
+              className={`text-nyx-100 min-w-0 flex-1 truncate text-body ${
+                task.status === 'cancelled' ? 'line-through' : ''
+              }`}
+            >
+              {task.name}
+            </span>
           </span>
-          <PriorityBadge priority={task.priority} />
-          {task.estimate ? (
-            <span className="text-nyx-600 hidden shrink-0 font-mono text-caption md:block">
-              {minutesToHuman(task.estimate)}
-            </span>
-          ) : null}
-          {Boolean(seqCounts?.before) && (
-            <span
-              title={`${seqCounts!.before} tarefa(s) antes desta`}
-              className="text-nyx-500 flex shrink-0 items-center gap-0.5 text-[11px]"
-            >
-              <CornerUpLeft size={11} />
-              {seqCounts!.before}
-            </span>
-          )}
-          {Boolean(seqCounts?.after) && (
-            <span
-              title={`${seqCounts!.after} tarefa(s) depois desta`}
-              className="text-nyx-500 flex shrink-0 items-center gap-0.5 text-[11px]"
-            >
-              <CornerDownRight size={11} />
-              {seqCounts!.after}
-            </span>
-          )}
-          <TargetBadge target={task.target as string | null} />
-          <DueBadge due={task.due} status={task.status} />
+          <span className="flex shrink-0 flex-wrap items-center gap-1">
+            <PriorityBadge priority={task.priority} />
+            {task.estimate ? (
+              <span className="text-nyx-600 shrink-0 font-mono text-caption">
+                {minutesToHuman(task.estimate)}
+              </span>
+            ) : null}
+            {Boolean(seqCounts?.before) && (
+              <span
+                title={`${seqCounts!.before} tarefa(s) antes desta`}
+                className="text-nyx-500 flex shrink-0 items-center gap-0.5 text-[11px]"
+              >
+                <CornerUpLeft size={11} />
+                {seqCounts!.before}
+              </span>
+            )}
+            {Boolean(seqCounts?.after) && (
+              <span
+                title={`${seqCounts!.after} tarefa(s) depois desta`}
+                className="text-nyx-500 flex shrink-0 items-center gap-0.5 text-[11px]"
+              >
+                <CornerDownRight size={11} />
+                {seqCounts!.after}
+              </span>
+            )}
+            <TargetBadge target={task.target as string | null} />
+            <DueBadge due={task.due} status={task.status} />
+            <ScheduledBadge scheduled={scheduled} />
+          </span>
         </button>
 
         {projectName && (
